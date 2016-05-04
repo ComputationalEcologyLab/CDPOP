@@ -653,11 +653,7 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 					# Get probability function of user defined input number
 					Bearpairs,tempmales = DoSexualYY(nobreedgrids,xycdmatrix,breedgrids,\
 					tempmales,matemovethresh,Bearpairs,nobreedgrids,subpopmatemort,subpopmortperc,subpop,gen,selfans)
-					
-					# Get probability function of user defined input number
-					Bearpairs = DoAsexualYY(xycdmatrix,matemovethresh,Bearpairs,\
-					selfans,breedgrids)										
-					
+										
 					# Update count
 					count = count + 1					
 				

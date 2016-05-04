@@ -567,7 +567,9 @@ def ReadCDMatrix(cdmatrixfilename,function,threshold,A,B,C,subpop):
 			
 			# For Gaussian function 
 			elif function == '7':
-			
+				if C == 0.0:
+					print('Parameter C for Gaussian function is 0.')
+					sys.exit(-1)
 				# This function gets rescale: calculate here
 				scale_min = A*np.exp(-((float(threshold)-B)**2)/(2*C**2))
 				scale_max = A*np.exp(-((float(minbigCD)-B)**2)/(2*C**2))

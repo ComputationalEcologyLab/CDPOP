@@ -159,6 +159,7 @@ if __name__ == '__main__':
 		burningen = int(batchVars['startSelection'][ibatch])
 		cdinfect = batchVars['cdinfect'][ibatch]
 		transmissionprob = float(batchVars['transmissionprob'][ibatch])
+		matedist_out = batchVars['output_matedistance'][ibatch]
 						
 		# Grab the nthfile list range specific to user input, list or sequence
 		if not isinstance(nthfile_out, (list,tuple)):
@@ -192,7 +193,10 @@ if __name__ == '__main__':
 			cdclimgentime = [cdclimgentimelist]
 		else: 
 			cdclimgentime = cdclimgentimelist
-		
+		if cdclimgentime[0] != '0':
+			print('First cdclimate time must be 0.')
+			sys.exit(-1)
+	
 		# Get mortality here: if tuple not returned and just one number applied across all adult ages 
 		if not isinstance(agefilename,(list,tuple)):
 			agefilename = [agefilename]
@@ -401,7 +405,7 @@ if __name__ == '__main__':
 				start_time1 = datetime.datetime.now()
 				
 				# Check gen time equal to cdclimgentime
-				for icdtime in xrange(len(cdclimgentime)):
+				for icdtime in xrange(len(cdclimgentime)):						
 					if gen == int(cdclimgentime[icdtime]):
 						tupClimate = DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemoveno,Fdispmoveno,Mdispmoveno,matemovethresh,Fdispmovethresh,Mdispmovethresh,matemoveparA,matemoveparB,matemoveparC,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,subpop,agemortvals,offnovals,egg_lmbdavals,egg_sigmavals,K_envvals,newmortperc,fitvals_pass)
 						
@@ -437,7 +441,7 @@ if __name__ == '__main__':
 						stringout = 'DoCDCliamte(): '+str(datetime.datetime.now() -start_time1) + ''
 						logMsg(logfHndl,stringout)
 						print 'DoCDClimate(): ',str(datetime.datetime.now() -start_time1),''	
-				
+
 				# -------------------------------	
 				# Call ReadGrid()
 				# -------------------------------
@@ -686,7 +690,7 @@ if __name__ == '__main__':
 			FDispDistEDstd,MDispDistEDstd,MateDistCDstd,FDispDistCDstd,MDispDistCDstd,subpopmigration,\
 			FAvgMate,MAvgMate,FSDMate,MSDMate,DisperseDeaths,Open,CouldNotDisperse,\
 			Female_BreedEvents,gridformat,subpopemigration,females_nomate,subgridtotal,OffDeaths,Population_age,\
-			BreedFemales_age,subpopmatemort,Opt3SelectionDeaths,MateDistances)
+			BreedFemales_age,subpopmatemort,Opt3SelectionDeaths,MateDistances,matedist_out)
 			
 			# Print to log
 			stringout = 'DoPostProcess(): '+str(datetime.datetime.now() -start_time1) + ''

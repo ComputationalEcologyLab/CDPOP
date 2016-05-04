@@ -1,3 +1,12 @@
+Changes 1.2.33.2016.04.28T16:28:00MDT (ell)
+0) Error in output write out with all MateDistances reported. Make this option and fixed.
+1) Added error statement for if cdclimgentime is not 0. 
+2) Added error statement if C == 0 in Gaussian function.
+3) Bug if sexual reproduction == N and Y/Y. Fixed.  
+
+Changes 1.2.33.2016.03.23T17:00:00MDT (ell, AJS, SAC)
+0) Begin to add multi-allele selection model. See user manual for equation. Add in beta file for each allele. Add in variable file.  
+
 Changes 1.2.32.2015.12.05T11:44:00MST (ell, AJS, SAC)
 0) FIxed disperal and mate movement prob to cost conversion for outputting.
 1) Add to output.csv a column for mate movement distances separated by |
