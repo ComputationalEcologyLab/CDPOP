@@ -66,6 +66,16 @@ The example run is for 16-points representing individuals with a Euclidean dista
 
 7. Check for successful model run completion: The program will provide step-by-step output in the Shell window. Once completed, a simulation time will be printed out and folders batchrun0mcrun0, batchrun0mcrun1, batchrun0mcrun2, batchrun0mcrun3, batchrun0mcrun4, and batchrun1mcrun0 will be created in your CDPOP home directory to store output from the separate batch and/or Monte-Carlo runs. These folders are located in the data folder specified in (6). The output folder will have a unique date/time stamp after the name in case you want to run multiple CDPOP runs in this same directory. The program will also provide a log file with program steps in your CDPOP home directory.
 
+------------------------------------------------
+Bugs, Feature Request, Troubleshooting, and FAQs
+------------------------------------------------
+Have a bug, feature request, trouble running CDPOP, or other FAQs? First please read the user manual to see if your issue can be addressed there. FAQ questions include:
+1. You can't get the example CDPOP to run?
+2. Is your population crashing?
+3. You can't produce a signal with your simulated data?
+
+
+
 Happy Simulations!
 
 Erin.
