@@ -335,7 +335,8 @@ def InitializeAge(agefilename,nogrids,datadir):
 		# Store all information in a list [age,probability]
 		ageclass = []
 		ageno = []
-		agemort = []
+		Magemort = []
+		Fagemort = []
 		eggs_mean = []
 		eggs_sigma = []	
 		Mmature = []
@@ -344,32 +345,40 @@ def InitializeAge(agefilename,nogrids,datadir):
 			ageclass.append(int(xage[i+2][0]))
 			ageno.append(float(xage[i+2][1]))
 			if len(xage[i+2][2].split('|')) == 1: 
-				agemort.append(float(xage[i+2][2])/100.)
+				Magemort.append(float(xage[i+2][2])/100.)
 			else:
-				agemort.append(xage[i+2][2].split('|'))
+				Magemort.append(xage[i+2][2].split('|'))
 			if len(xage[i+2][3].split('|')) == 1: 
-				eggs_mean.append(float(xage[i+2][3]))
+				Fagemort.append(float(xage[i+2][3])/100.)
 			else:
-				eggs_mean.append(xage[i+2][3].split('|'))
+				Fagemort.append(xage[i+2][3].split('|'))
 			if len(xage[i+2][4].split('|')) == 1: 
-				eggs_sigma.append(float(xage[i+2][4]))
+				eggs_mean.append(float(xage[i+2][4]))
 			else:
-				eggs_sigma.append(xage[i+2][4].split('|'))
-			Mmature.append(float(xage[i+2][5]))
-			Fmature.append(float(xage[i+2][6]))
+				eggs_mean.append(xage[i+2][4].split('|'))
+			if len(xage[i+2][5].split('|')) == 1: 
+				eggs_sigma.append(float(xage[i+2][5]))
+			else:
+				eggs_sigma.append(xage[i+2][5].split('|'))
+			Mmature.append(float(xage[i+2][6]))
+			Fmature.append(float(xage[i+2][7]))
 			
 		# Get age distribution list
 		for i in xrange(len(ageno)):
 			agelst[ifile].append([ageclass[i],ageno[i]/sum(ageno)])
 		
-		# Get Age 0 mortality
+		# Get Age 0 mortality for males and females
 		if len(xage[1][2].split('|')) == 1: 
-			newmortperc = float(xage[1][2])/100.
+			Mnewmortperc = float(xage[1][2])/100.
 		else:
-			newmortperc = xage[1][2].split('|')
+			Mnewmortperc = xage[1][2].split('|')
+		if len(xage[1][3].split('|')) == 1: 
+			Fnewmortperc = float(xage[1][3])/100.
+		else:
+			Fnewmortperc = xage[1][3].split('|')
 			
 		# Error checks here: if number of classes does not equal mortality age classes
-		if len(agelst[ifile]) != len(agemort):
+		if len(agelst[ifile]) != len(Magemort):
 			print('Agedistribution data not fully entered correctly.')
 			sys.exit(-1)
 		# Error check that age 0s are initialized
@@ -380,7 +389,7 @@ def InitializeAge(agefilename,nogrids,datadir):
 		del(xage)
 	
 	# Return variables
-	return agelst,agemort,eggs_mean,eggs_sigma,newmortperc,Mmature,Fmature
+	return agelst,Magemort,Fagemort,eggs_mean,eggs_sigma,Mnewmortperc,Fnewmortperc,Mmature,Fmature
 	
 	# End::InitializeAge()
 
@@ -629,7 +638,7 @@ def ReadCDMatrix(cdmatrixfilename,function,threshold,A,B,C,subpop):
 	# End::ReadMateCDMatrix
 
 # ---------------------------------------------------------------------------------------------------	 
-def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemoveno,Fdispmoveno,Mdispmoveno,matemovethresh,Fdispmovethresh,Mdispmovethresh,matemoveparA,matemoveparB,matemoveparC,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,subpop,agemort,offno,lmbda,sigma,K_envvals,newmortperc,fitvals):
+def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemoveno,Fdispmoveno,Mdispmoveno,matemovethresh,Fdispmovethresh,Mdispmovethresh,matemoveparA,matemoveparB,matemoveparC,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,subpop,Magemort,Fagemort,offno,lmbda,sigma,K_envvals,Mnewmortperc,Fnewmortperc,fitvals):
 	'''
 	DoCDClimate()
 	Reads in cost distance matrices and converts to probabilities.
@@ -646,14 +655,19 @@ def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemo
 			sys.exit(-1)
 	
 	# Get age mortality here
-	tempmort = []
+	tempMmort = []
+	tempFmort = []
 	templmbda = []
 	tempsigma = []
-	for i in xrange(len(agemort)):
-		if not isinstance(agemort[i], float):
-			tempmort.append(float(agemort[i][icdtime])/100.)
+	for i in xrange(len(Magemort)):
+		if not isinstance(Magemort[i], float):
+			tempMmort.append(float(Magemort[i][icdtime])/100.)
 		else:
-			tempmort.append(agemort[i])
+			tempMmort.append(Magemort[i])
+		if not isinstance(Fagemort[i], float):
+			tempFmort.append(float(Fagemort[i][icdtime])/100.)
+		else:
+			tempFmort.append(Fagemort[i])
 		if not isinstance(lmbda[i], float):
 			templmbda.append(float(lmbda[i][icdtime]))
 		else:
@@ -662,10 +676,15 @@ def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemo
 			tempsigma.append(float(sigma[i][icdtime]))
 		else:
 			tempsigma.append(sigma[i])
-	if not isinstance(agemort[i], float):
-		tempnewmort = float(newmortperc[icdtime])/100.
+	if not isinstance(Magemort[i], float):
+		tempMnewmort = float(Mnewmortperc[icdtime])/100.
 	else:
-		tempnewmort = newmortperc
+		tempMnewmort = Mnewmortperc
+	if not isinstance(Fagemort[i], float):
+		tempFnewmort = float(Fnewmortperc[icdtime])/100.
+	else:
+		tempFnewmort = Fnewmortperc
+	
 	# Get birth rate values here, r and K_env
 	if isinstance(offno, (list,tuple)):
 		tempoffno = offno[icdtime]
@@ -805,7 +824,7 @@ def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemo
 	
 	# Return this functions variables
 	tupClimate = matecdmatrix,Fdispcdmatrix,Mdispcdmatrix,matemovethresh,\
-	Fdispmovethresh,Mdispmovethresh,Fdisp_ScaleMin,Fdisp_ScaleMax,Mdisp_ScaleMin,Mdisp_ScaleMax,mate_ScaleMin,mate_ScaleMax,tempmort,tempoffno,templmbda,tempsigma,tempK_env,tempnewmort,tempfitvals,matemoveno,Fdispmoveno,Mdispmoveno	
+	Fdispmovethresh,Mdispmovethresh,Fdisp_ScaleMin,Fdisp_ScaleMax,Mdisp_ScaleMin,Mdisp_ScaleMax,mate_ScaleMin,mate_ScaleMax,tempMmort,tempFmort,tempoffno,templmbda,tempsigma,tempK_env,tempMnewmort,tempFnewmort,tempfitvals,matemoveno,Fdispmoveno,Mdispmoveno	
 	return tupClimate
 	
 	#End::DoCDClimate()
@@ -1226,7 +1245,7 @@ subpopmigration,subpopemigration,datadir,geneswap):
 	# -------------------------------------------
 	# Initialize age structure
 	# ------------------------------------------- 
-	agelst,agemort,egg_lmbdavals,egg_sigmavals,newmortperc,Mmature,Fmature = InitializeAge(agefilename,nogrids,datadir)
+	agelst,Magemort,Fagemort,egg_lmbdavals,egg_sigmavals,Mnewmortperc,Fnewmortperc,Mmature,Fmature = InitializeAge(agefilename,nogrids,datadir)
 	
 	# ------------------------------------------
 	# Initialize infection
@@ -1249,7 +1268,7 @@ subpopmigration,subpopemigration,datadir,geneswap):
 			
 	# Return this functions variables
 	tupPreProcess = ithmcrundir,FID,id,sex,age,xgrid,ygrid,genes,\
-	nogrids,subpop,fitvals,infection,Infected,subpopmigration,subpopemigration,agemort,egg_lmbdavals,egg_sigmavals,allelst,newmortperc,Mmature,Fmature,intgenesans
+	nogrids,subpop,fitvals,infection,Infected,subpopmigration,subpopemigration,Magemort,Fagemort,egg_lmbdavals,egg_sigmavals,allelst,Mnewmortperc,Fnewmortperc,Mmature,Fmature,intgenesans
 	return tupPreProcess
 	
 	#End::DoPreProcess()

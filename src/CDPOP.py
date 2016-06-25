@@ -292,9 +292,11 @@ if __name__ == '__main__':
 			Population_age = []
 			Migrants = []
 			Open = []
-			Deaths = []
+			Track_MDeaths = []
+			Track_FDeaths = []
 			Births = []
-			OffDeaths = []
+			Track_MOffDeaths = []
+			Track_FOffDeaths = []
 			DisperseDeaths = []
 			CouldNotDisperse = []
 			Opt3SelectionDeaths = []
@@ -365,14 +367,16 @@ if __name__ == '__main__':
 			Infected = tupPreProcess[12]
 			subpopmigration = tupPreProcess[13]
 			subpopemigration = tupPreProcess[14]
-			agemortvals =  tupPreProcess[15]
-			egg_lmbdavals = tupPreProcess[16]
-			egg_sigmavals = tupPreProcess[17]
-			allelst = tupPreProcess[18]
-			newmortperc = tupPreProcess[19]
-			Mmature = tupPreProcess[20]
-			Fmature = tupPreProcess[21]
-			intgenesans = tupPreProcess[22] # might have changed due to error geneswap != 0
+			Magemortvals =  tupPreProcess[15]
+			Fagemortvals =  tupPreProcess[16]
+			egg_lmbdavals = tupPreProcess[17]
+			egg_sigmavals = tupPreProcess[18]
+			allelst = tupPreProcess[19]
+			Mnewmortperc = tupPreProcess[20]
+			Fnewmortperc = tupPreProcess[21]
+			Mmature = tupPreProcess[22]
+			Fmature = tupPreProcess[23]
+			intgenesans = tupPreProcess[24] # might have changed due to error geneswap != 0
 			
 			# ---------------------------------
 			# Error statements
@@ -407,7 +411,7 @@ if __name__ == '__main__':
 				# Check gen time equal to cdclimgentime
 				for icdtime in xrange(len(cdclimgentime)):						
 					if gen == int(cdclimgentime[icdtime]):
-						tupClimate = DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemoveno,Fdispmoveno,Mdispmoveno,matemovethresh,Fdispmovethresh,Mdispmovethresh,matemoveparA,matemoveparB,matemoveparC,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,subpop,agemortvals,offnovals,egg_lmbdavals,egg_sigmavals,K_envvals,newmortperc,fitvals_pass)
+						tupClimate = DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemoveno,Fdispmoveno,Mdispmoveno,matemovethresh,Fdispmovethresh,Mdispmovethresh,matemoveparA,matemoveparB,matemoveparC,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,subpop,Magemortvals,Fagemortvals,offnovals,egg_lmbdavals,egg_sigmavals,K_envvals,Mnewmortperc,Fnewmortperc,fitvals_pass)
 						
 						cdmatrix_mate = tupClimate[0]
 						cdmatrix_F = tupClimate[1]
@@ -421,16 +425,18 @@ if __name__ == '__main__':
 						Mdisp_ScaleMax = tupClimate[9]
 						mate_ScaleMin = tupClimate[10]
 						mate_ScaleMax = tupClimate[11]
-						agemort = tupClimate[12]
-						offno = tupClimate[13]
-						eggs_lambda = tupClimate[14]
-						eggs_sigma = tupClimate[15]
-						K_env = tupClimate[16]
-						newmort = tupClimate[17]
-						fitvals = tupClimate[18]
-						mateno = tupClimate[19]
-						Fdispno = tupClimate[20]
-						Mdispno = tupClimate[21] 
+						Magemort = tupClimate[12]
+						Fagemort = tupClimate[13]
+						offno = tupClimate[14]
+						eggs_lambda = tupClimate[15]
+						eggs_sigma = tupClimate[16]
+						K_env = tupClimate[17]
+						Mnewmort = tupClimate[18]
+						Fnewmort = tupClimate[19]
+						fitvals = tupClimate[20]
+						mateno = tupClimate[21]
+						Fdispno = tupClimate[22]
+						Mdispno = tupClimate[23] 
 												
 						# Error check for if nofiles == nogrids system exit
 						if nogrids != len(cdmatrix_mate):
@@ -502,7 +508,7 @@ if __name__ == '__main__':
 				start_time1 = datetime.datetime.now()
 				
 				tupGetMetrics = GetMetrics(Population,nogrids,loci,alleles,genes,\
-				gen,Ho,Alleles,He,subpop,p1,p2,q1,q2,Population_age,age,agemort,geneswap,allelst)
+				gen,Ho,Alleles,He,subpop,p1,p2,q1,q2,Population_age,age,Magemort,geneswap,allelst)
 				
 				Alleles = tupGetMetrics[0]
 				filledgrids = tupGetMetrics[1]
@@ -532,7 +538,7 @@ if __name__ == '__main__':
 				ygridcopy,ToTMales,ToTFemales,BreedMales,BreedFemales,\
 				sexans,selfans,FID,\
 				MateDistEDstd, MateDistCDstd,FAvgMate,MAvgMate,\
-				FSDMate,MSDMate,filledgrids,Female_BreedEvents,gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmature,mate_ScaleMax,mate_ScaleMin,matemoveparA,matemoveparB,matemoveparC,MateDistances)
+				FSDMate,MSDMate,filledgrids,Female_BreedEvents,gen,subpop,BreedFemales_age,Magemort,subpopmatemort,subpopmortperc,Mmature,Fmature,mate_ScaleMax,mate_ScaleMin,matemoveparA,matemoveparB,matemoveparC,MateDistances)
 				Bearpairs = tupMate[0]
 				females = tupMate[1]
 				females_nomate.append(tupMate[2])
@@ -557,7 +563,7 @@ if __name__ == '__main__':
 				
 				tupDoOff = DoOffspring(offno,eggs_lambda,Bearpairs,CDpairs,Femalepercent,\
 				Births,infection,transmissionprob,equalsexratio,\
-				newmort,OffDeaths,eggs_sigma,age,sex)
+				Mnewmort,Fnewmort,Track_MOffDeaths,Track_FOffDeaths,eggs_sigma,age,sex)
 				
 				offspring = tupDoOff[0]	
 				offspringno = tupDoOff[1]
@@ -589,7 +595,7 @@ if __name__ == '__main__':
 				# Timing events: start
 				start_time1 = datetime.datetime.now()
 				
-				tupAMort = DoMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Deaths,alleles,FID,agemort,\
+				tupAMort = DoMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track_MDeaths,Track_FDeaths,alleles,FID,Magemort,Fagemort,\
 				infection,geneswap,popmodel,K_env,fitvals,mature,cdevolveans,Opt3SelectionDeaths,burningen)
 				
 				freegrid = tupAMort[0]
@@ -684,12 +690,12 @@ if __name__ == '__main__':
 			xgridcopy,ygridcopy,gendmatans,\
 			loci,alleles,looptime,Population,ToTFemales,ToTMales,\
 			BreedFemales,BreedMales,Migrants,Births,\
-			Deaths,Alleles,He,Ho,AllelesMutated,\
+			Track_MDeaths,Track_FDeaths,Alleles,He,Ho,AllelesMutated,\
 			MateDistED,FDispDistED,MDispDistED,MateDistCD,FDispDistCD,MDispDistCD,nthfile,\
 			logfHndl,p1,p2,q1,q2,Infected,subpop,MateDistEDstd,\
 			FDispDistEDstd,MDispDistEDstd,MateDistCDstd,FDispDistCDstd,MDispDistCDstd,subpopmigration,\
 			FAvgMate,MAvgMate,FSDMate,MSDMate,DisperseDeaths,Open,CouldNotDisperse,\
-			Female_BreedEvents,gridformat,subpopemigration,females_nomate,subgridtotal,OffDeaths,Population_age,\
+			Female_BreedEvents,gridformat,subpopemigration,females_nomate,subgridtotal,Track_MOffDeaths,Track_FOffDeaths,Population_age,\
 			BreedFemales_age,subpopmatemort,Opt3SelectionDeaths,MateDistances,matedist_out)
 			
 			# Print to log

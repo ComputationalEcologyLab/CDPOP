@@ -1259,14 +1259,14 @@ def DoPostProcess(ithmcrundir,nogrids,\
 xgridcopy,ygridcopy,gendmatans,\
 loci,alleles,looptime,Population,ToTFemales,ToTMales,\
 BreedFemales,BreedMales,Migrants,Births,\
-Deaths,Alleles,He,Ho,AllelesMutated,\
+MDeaths,FDeaths,Alleles,He,Ho,AllelesMutated,\
 MateDistED,FDispDistED,MDispDistED,MateDistCD,FDispDistCD,\
 MDispDistCD,nthfile,logfHndl,p1,p2,q1,q2,Infected,subpop,\
 MateDistEDstd,FDispDistEDstd,MDispDistEDstd,MateDistCDstd,\
 FDispDistCDstd,MDispDistCDstd,subpopmigration,FAvgMate,MAvgMate,\
 FSDMate,MSDMate,DisperseDeaths,Open,CouldNotDisperse,\
 Female_BreedEvents,gridformat,subpopemigration,females_nomate,\
-subgridtotal,OffDeaths,Population_age,BreedFemales_age,subpopmatemort,SelectionDeaths,MateDistances,matedist_out):
+subgridtotal,MOffDeaths,FOffDeaths,Population_age,BreedFemales_age,subpopmatemort,SelectionDeaths,MateDistances,matedist_out):
 	'''
 	DoPostProcess()
 	Create Distance Matrices - Geographic, Genetic, and Cost
@@ -1329,9 +1329,9 @@ subgridtotal,OffDeaths,Population_age,BreedFemales_age,subpopmatemort,SelectionD
 	# Write out the titles
 	# Add Titles from xypoints
 	if matedist_out == 'Y':
-		outputtitle = ['Year','Population','Population_Age','GrowthRate','ToTFemales','ToTMales','BreedFemales','BreedFemales_Age','BreedMales','BreedEvents_Females','Females_NoMate','Migrants','DisperseDeaths','Births','EggDeaths','AgeDeaths','Alleles','He','Ho','Mutations','MateDistED','MateDistEDstd','Female_DispDistED','Female_DispDistEDstd','Male_DispDistED','Male_DispDistEDstd','MateDistCD','MateDistCDstd','Female_DispDistCD','Female_DispDistCDstd','Male_DispDistCD','Male_DispDistCDstd','p1','p2','q1','q2','Infected','SubpopImmigration','SubpopEmigration','SubpopNoMate','FemalesMeanMate','MalesMeanMate','FemalesSDMate','MalesSDMate','OpenLocations','CouldNotDisperse','MatureSelectionDeaths','AllMateCDistances']
+		outputtitle = ['Year','Population','Population_Age','GrowthRate','ToTFemales','ToTMales','BreedFemales','BreedFemales_Age','BreedMales','BreedEvents_Females','Females_NoMate','Migrants','DisperseDeaths','Births','Male_Age0Deaths','Female_Age0Deaths','Male_AgeDeaths','Female_AgeDeaths','Alleles','He','Ho','Mutations','MateDistED','MateDistEDstd','Female_DispDistED','Female_DispDistEDstd','Male_DispDistED','Male_DispDistEDstd','MateDistCD','MateDistCDstd','Female_DispDistCD','Female_DispDistCDstd','Male_DispDistCD','Male_DispDistCDstd','p1','p2','q1','q2','Infected','SubpopImmigration','SubpopEmigration','SubpopNoMate','FemalesMeanMate','MalesMeanMate','FemalesSDMate','MalesSDMate','OpenLocations','CouldNotDisperse','MatureSelectionDeaths','AllMateCDistances']
 	else:
-		outputtitle = ['Year','Population','Population_Age','GrowthRate','ToTFemales','ToTMales','BreedFemales','BreedFemales_Age','BreedMales','BreedEvents_Females','Females_NoMate','Migrants','DisperseDeaths','Births','EggDeaths','AgeDeaths','Alleles','He','Ho','Mutations','MateDistED','MateDistEDstd','Female_DispDistED','Female_DispDistEDstd','Male_DispDistED','Male_DispDistEDstd','MateDistCD','MateDistCDstd','Female_DispDistCD','Female_DispDistCDstd','Male_DispDistCD','Male_DispDistCDstd','p1','p2','q1','q2','Infected','SubpopImmigration','SubpopEmigration','SubpopNoMate','FemalesMeanMate','MalesMeanMate','FemalesSDMate','MalesSDMate','OpenLocations','CouldNotDisperse','MatureSelectionDeaths']
+		outputtitle = ['Year','Population','Population_Age','GrowthRate','ToTFemales','ToTMales','BreedFemales','BreedFemales_Age','BreedMales','BreedEvents_Females','Females_NoMate','Migrants','DisperseDeaths','Births','Male_Age0Deaths','Female_Age0Deaths','Male_AgeDeaths','Female_AgeDeaths','Alleles','He','Ho','Mutations','MateDistED','MateDistEDstd','Female_DispDistED','Female_DispDistEDstd','Male_DispDistED','Male_DispDistEDstd','MateDistCD','MateDistCDstd','Female_DispDistCD','Female_DispDistCDstd','Male_DispDistCD','Male_DispDistCDstd','p1','p2','q1','q2','Infected','SubpopImmigration','SubpopEmigration','SubpopNoMate','FemalesMeanMate','MalesMeanMate','FemalesSDMate','MalesSDMate','OpenLocations','CouldNotDisperse','MatureSelectionDeaths']
 		
 	
 	# Write out the title
@@ -1375,9 +1375,13 @@ subgridtotal,OffDeaths,Population_age,BreedFemales_age,subpopmatemort,SelectionD
 		outputfile.write(str(Migrants[i])+',')
 		outputfile.write(str(DisperseDeaths[i])+',')
 		outputfile.write(str(Births[i])+',')
-		outputfile.write(str(OffDeaths[i])+',')
-		for j in xrange(len(Deaths[i])):
-			outputfile.write(str(Deaths[i][j])+'|')
+		outputfile.write(str(MOffDeaths[i])+',')
+		outputfile.write(str(FOffDeaths[i])+',')
+		for j in xrange(len(MDeaths[i])):
+			outputfile.write(str(MDeaths[i][j])+'|')
+		outputfile.write(',')
+		for j in xrange(len(FDeaths[i])):
+			outputfile.write(str(FDeaths[i][j])+'|')
 		outputfile.write(',')
 		for j in xrange(nosubpops+1):
 			outputfile.write(str(Alleles[i][j])+'|')

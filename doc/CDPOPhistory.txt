@@ -1,3 +1,8 @@
+Changes 1.2.34.2016.06.24T15:57:00MDT (ell)
+0) Add mortality option for females and males in AgeVars file. (Melissa Oscarson goat work). 
+a) Add tracking FDeaths and MDeaths to output.csv file.
+b) fix for option 6, fix for dd mortality. 
+
 Changes 1.2.33.2016.04.28T16:28:00MDT (ell)
 0) Error in output write out with all MateDistances reported. Make this option and fixed.
 1) Added error statement for if cdclimgentime is not 0. 

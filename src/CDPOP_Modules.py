@@ -225,7 +225,7 @@ genesnew,equalsexratio,sexnew,subpopnew,infectionnew,allelst,geneswap,gen,intgen
 
 # ---------------------------------------------------------------------------------------------------	 
 def GetMetrics(Population,nogrids,loci,alleles,genes,gen,Ho,\
-Alleles,He,subpop,p1,p2,q1,q2,Population_age,age,agemort,geneswap,\
+Alleles,He,subpop,p1,p2,q1,q2,Population_age,age,Magemort,geneswap,\
 allelst,F=None,FST=None,FIS=None,FIT=None):
 	'''
 	GetMetrics()
@@ -238,14 +238,14 @@ allelst,F=None,FST=None,FIS=None,FIT=None):
 	
 	# Track population age numbers
 	Population_age.append([])
-	for i in xrange(len(agemort)):
+	for i in xrange(len(Magemort)):
 		Population_age[gen].append([])
 	countage = Counter(np.asarray(np.asarray(age,dtype='|S10')[np.where(np.asarray(age,dtype='|S10') != 'NA')[0]],dtype=np.int8))
-	for i in xrange(1,len(agemort)+1):
+	for i in xrange(1,len(Magemort)+1):
 		Population_age[gen][i-1].append(countage[i])
 	
 	# Sum up population age tracker
-	for i in xrange(len(agemort)):
+	for i in xrange(len(Magemort)):
 		Population_age[gen][i] = sum(Population_age[gen][i])
 		
 	# List for total, left, and right
@@ -903,7 +903,7 @@ offspring,genes,loci,muterate,mtdna,mutationans,geneswap):
 	# End::InheritGenes()
 
 # ---------------------------------------------------------------------------------------------------
-def ConstantMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Deaths,alleles,FID,agemort,infection,geneswap,mature):
+def ConstantMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track_MDeaths,Track_FDeaths,alleles,FID,Magemort,Fagemort,infection,geneswap,mature):
 	
 	'''
 	Constant mortality applied to each age class
@@ -911,40 +911,63 @@ def ConstantMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Death
 	
 	# Get total number of deaths for each age class, be careful of NAs and strings
 	uniqueages = Counter(np.asarray(np.asarray(age,dtype='|S10')[np.where(np.asarray(age,dtype='|S10') != 'NA')[0]],dtype=np.int8))
-	agedeaths = []	
-	extra_agedeaths = []
-	for i in xrange(1,(len(agemort)+1)):
-		agedeaths.append(round(agemort[i-1]*uniqueages[i]))
+	# Split up for sex
+	females = np.where(np.asarray(sex,dtype='|S4')=='0')[0]
+	males = np.where(np.asarray(sex,dtype='|S4')=='1')[0]
+	Fages = np.asarray(age)[females]
+	Mages = np.asarray(age)[males]
+	Funiqueages = Counter(np.asarray(np.asarray(Fages,dtype='|S10')[np.where(np.asarray(Fages,dtype='|S10') != 'NA')[0]],dtype=np.int8))
+	Muniqueages = Counter(np.asarray(np.asarray(Mages,dtype='|S10')[np.where(np.asarray(Mages,dtype='|S10') != 'NA')[0]],dtype=np.int8))
+	Magedeaths = []	
+	Fagedeaths = []
+	extra_Magedeaths = []
+	extra_Fagedeaths = []
+	for i in xrange(1,(len(Magemort)+1)):
+		Magedeaths.append(round(Magemort[i-1]*Muniqueages[i]))
+		Fagedeaths.append(round(Fagemort[i-1]*Funiqueages[i]))
 	
 	# Switch for ages over age classes, apply last mortality to age classes
-	if max(uniqueages) > len(agemort):
+	if max(Muniqueages) > len(Magemort):
 		print('Warning: age classes exceeding specified class in Agevars.csv file.')
-		for j in xrange(len(agemort)+1,(max(uniqueages)+1)):
-			extra_agedeaths.append(round(agemort[-1]*uniqueages[j]))
+		for j in xrange(len(Magemort)+1,(max(Muniqueages)+1)):
+			extra_Magedeaths.append(round(Magemort[-1]*Muniqueages[j]))
+	if max(Funiqueages) > len(Fagemort):
+		print('Warning: age classes exceeding specified class in Agevars.csv file.')
+		for j in xrange(len(Fagemort)+1,(max(Funiqueages)+1)):
+			extra_Fagedeaths.append(round(Fagemort[-1]*Funiqueages[j]))
 	
 	# Grab locations that are open
 	openindex = np.where(np.asarray(sex) == 'NA')[0]
 	
-	# Grab locations that are not open
+	# Grab locations that are filled
 	filledindex = np.where(np.asarray(sex) != 'NA')[0]
 	
 	# Then take a sample from the possible age class indices to delete from
-	deleteoldindex = []	
-	for i in xrange(1,(len(agedeaths)+1)):			
-		deleteoldindex.append(random.sample(np.where(np.asarray(age,dtype = 'str') == str(i))[0],int(agedeaths[i-1])))
+	Mdeleteoldindex = []	
+	Fdeleteoldindex = []
+	for i in xrange(1,(len(Magedeaths)+1)):			
+		Mdeleteoldindex.append(random.sample(np.where(np.asarray(Mages,dtype = 'str') == str(i))[0],int(Magedeaths[i-1])))
+		Fdeleteoldindex.append(random.sample(np.where(np.asarray(Fages,dtype = 'str') == str(i))[0],int(Fagedeaths[i-1])))
 		
 	# In case there are extra age deaths
-	if len(extra_agedeaths) != 0:
-		count = len(agemort)+1
-		for j in xrange(len(extra_agedeaths)):
-			deleteoldindex.append(random.sample(np.where(np.asarray(age) == count)[0],int(extra_agedeaths[j])))
+	if len(extra_Magedeaths) != 0:
+		count = len(Magemort)+1
+		for j in xrange(len(extra_Magedeaths)):
+			Mdeleteoldindex.append(random.sample(np.where(np.asarray(Mages) == count)[0],int(extra_Magedeaths[j])))
+			count = count + 1
+	if len(extra_Fagedeaths) != 0:
+		count = len(Fagemort)+1
+		for j in xrange(len(extra_Fagedeaths)):
+			Fdeleteoldindex.append(random.sample(np.where(np.asarray(Fages) == count)[0],int(extra_Fagedeaths[j])))
 			count = count + 1
 	
-	# Flatten and turn into array
-	deleteoldindex = np.asarray([item for sublist in deleteoldindex for item in sublist])
+	# Flatten and turn into array and get original index locations
+	Mdeleteoldindex = males[np.asarray([item for sublist in Mdeleteoldindex for item in sublist])]
+	Fdeleteoldindex = females[np.asarray([item for sublist in Fdeleteoldindex for item in sublist])]
 		
 	# Then add indices together
-	deleteallindex = np.append(openindex,deleteoldindex)
+	deleteallindex = np.append(openindex,Mdeleteoldindex)
+	deleteallindex = np.append(deleteallindex,Fdeleteoldindex)
 	deleteallindex = np.asarray(deleteallindex,dtype = 'int')
 	
 	# Store freegrid locations
@@ -966,11 +989,14 @@ def ConstantMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Death
 	# Just one more shuffle to mix up empty versus killed off grids
 	shuffle(freegrid)
 	
-	# Store total number of Deaths information for output 
+	# Store total number of Deaths information for output	
+	Track_MDeaths.append(Magedeaths)
+	Track_FDeaths.append(Fagedeaths)
 	# Check that agedeaths equals age distribution file
-	Deaths.append(agedeaths)
-	if len(extra_agedeaths) != 0:
-		Deaths[gen][-1] = Deaths[gen][-1] + sum(extra_agedeaths)
+	if len(extra_Magedeaths) != 0:
+		Track_MDeaths[gen][-1] = Track_MDeaths[gen][-1] + sum(extra_Magedeaths)
+	if len(extra_Fagedeaths) != 0:
+		Track_FDeaths[gen][-1] = Track_FDeaths[gen][-1] + sum(extra_Fagedeaths)
 	
 	# Return variables from this argument
 	tupMort = freegrid,id,sex,age,xgrid,ygrid,genes,FID,infection,mature
@@ -978,7 +1004,7 @@ def ConstantMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Death
 	# End::DoConstantMortality
 	
 # ----------------------------------------------------------------------------------------------	 
-def DDMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Deaths,alleles,FID,infection,geneswap,K_env,popmodel,agemort,mature):
+def DDMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track_MDeaths,Track_FDeaths,alleles,FID,infection,geneswap,K_env,popmodel,Magemort,Fagemort,mature):
 	'''
 	DensityDependentMortality()
 	Density dependent survival applied to each population.		
@@ -989,6 +1015,10 @@ def DDMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Deaths,alle
 	Nt = len(np.where(np.asarray(age,dtype='|S10') != 'NA')[0])
 	agedeaths = []	
 	extra_agedeaths = []
+	
+	if Magemort != Fagemort:
+		print('Warning: Logistic growth is specified and the average age specific mortality of males and females will be used.')
+	agemort = (np.asarray(Magemort) + np.asarray(Fagemort)) / 2.
 	
 	for i in xrange(1,(len(agemort)+1)): # Only for ages 1 +		
 		# Current Ni,t
@@ -1073,12 +1103,14 @@ def DDMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Deaths,alle
 	
 	# Just one more shuffle to mix up empty versus killed off grids
 	shuffle(freegrid)
-	
+
 	# Store total number of Deaths information for output 
 	# Check that agedeaths equals age distribution file
-	Deaths.append(agedeaths)
+	Track_MDeaths.append((np.asarray(agedeaths)/2.).tolist())
+	Track_FDeaths.append((np.asarray(agedeaths)/2.).tolist())
 	if len(extra_agedeaths) != 0:
-		Deaths[gen][-1] = Deaths[gen][-1] + sum(extra_agedeaths)
+		Track_MDeaths[gen][-1] = Track_MDeaths[gen][-1] + sum(extra_agedeaths)/2.
+		Track_FDeaths[gen][-1] = Track_FDeaths[gen][-1] + sum(extra_agedeaths)/2.
 	
 	# Return variables from this argument
 	tupMort = freegrid,id,sex,age,xgrid,ygrid,genes,FID,infection,mature
@@ -1148,7 +1180,7 @@ def AdultSelection(tupMort,fitvals,mature,SelectionDeaths):
 	# End::AdultSelection
 	
 # ---------------------------------------------------------------------------------------------------	 
-def DoMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Deaths,alleles,FID,agemort,infection,geneswap,popmodel,K_env,fitvals,mature,cdevolveans,Opt3SelectionDeaths,burningen):
+def DoMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track_MDeaths,Track_FDeaths,alleles,FID,Magemort,Fagemort,infection,geneswap,popmodel,K_env,fitvals,mature,cdevolveans,Opt3SelectionDeaths,burningen):
 	'''
 	DoMortality()
 	Mortality of old generation
@@ -1163,11 +1195,11 @@ def DoMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Deaths,alle
 	# Switch for model choice
 	if popmodel == 'exp':
 	
-		tupMort = ConstantMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Deaths,alleles,FID,agemort,infection,geneswap,mature)
+		tupMort = ConstantMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track_MDeaths,Track_FDeaths,alleles,FID,Magemort,Fagemort,infection,geneswap,mature)
 		
 	elif popmodel == 'logistic' or popmodel == 'rickers' or popmodel == 'richards':
 		
-		tupMort = DDMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Deaths,alleles,FID,infection,geneswap,K_env,popmodel,agemort,mature)	
+		tupMort = DDMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track_MDeaths,Track_FDeaths,alleles,FID,infection,geneswap,K_env,popmodel,Magemort,Fagemort,mature)	
 		
 	else:
 		print('This population model for survival does not exist')
