@@ -961,13 +961,18 @@ def ConstantMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track
 			Fdeleteoldindex.append(random.sample(np.where(np.asarray(Fages) == count)[0],int(extra_Fagedeaths[j])))
 			count = count + 1
 	
-	# Flatten and turn into array and get original index locations
-	Mdeleteoldindex = males[np.asarray([item for sublist in Mdeleteoldindex for item in sublist])]
-	Fdeleteoldindex = females[np.asarray([item for sublist in Fdeleteoldindex for item in sublist])]
-		
-	# Then add indices together
-	deleteallindex = np.append(openindex,Mdeleteoldindex)
-	deleteallindex = np.append(deleteallindex,Fdeleteoldindex)
+	# Flatten and turn into array and get original index locations and add indices together
+	if sum(Mdeleteoldindex,[]) != []:
+		Mdeleteoldindex = males[np.asarray(sum(Mdeleteoldindex,[]))]
+		deleteallindex = np.append(openindex,Mdeleteoldindex)
+	else:
+		Mdeleteoldindex = np.asarray([])
+		deleteallindex = openindex
+	if sum(Fdeleteoldindex,[]) != []:
+		Fdeleteoldindex = females[np.asarray(sum(Fdeleteoldindex,[]))]
+		deleteallindex = np.append(deleteallindex,Fdeleteoldindex)
+	else:
+		Fdeleteoldindex = np.asarray([])
 	deleteallindex = np.asarray(deleteallindex,dtype = 'int')
 	
 	# Store freegrid locations
