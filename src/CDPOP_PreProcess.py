@@ -753,7 +753,7 @@ def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemo
 	else:
 		MdispmoveparC = float(MdispmoveparC)
 	# Patch based parameters	
-	tempfitvals = []
+	tempfitvals = []	
 	for isub in xrange(len(subpop)):
 		if len(fitvals) > 0:
 			tempfitvals.append([])
@@ -762,6 +762,14 @@ def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemo
 					tempfitvals[isub].append(fitvals[isub][i].split('|')[icdtime])
 				else:
 					tempfitvals[isub].append(fitvals[isub][i])
+				# Check if ; separated for 1_HetMort
+				if len(tempfitvals[isub][i].split(';')) > 1:
+					# Quick error check
+					if len(tempfitvals[isub][i].split(';')) != 2:
+						print('Two values used for 1_HeMort option.')
+						sys.exit(-1)
+					tempfitvals[isub][i] = tempfitvals[isub][i].split(';')
+					
 						
 	# ---------------------------------------------------------
 	# Read in cdmatrix.csv and convert to a probability matrix
@@ -1116,17 +1124,17 @@ subpopmigration,subpopemigration,datadir,geneswap):
 		xgrid.append(float(xy[i+1][1]))
 		ygrid.append(float(xy[i+1][2]))
 		id.append(xy[i+1][3])
+		
 		if intgenesans != 'known':
-			if cdevolveans == '1' or cdevolveans == '3':
+			if cdevolveans == '1' or cdevolveans == '3' or cdevolveans == '1_HeMort_GEA' or cdevolveans == '1_HeMort_All':
 				fitvals.append([xy[i+1][5],xy[i+1][6],xy[i+1][7]])
 			elif cdevolveans == '2':
 				fitvals.append([xy[i+1][8],xy[i+1][9],xy[i+1][10],xy[i+1][11],xy[i+1][12],xy[i+1][13],xy[i+1][14],xy[i+1][15],xy[i+1][16]])
 		else:
-			if cdevolveans == '1' or cdevolveans == '3':
+			if cdevolveans == '1' or cdevolveans == '3' or cdevolveans == '1_HeMort_GEA' or cdevolveans == '1_HeMort_All':
 				fitvals.append([xy[i+1][8],xy[i+1][9],xy[i+1][10]])
 			elif cdevolveans == '2':
 				fitvals.append([xy[i+1][11],xy[i+1][12],xy[i+1][13],xy[i+1][14],xy[i+1][15],xy[i+1][16],xy[i+1][17],xy[i+1][18],xy[i+1][19]])
-		
 		# Only grab sex information from the file is equal sex ratio is N
 		if equalsexratio == 'N' or equalsexratio == 'AtBirth':
 			if xy[i+1][3] == 'NA' and xy[i+1][4] != 'NA':

@@ -2,6 +2,11 @@ Changes 1.2.34.2016.06.24T15:57:00MDT (ell)
 0) Add mortality option for females and males in AgeVars file. (Melissa Oscarson goat work). 
 a) Add tracking FDeaths and MDeaths to output.csv file.
 b) fix for option 6, fix for dd mortality. 
+1) Create a cdevolveans m;b that refers to survival as a function of heterozygosity, e.g., survival = 55(heterozygosity) + 56.179. Then 1 - survival gives the additional mortality of that individual. 
+a) Add option to inputvars (1_HeMort) and fitvals seperated by ; 2 values for linear equation. Option 1_HeMort_GEA - means first locus can have spatial differential survival based on het. Option 1_HeMort_All - means regardless of genotype, apply het survival equation - use values in AA spot.  
+b) Track heterozygosity of each individual
+c) Add to user manual. 
+d) Make for age specific?
 
 Changes 1.2.33.2016.04.28T16:28:00MDT (ell)
 0) Error in output write out with all MateDistances reported. Make this option and fixed.

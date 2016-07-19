@@ -186,6 +186,67 @@ def GetProbArray(Fxycdmatrix,Mxycdmatrix,tempoffspring,index,freegrid,philopatry
 	# End::GetProbArray()
 	
 # ---------------------------------------------------------------------------------------------------	
+def DoHeMortSelection(offspring,fitvals1,tempfreegrid,iteminlist,loci,cdevolveans):
+	'''
+	DoHeMortSelection()
+	This function calculates offsprings differential mortality, given the individuals Het and equation specified. 
+	'''
+	
+	# Get individuals heterozygosity - # het loci / loci
+	# -----------------------------
+	offgenes = np.asarray(offspring[6]) # Genes
+	#all_freq_sq = (offgenes / 2.)**2 # Allele frequency ^ 2
+	#homozygosity = sum(all_freq_sq)/loci
+	#he = (1. - homozygosity)	
+	hetLoci = loci - len(np.where(offgenes == 2)[0])
+	he = hetLoci / float(loci)
+	
+	# For GEA method
+	if cdevolveans == '1_HeMort_GEA':	
+		# If L0A0|L0A0 -- loci under selection:
+		if offspring[6][0] == 2:
+
+			# The grab it's fitness values
+			m = float(fitvals1[tempfreegrid[iteminlist]][0][0])
+			bint = float(fitvals1[tempfreegrid[iteminlist]][0][1])
+			y = m * he + bint
+			differentialmortality = (1. - y)/100.
+																	
+		# If L0A0|L0A1 -- loci under selection:
+		elif offspring[6][0] == 1 and offspring[6][1] == 1:
+
+			# The grab it's fitness values
+			m = float(fitvals1[tempfreegrid[iteminlist]][1][0])
+			bint = float(fitvals1[tempfreegrid[iteminlist]][1][1])
+			y = m * he + bint
+			differentialmortality = (1. - y)/100.
+														# If L0A1|L0A1 -- loci under selection
+		elif offspring[6][1] == 2:
+			
+			# The grab it's fitness values
+			m = float(fitvals1[tempfreegrid[iteminlist]][2][0])
+			bint = float(fitvals1[tempfreegrid[iteminlist]][2][1])
+			y = m * he + bint
+			differentialmortality = (1. - y)/100.
+		
+		# Another genotype
+		else:
+			differentialmortality = 0.0
+		
+	# For all method
+	else:
+		# The grab it's fitness values
+		m = float(fitvals1[tempfreegrid[iteminlist]][0][0])
+		bint = float(fitvals1[tempfreegrid[iteminlist]][0][1])
+		y = m * he + bint
+		differentialmortality = (1. - y)/100.
+	
+	return differentialmortality
+	
+	# End::DoHeMortSelection()
+	
+	
+# ---------------------------------------------------------------------------------------------------	
 def Do1LocusSelection(offspring,fitvals1,tempfreegrid,iteminlist):
 	'''
 	Do1LocusSelection()
@@ -400,6 +461,25 @@ males,males_nomate,burningen):
 						CouldNotDisperse[gen].append(0)
 						continue
 						
+				# CDEVOLVE - Heterozygosity survival
+				elif cdevolveans == '1_HeMort_GEA' or cdevolveans == '1_HeMort_All':
+					
+					# Select the w_choice item
+					iteminlist = w_choice_item(probarray)
+					
+					# Call 1-locus selection model
+					differentialmortality = DoHeMortSelection(offspring[i],fitvals,tempfreegrid,iteminlist,loci,cdevolveans)
+											
+					# Then flip the coin to see if offspring survives its location
+					randcheck = rand()
+					
+					# If offspring did not survive: break from loop, move to next offspring
+					if randcheck < differentialmortality:
+						offcount = offcount + 1
+						DisperseDeaths[gen].append(1)
+						CouldNotDisperse[gen].append(0)
+						continue
+				
 				# If subpopulation differential mortality is on
 				elif sum(subpopmortperc) != 0.0:
 											

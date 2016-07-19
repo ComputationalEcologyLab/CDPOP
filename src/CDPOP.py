@@ -447,7 +447,7 @@ if __name__ == '__main__':
 						stringout = 'DoCDCliamte(): '+str(datetime.datetime.now() -start_time1) + ''
 						logMsg(logfHndl,stringout)
 						print 'DoCDClimate(): ',str(datetime.datetime.now() -start_time1),''	
-
+			 
 				# -------------------------------	
 				# Call ReadGrid()
 				# -------------------------------
