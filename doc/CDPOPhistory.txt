@@ -6,7 +6,11 @@ b) fix for option 6, fix for dd mortality.
 a) Add option to inputvars (1_HeMort) and fitvals seperated by ; 2 values for linear equation. Option 1_HeMort_GEA - means first locus can have spatial differential survival based on het. Option 1_HeMort_All - means regardless of genotype, apply het survival equation - use values in AA spot.  
 b) Track heterozygosity of each individual
 c) Add to user manual. 
-d) Make for age specific?
+d) Changed individual het calculation as # het loci / total # loci
+
+2) Adding in a rate of twinning. 
+a) Cleaning up and speeding up the InheritGenes module - reducing for loops...
+b) Checked WF validation. 
 
 Changes 1.2.33.2016.04.28T16:28:00MDT (ell)
 0) Error in output write out with all MateDistances reported. Make this option and fixed.

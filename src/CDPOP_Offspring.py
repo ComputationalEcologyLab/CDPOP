@@ -24,7 +24,14 @@ def DoOffspringSex(Bearpairs,Femalepercent,CDpairs,equalsexratio):
 	'''	
 	# Create empty variable for storing individual offspring information
 	offspring=[]
-	
+	if equalsexratio == 'WrightFisher':
+		# Error statement for even population
+		if np.mod(len(Bearpairs),2) != 0:
+			print('Special case for Wrigth Fisher assumption, must be even population.')
+			sys.exit(-1)
+		offsex = np.append(np.zeros(len(Bearpairs)/2,"int"),np.ones(len(Bearpairs)/2,"int"))
+		np.random.shuffle(offsex)
+		
 	# Loop through each mate pair
 	for i in xrange(len(Bearpairs)):
 		
@@ -64,6 +71,14 @@ def DoOffspringSex(Bearpairs,Femalepercent,CDpairs,equalsexratio):
 			
 				# And then append all information onto a list storage variable offspring
 				offspring.append([Bearpairs[i][0],Bearpairs[i][1],CDpairs[i][0],CDpairs[i][1],offsex[j]])
+		
+		# WRightFisher - assign equal males and females
+		elif equalsexratio == 'WrightFisher':
+			# And then loop through each offspring from that mate pair
+			for j in xrange(Bearpairs[i][2]):
+			
+				# And then append all information onto a list storage variable offspring
+				offspring.append([Bearpairs[i][0],Bearpairs[i][1],CDpairs[i][0],CDpairs[i][1],offsex[i]])		
 	
 	# Variables returned
 	return offspring
@@ -254,18 +269,22 @@ def DoOffspringNormal(Bearpairs,CDpairs,lmbdavals,sigmavals,age):
 	# End::DoOffspringNormal()
 	
 # ---------------------------------------------------------------------------------------------------	 
-def DoCDInfect(offspring,infection,transmissionprob):
+def DoCDInfectAndTwinning(offspring,infection,transmissionprob,twinning,Twins):
 	'''
 	DoCDInfect()
 	This function determins whether the offspring gets infected
 	or not from the parents infection.  Vertical transmission.
+	DoTwinning() 
+	Also check for twins and split egg, assinging a unique ID
 	'''	
-	# Get infection status of offspring.
-	for ithinfect in xrange(len(offspring)):
+	
+	count_twins = 0
+	# Get infection status of offspring also looping through 'egg' to see if it splits
+	for ioff in xrange(len(offspring)):
 	
 		# If parent has infection
-		if infection[offspring[ithinfect][0]] == 1 or\
-		infection[offspring[ithinfect][1]] == 1:
+		if infection[int(offspring[ioff][0])] == 1 or\
+		infection[int(offspring[ioff][1])] == 1:
 		
 			# Get a random number
 			randinfection = rand()
@@ -274,25 +293,36 @@ def DoCDInfect(offspring,infection,transmissionprob):
 			if randinfection < transmissionprob:
 			
 				# Then append infection status to offspring 
-				offspring[ithinfect].append(1)
+				offspring[ioff].append(1)
 				
 			# If offspring does not get infected
 			else:
-				offspring[ithinfect].append(0)
+				offspring[ioff].append(0)
 			
 		# If offspring does not get infected.
 		else:
 		
 			# Then append infection status to offspring
-			offspring[ithinfect].append(0)
-
+			offspring[ioff].append(0)
+			
+		# Twinning check here - Get a random number and check probability
+		randtwin = rand()
+		if randtwin < twinning:
+			# Twinning happens
+			offspring[ioff].append('T'+str(ioff)) # Gives unique ID to this twin
+			offspring.append(offspring[ioff]) # Then copy this egg				
+			count_twins = count_twins + 1	
+		else:
+			offspring[ioff].append('-9999')
+	Twins.append(count_twins)
+	
 	# Return variables
 	return offspring
 		
 	# End::DoCDInfect()	
 	
 # ----------------------------------------------------------------------------------------------	 
-def DoOffMortality(offspring,Mnewmortperc,Fnewmortperc,equalsexratio,offno,age,lmbda,sex,Track_MOffDeaths,Track_FOffDeaths):
+def DoOffMortality(offspring,Mnewmortperc,Fnewmortperc,equalsexratio,offno,age,lmbda,sex,Track_MOffDeaths,Track_FOffDeaths,twinning):
 	'''
 	DoOffMortality()
 	Mortality functions for age 0 class.
@@ -343,7 +373,7 @@ def DoOffMortality(offspring,Mnewmortperc,Fnewmortperc,equalsexratio,offno,age,l
 				# For each Fspot, return offspring location index
 				offspot = [] 
 				for j in xrange(len(Fspots)):
-					offspot.append(list(np.where(motheroff == Fspots[j])[0]))
+					offspot.append(list(np.where(motheroff == str(Fspots[j]))[0])) # Be careful of string searches
 				offspot = sum(offspot,[])
 				offspot = np.asarray(offspot) # This is the age specific females that had the offspring in the offspring list.
 				if len(offspot) == 0:
@@ -381,41 +411,41 @@ def DoOffMortality(offspring,Mnewmortperc,Fnewmortperc,equalsexratio,offno,age,l
 			Track_FOffDeaths.append((len(offspring)-len(tempoffspring))/2.)
 			
 		else:
-			
 			# Get number of survivors for female and male
 			offsex = np.asarray(offspring)[:,4]
-			Foffsex = np.where(offsex == 0)[0] # Index location
-			Moffsex = np.where(offsex == 1)[0] # Index location
+			#Foffsex = np.concatenate((np.where(offsex == '0')[0],np.where(offsex == '0T')[0]),axis = 0)
+			#Moffsex = np.concatenate((np.where(offsex == '1')[0],np.where(offsex == '1T')[0]),axis = 0) 
+			Foffsex = np.where(offsex == '0')[0]
+			Moffsex = np.where(offsex == '1')[0]
+			# Index location
 			Foffsurvivors = int(round((s0_females)*len(Foffsex)))
 			Moffsurvivors = int(round((s0_males)*len(Moffsex)))
 			Foffdeaths = int(round((Fnewmortperc)*len(Foffsex)))
-			Moffdeaths = int(round((Mnewmortperc)*len(Moffsex)))
-						
-			# Shuffle the offspring list
-			shuffle(offspring)
+			Moffdeaths = int(round((Mnewmortperc)*len(Moffsex)))			
+			
+			# Shuffle Female and male index list
+			shuffle(Foffsex)
+			shuffle(Moffsex)
 			
 			if equalsexratio == 'AtBirth':
 				if (Foffdeaths + Moffdeaths) > 0:
 					print('Warning: Equal sex ratio AtBirth is specified with different age 0 mortality values. Using total age 0 deaths.')
 				offdeaths = Foffdeaths + Moffdeaths
-				# Sort by sex
-				offspring.sort(key=lambda x: x[4])
-				# The remove first half of offsurvive and last half
-				tempoffspring = offspring[(offdeaths/2):]
-				tempoffspring = tempoffspring[0:len(tempoffspring)-(offdeaths/2)]
-			else:
-				# Shuffle Female and male index list
-				shuffle(Foffsex)
-				shuffle(Moffsex)
 				
+				# Remove equally from F and M 
+				tempFoff = Foffsex[0:len(Foffsex)-(offdeaths/2)]
+				tempMoff = Moffsex[0:len(Moffsex)-(offdeaths/2)]
+				
+			else:								
 				# Grab the survived female and male index list 
 				tempFoff = Foffsex[0:Foffsurvivors]
 				tempMoff = Moffsex[0:Moffsurvivors]
-				tempoff = np.concatenate((tempFoff,tempMoff),axis=0)
-				# Grab the survived offspring location
-				tempoffspring = np.asarray(offspring)[tempoff]
-				# Back to list
-				tempoffspring = tempoffspring.tolist()
+			
+			tempoff = np.concatenate((tempFoff,tempMoff),axis=0)
+			# Grab the survived offspring location
+			tempoffspring = np.asarray(offspring)[tempoff]
+			# Back to list
+			tempoffspring = tempoffspring.tolist()
 				
 			# Tracking
 			Track_MOffDeaths.append(Moffdeaths)
@@ -433,7 +463,7 @@ def DoOffMortality(offspring,Mnewmortperc,Fnewmortperc,equalsexratio,offno,age,l
 	
 # ---------------------------------------------------------------------------------------------------	 
 def DoOffspring(offno,lmbda,Bearpairs,CDpairs,\
-Femalepercent,Births,infection,transmissionprob,equalsexratio,Mnewmortperc,Fnewmortperc,Track_MOffDeaths,Track_FOffDeaths,sigma,age,sex):
+Femalepercent,Births,infection,transmissionprob,equalsexratio,Mnewmortperc,Fnewmortperc,Track_MOffDeaths,Track_FOffDeaths,sigma,age,sex,twinning,Twins):
 	'''
 	DoOffspring()
 	Choose numberof Offspring for each mated pair
@@ -441,6 +471,7 @@ Femalepercent,Births,infection,transmissionprob,equalsexratio,Mnewmortperc,Fnewm
 	offno, Bearpairs, lmbda.
 	Output: Bear Pairs + # of offspring [Female,Male,#Offspring]
 	Also add # offspring to CDpairs
+	offspring returned [Female,Male,Female,Male,sex,infection,TwinningID]
 	'''
 	
 	# Function 1 is a uniform random draw between 0 and lmdba number	
@@ -486,19 +517,18 @@ Femalepercent,Births,infection,transmissionprob,equalsexratio,Mnewmortperc,Fnewm
 	# If function 4 is choosen, then weed the offspring here
 	if (offno == '4'):
 		
-		offspring = DoOffspringEqual(offspring,lmbda,age)
+		offspring = DoOffspringEqual(offspring,lmbda,age)	
 	
+	# Assign infection to each offspring and Apply twinning possibility here
+	offspring = DoCDInfectAndTwinning(offspring,infection,transmissionprob,twinning,Twins)
+		
 	# Store number of Births
-	tempBirths = len(offspring)
-	Births.append(tempBirths)
+	Births.append(len(offspring))	
 	
 	# Apply Mortality to the egg class here
-	offspring = DoOffMortality(offspring,Mnewmortperc,Fnewmortperc,equalsexratio,offno,age,lmbda,sex,Track_MOffDeaths,Track_FOffDeaths)
-	
-	# Assign infection to each offspring
-	offspring = DoCDInfect(offspring,infection,transmissionprob)
+	offspring = DoOffMortality(offspring,Mnewmortperc,Fnewmortperc,equalsexratio,offno,age,lmbda,sex,Track_MOffDeaths,Track_FOffDeaths,twinning)
 		
-	# Return variables from this argument
+	# Return variables from this argument, offspring values are all string now.
 	tupDoOff = offspring,len(offspring)
 	return tupDoOff
 		

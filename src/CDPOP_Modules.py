@@ -456,7 +456,7 @@ offspring,genes,loci,muterate,mtdna,mutationans,geneswap):
 	InheritGenes()
 	Pass along gentic information to survived offspring from parents
 	Input: offspring, genes 
-	Output: [femaleid,maleid,cdmatidofmother,cdmatidoffather,sex],[
+	Output: [femaleid,maleid,cdmatidofmother,cdmatidoffather,sex,infection,TWINID],[
 	genetic information]		
 	'''		
 	
@@ -464,417 +464,176 @@ offspring,genes,loci,muterate,mtdna,mutationans,geneswap):
 	if gen >= geneswap:
 	
 		# Storage for tracking how many alleles mutated
-		noallelesmutated = []
-			
+		noallelesmutated = []			
 		# If there are offspring
 		if int(offspringno) != int(0):
 		
+			# Sort by twins. 
+			offspring.sort(key=lambda x: x[6]) 
+			tempoff = np.asarray(copy.deepcopy(offspring))
+			countTwins = Counter(tempoff[:,6])
+	
+			isTwin = False # For checking for twins
+			twingenes = [] # Initialize twin genes
 			# Begin loop through offspring
-			for i in xrange(offspringno):
+			for i in xrange(offspringno):				
 				
-				# Add spot in offspring array for individual i's genes
-				offspring[i].append([])
-				
-				# Temp storage for i's mother's genes
-				mothergenes=genes[offspring[i][0]]
-				# Temp storage for i's father's genes
-				fathergenes=genes[offspring[i][1]]
-				
-				# Loop through each locus
-				for jspot in xrange(loci):
-					
-					# Temporary index storage
-					tempindfather = []
-					tempindmother = []
+				# If twins genes were copied already from previous offspring
+				if len(twingenes) == 0: 
+					# Temp storage for i's mother's  and fathers genes
+					mothergenes=genes[int(offspring[i][0])]
+					fathergenes=genes[int(offspring[i][1])]								
+					fathergenes = sum(fathergenes,[])
+					mothergenes = sum(mothergenes,[])
+					fathergenes = np.asarray(fathergenes,dtype=int)
+					mothergenes = np.asarray(mothergenes,dtype=int)
+					# Temp genes storage for offspring
+					tempgenes = np.zeros(len(fathergenes),dtype =int)
+					# Allele indices
+					alleles = np.asarray(range(len(mothergenes))) 
+					for iloci in xrange(loci): # Loop through loci
+						# Allele indices to sample from - index into tempgenes
+						possiblealleles = alleles[(iloci*len(mothergenes)/loci):(iloci*len(mothergenes)/loci+len(mothergenes)/loci)]
+						
+						# Father and mother locations							
+						F2 = np.where(fathergenes[possiblealleles] == 2)[0] # location of 2s
+						F1 = np.where(fathergenes[possiblealleles] == 1)[0]
+						M2 = np.where(mothergenes[possiblealleles] == 2)[0]
+						M1 = np.where(mothergenes[possiblealleles] == 1)[0]
+						tempALL = np.concatenate((F2,F2,F1,M2,M2,M1),axis=0) # Repeat 2s twice
+						if len(tempALL) < 4:
+							print('Error in twinning. Email Erin.')
+							sys.exit(-1)
+							
+						# Sample 2 alleles - these are indeices
+						sampleAlleles = random.sample(tempALL,2)
+						# Fill in alleles corresponding to sampled spots
+						for iall in xrange(2):
+							tempgenes[possiblealleles[sampleAlleles[iall]]] = tempgenes[possiblealleles[sampleAlleles[iall]]] + 1
+							
+					# mtDNA is turned on
+					# ------------------
+					if mtdna == 'Y':
+						# Force last locus to be mothergenes - possible alleles are from the last loop above
+						tempgenes[possiblealleles] = mothergenes[possiblealleles]				
+						
+					# Check for twin copy
+					# -------------------
+					if len(offspring[i][6].split('T')) > 1:
+						# Check if there are indeed more than 1 of these 
+						if countTwins[offspring[i][6]] > 1:
+							twingenes = copy.deepcopy(tempgenes)
 										
-					# Loop through each allele-mother and father have same len of alleles
-					for kspot in xrange(len(fathergenes[jspot])):
-												
-						# Check the homogeneous 2 case - in father genes
-						if int(fathergenes[jspot][kspot])==2:
+				# Then flip the twin check back for next offsprings
+				else: # This is a twin
+					tempgenes = copy.deepcopy(twingenes)
+					isTwin = True
+					# Check
+					if offspring[i][6] != offspring[i-1][6]:
+						print('Twinning algorithm is not working. Email Erin.')
+						sys.exit(-1)
+														
+				# Then check for mutations at each allele
+				# ---------------------------------------
+				if muterate != 0.0:
+					for iloci in xrange(loci): # Loop through loci
+						mutationrandnos = rand(2) # Get a random number for checking
+						# Allele indices to sample from - index into tempgenes
+						possiblealleles = alleles[(iloci*len(mothergenes)/loci):(iloci*len(mothergenes)/loci+len(mothergenes)/loci)]
+						# Get the current location of alleles - index into tempgenes 
+						thisloci = possiblealleles[np.where(tempgenes[possiblealleles] != 0)[0]]
+						# Check case for homo
+						if len(thisloci) == 1:
+							# Copy the spot
+							thisloci = np.concatenate((thisloci,thisloci),axis=0)
+						
+						# Loop through alleles
+						for iall in xrange(2): 			
 							
-							# Get a random number for allele mutation
-							mutationrandno = rand()
-							
-							# Check if random number is less than or equal to muterate
-							if mutationrandno <= muterate:
-							
-								# If backward and forward mutation
+							# Check if random number is less than muterate
+							if mutationrandnos[iall] < muterate:
+								
+								# First remove this allele from tempgenes
+								tempgenes[thisloci[iall]] = tempgenes[thisloci[iall]] - 1
+																
+								# If random kth allele model
 								if mutationans == 'random':
-									# Randomly choose another allele								
-									randallelespot = int(len(fathergenes[jspot])*rand())
-									while randallelespot == kspot:
-										randallelespot = int(len(fathergenes[jspot])*rand())
-									tempindfather.append(randallelespot)									
+									# Randomly choose another allele, but not what allele it was									
+									movealleleTO = random.sample(possiblealleles[np.where(thisloci[iall] != possiblealleles)[0]],1)[0]
+									# Index into tempgenes and add 1
+									tempgenes[movealleleTO] = tempgenes[movealleleTO] + 1
+																	
 									# Count a mutation
 									noallelesmutated.append(1)
 									
 								# If just forward mutation
 								elif mutationans == 'forward':
-									if kspot != len(fathergenes[jspot])-1:
-										tempindfather.append(kspot+1)									
+									# Move allele forward unless it is the last one
+									if thisloci[iall] != possiblealleles[-1]:
+										tempgenes[thisloci[iall]+1] = tempgenes[thisloci[iall]+1] + 1
+																		
 										# Count a mutation
 										noallelesmutated.append(1)
-									else:
-										# THen no mutation
-										tempindfather.append(kspot)
 
 								# If just forward mutation
 								elif mutationans == 'backward':
-									if kspot != 0:
-										tempindfather.append(kspot-1)									
+									# Move allele backward unless it is the first one
+									if thisloci[iall] != possiblealleles[0]:
+										tempgenes[thisloci[iall]-1] = tempgenes[thisloci[iall]-1] + 1
+																		
 										# Count a mutation
 										noallelesmutated.append(1)
-									else:
-										# THen no mutation
-										tempindfather.append(kspot)
 										
 								# If forward and backward mutation
 								elif mutationans == 'forwardbackward':
 									# Then random forward or backward step
 									randstep = rand()
 									# To go left, but it can't be the first allele
-									if randstep < 0.5 and kspot != 0:
-										tempindfather.append(kspot-1)
+									if randstep < 0.5 and thisloci[iall] != possiblealleles[0]:
+										tempgenes[thisloci[iall]-1] = tempgenes[thisloci[iall]-1] + 1
 										# Count a mutation
 										noallelesmutated.append(1)
 									# To go right, but it can't be the last allele
-									elif randstep >= 0.5 and kspot != len(fathergenes[jspot])-1:
-										tempindfather.append(kspot+1)
+									elif randstep >= 0.5 and thisloci[iall] != possiblealleles[-1]:
+										tempgenes[thisloci[iall]+1] = tempgenes[thisloci[iall]+1] + 1
 										# Count a mutation
 										noallelesmutated.append(1)
-									else:
-										# THen no mutation
-										tempindfather.append(kspot)
 								
 								# If forward mutation in A and backward mutation for b (A -> a, b -> B)
 								elif mutationans == 'forwardAbackwardBrandomN':
-									if jspot == 0 and kspot == 0:
-										tempindfather.append(kspot+1)									
+									print('Currently not operating. Email Erin.')
+									sys.exit(-1)
+									if iloci == 0 and thisloci[iall] == possiblealleles[0]:
+										tempgenes[thisloci[iall]+1] = tempgenes[thisloci[iall]+1] + 1									
 										# Count a mutation
 										noallelesmutated.append(1)
-									elif jspot == 1 and kspot == 1:
-										tempindfather.append(kspot-1)
+									elif iloci == 1 and thisloci[iall] == possiblealleles[1]:
+										tempgenes[thisloci[iall]-1] = tempgenes[thisloci[iall]-1] + 1
 										# Count a mutation
 										noallelesmutated.append(1)
-									elif jspot != 0 and jspot != 1:
+									elif iloci != 0 and iloci != 1:
 										# Randomly choose another allele								
-										randallelespot = int(len(fathergenes[jspot])*rand())
-										while randallelespot == kspot:
-											randallelespot = int(len(fathergenes[jspot])*rand())
-										tempindfather.append(randallelespot)									
+										movealleleTO = random.sample(possiblealleles[np.where(thisloci[iall] != possiblealleles)[0]],1)[0]
+										# Index into tempgenes and add 1
+										tempgenes[movealleleTO] = tempgenes[movealleleTO] + 1
+																		
 										# Count a mutation
 										noallelesmutated.append(1)
-									else:
-										# THen no mutation
-										tempindfather.append(kspot)	
 								
 								# No other mutation models matched
 								else:
 									print('The mutation model does not exist.')
-									sys.exit(-1)								
-							
-							# and if random number is not less than or equal to muterate
-							else:
-								tempindfather.append(kspot)
-						
-						# Check the homogeneous 2 case - in mother genes	
-						if int(mothergenes[jspot][kspot])==2:
-							
-							# Get a random number for allele mutation
-							mutationrandno = rand()
-							
-							# Check if random number is less than or equal to muterate
-							if mutationrandno <= muterate:
-							
-								# If backward and forward mutation
-								if mutationans == 'random':
-									# Randomly choose another allele
-									randallelespot = int(len(mothergenes[jspot])*rand())
-									while randallelespot == kspot:
-										randallelespot = int(len(mothergenes[jspot])*rand())
-									tempindmother.append(randallelespot)
-									# Count a mutation
-									noallelesmutated.append(1)
-									
-								# If just forward mutation
-								elif mutationans == 'forward':
-									if kspot != len(mothergenes[jspot])-1:
-										tempindmother.append(kspot+1)									
-										# Count a mutation
-										noallelesmutated.append(1)
-									else:
-										# THen no mutation
-										tempindmother.append(kspot)
-
-								# If just backward mutation
-								elif mutationans == 'backward':
-									if kspot != 0:
-										tempindmother.append(kspot-1)									
-										# Count a mutation
-										noallelesmutated.append(1)
-									else:
-										# THen no mutation
-										tempindmother.append(kspot)
-										
-								# If forward or backward step mutation
-								elif mutationans == 'forwardbackward':
-									# Random draw for forward or backward
-									randstep = rand()
-									# TO go left, but it can't be the first allele
-									if randstep < 0.5 and kspot != 0:
-										tempindmother.append(kspot-1)									
-										# Count a mutation
-										noallelesmutated.append(1)
-									# To go right, but it can't be the last allele
-									elif randstep >= 0.5 and kspot != len(fathergenes[jspot])-1:
-										tempindmother.append(kspot+1)									
-										# Count a mutation
-										noallelesmutated.append(1)
-									else:
-										# THen no mutation
-										tempindmother.append(kspot)
-								
-								# If forward mutation in A and backward mutation in b
-								elif mutationans == 'forwardAbackwardBrandomN':
-									if jspot == 0 and kspot == 0:
-										tempindmother.append(kspot+1)									
-										# Count a mutation
-										noallelesmutated.append(1)
-									elif jspot == 1 and kspot == 1:
-										tempindmother.append(kspot-1)
-										# Count a mutation
-										noallelesmutated.append(1)
-									if jspot != 0 and jspot != 1:
-										# Randomly choose another allele
-										randallelespot = int(len(mothergenes[jspot])*rand())
-										while randallelespot == kspot:
-											randallelespot = int(len(mothergenes[jspot])*rand())
-										tempindmother.append(randallelespot)
-										# Count a mutation
-										noallelesmutated.append(1)
-									else:
-										# THen no mutation
-										tempindmother.append(kspot)
-								
-								# No other mutation models matched
-								else:
-									print('The mutation model does not exist.')
-									sys.exit(-1)					
-
-							# and if random number is not less than or equal to muterate
-							else:
-								tempindmother.append(kspot)
-							
-						# Check the hetero 1 case for father genes
-						if int(fathergenes[jspot][kspot])==1:
-							tempindfather.append(kspot)
-							
-						# Check the hetero 1 case for mother genes
-						if int(mothergenes[jspot][kspot])==1:
-							tempindmother.append(kspot)
-					
-					# Check if the tempindex has a length of 2 (which means it was not homo at
-					#	at this locus), then randomly select one of them, and then check for mutation
-					# Check from father genes
-					if len(tempindfather) == 2:
-					
-						# Then randomly select one of the homo alleles
-						temprandnofather = int(2*rand())
-						
-						# Delete from list
-						del(tempindfather[temprandnofather])
-						thealleleselected = tempindfather[0]
-						
-						# Get a random number for allele mutation
-						mutationrandno = rand()
-						
-						# Check if random number is less than or equal to muterate
-						if mutationrandno <= muterate:
-							
-							# If backward and forward mutation
-							if mutationans == 'random':
-								# Randomly choose another allele
-								randallelespot = int(len(fathergenes[jspot])*rand())
-								while randallelespot == thealleleselected:
-									randallelespot = int(len(fathergenes[jspot])*rand())
-								# and then reassign this spot
-								tempindfather[0] = randallelespot							
-								# Count a mutation
-								noallelesmutated.append(1)
-								
-							# Else if just forward mutation
-							elif mutationans == 'forward':
-								if thealleleselected != len(fathergenes[jspot])-1:
-									# and then reassign this spot
-									tempindfather[0] = thealleleselected+1									
-									# Count a mutation
-									noallelesmutated.append(1)
-																
-							# Else if just backward mutation
-							elif mutationans == 'backward':
-								if thealleleselected != 0:
-									# and then reassign this spot
-									tempindfather[0] = thealleleselected-1									
-									# Count a mutation
-									noallelesmutated.append(1)
-														
-							# Else if forward backward mutation
-							elif mutationans == 'forwardbackward':
-								# Random draw for forward or backward
-								randstep = rand()
-								# TO go left, but it can't be the first allele
-								if randstep < 0.5 and thealleleselected != 0:
-									# and then reassign this spot
-									tempindfather[0] = thealleleselected-1									
-									# Count a mutation
-									noallelesmutated.append(1)
-								# To go right, but it can't be the last allele
-								elif randstep >= 0.5 and thealleleselected != len(fathergenes[jspot])-1:
-									# and then reassign this spot
-									tempindfather[0] = thealleleselected+1									
-									# Count a mutation
-									noallelesmutated.append(1)
-							
-							# Else if forward mutation for A and backward mutation for b
-							elif mutationans == 'forwardAbackwardBrandomN':
-								if jspot == 0 and thealleleselected == 0:
-									# and then reassign this spot
-									tempindfather[0] = thealleleselected+1									
-									# Count a mutation
-									noallelesmutated.append(1)									
-								elif jspot == 1 and thealleleselected == 1:
-									tempindfather.append(kspot-1)
-									# Count a mutation
-									noallelesmutated.append(1)
-								elif jspot != 0 and jspot != 1:
-									# Randomly choose another allele
-									randallelespot = int(len(fathergenes[jspot])*rand())
-									while randallelespot == thealleleselected:
-										randallelespot = int(len(fathergenes[jspot])*rand())
-									# and then reassign this spot
-									tempindfather[0] = randallelespot							
-									# Count a mutation
-									noallelesmutated.append(1)
-								else:
-									# THen no mutation
-									tempindfather[0] = thealleleselected	
-										
-							# No other mutation models matched
-							else:
-								print('The mutation model does not exist.')
-								sys.exit(-1)		
-					
-					# Check from mother genes
-					if len(tempindmother) == 2:
-					
-						# THen randomly select on of the homo alleles
-						temprandnomother = int(2*rand())
-						# Delete from list
-						del(tempindmother[temprandnomother])
-						thealleleselected = tempindmother[0]
-						
-						# Get a random number for allele mutation
-						mutationrandno = rand()
-						
-						# Check if random number is less than or equal to muterate
-						if mutationrandno <= muterate:
-						
-							# If backward and forward mutation
-							if mutationans == 'random':
-								# Randomly choose another allele
-								randallelespot = int(len(mothergenes[jspot])*rand())
-								while randallelespot == thealleleselected:
-									randallelespot = int(len(mothergenes[jspot])*rand())
-								# and then reassign this spot
-								tempindmother[0] = randallelespot
-								# Count a mutation
-								noallelesmutated.append(1)
-								
-							# Else if just forward mutation
-							elif mutationans == 'forward':
-								if thealleleselected != len(mothergenes[jspot])-1:
-									# and then reassign this spot
-									tempindmother[0] = thealleleselected+1									
-									# Count a mutation
-									noallelesmutated.append(1)
-																
-							# Else if just backward mutation
-							elif mutationans == 'backward':
-								if thealleleselected != 0:
-									# and then reassign this spot
-									tempindmother[0] = thealleleselected-1									
-									# Count a mutation
-									noallelesmutated.append(1)
-																
-							# Else if forward backward mutation
-							elif mutationans == 'forwardbackward':
-								# Random draw for forward or backward
-								randstep = rand()
-								# TO go left, but it can't be the first allele
-								if randstep < 0.5 and thealleleselected != 0:
-									# and then reassign this spot
-									tempindmother[0] = thealleleselected-1									
-									# Count a mutation
-									noallelesmutated.append(1)
-								# To go right, but it can't be the last allele
-								elif randstep >= 0.5 and thealleleselected != len(mothergenes[jspot])-1:
-									# and then reassign this spot
-									tempindmother[0] = thealleleselected+1									
-									# Count a mutation
-									noallelesmutated.append(1)
-							
-							# Else if forward mutation for A and backward mutation for b
-							elif mutationans == 'forwardAbackwardBrandomN':
-								if jspot == 0 and thealleleselected == 0:
-									# and then reassign this spot
-									tempindmother[0] = thealleleselected+1								
-									# Count a mutation
-									noallelesmutated.append(1)								
-								elif jspot == 1 and thealleleselected == 1:
-									tempindmother.append(kspot-1)
-									# Count a mutation
-									noallelesmutated.append(1)
-								elif jspot != 0 and jspot != 1:
-									# Randomly choose another allele
-									randallelespot = int(len(mothergenes[jspot])*rand())
-									while randallelespot == thealleleselected:
-										randallelespot = int(len(mothergenes[jspot])*rand())
-									# and then reassign this spot
-									tempindmother[0] = randallelespot
-									# Count a mutation
-									noallelesmutated.append(1)
-								else:
-									# THen no mutation
-									tempindmother[0] = thealleleselected
-							
-							# No other mutation models matched
-							else:
-								print('The mutation model does not exist.')
-								sys.exit(-1)		
-					
-					# Now write to offspring genes array the selected alleles in locus j
-					for kspot in xrange(len(fathergenes[jspot])):
-						
-						# Hetero case 1 AB
-						if tempindfather[0] == kspot and tempindmother[0] != kspot:
-							offspring[i][6].append(1)
-						# Homo case AA or BB
-						elif tempindfather[0] == kspot and tempindmother[0] == kspot:
-							offspring[i][6].append(2)
-						# Hetero case 2 BA
-						elif tempindmother[0] == kspot and tempindfather[0] != kspot:
-							offspring[i][6].append(1)
-						# Or nothing there at all
-						elif tempindmother[0] != kspot and tempindfather[0] != kspot:
-							offspring[i][6].append(0)
+									sys.exit(-1)	
 				
-				# If mtdna is turned on, then erase the last loci and force it to be mothergenes
-				if mtdna == 'Y':
-					
-					# Force last locus to be mothergenes
-					for imtdna in xrange(len(mothergenes[loci-1])):
-						offspring[i][6][len(offspring[i][6])-(len(mothergenes[loci-1]))+imtdna] = mothergenes[loci-1][imtdna]
+				# Add to offspring list
+				# ---------------------
+				# Add spot in offspring array for individual i's genes
+				offspring[i].append(tempgenes.tolist())
+				
+				# Copy the saved twingenes for the next offspring
+				if isTwin:
+					twingenes = [] # Erase the copied twin genes
+					isTwin = False # Turn off 
 					
 			# Now store the total number of alleles that mutated
 			AllelesMutated.append(sum(noallelesmutated))
@@ -882,8 +641,7 @@ offspring,genes,loci,muterate,mtdna,mutationans,geneswap):
 			# Delete temp variables to free up space
 			del(mothergenes)
 			del(fathergenes)
-			del(tempindmother)
-			del(tempindfather)
+			#del(tempgenes)
 			
 		# If there are no offspring
 		elif int(offspringno) == int(0):
@@ -985,9 +743,12 @@ def ConstantMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track
 	xgrid = np.delete(xgrid,deleteallindex)
 	ygrid = np.delete(ygrid,deleteallindex)
 	mature = np.delete(mature,deleteallindex)
+	
 	# Keep genes around if within burnin faze
 	if gen >= geneswap:
 		genes = np.delete(genes,deleteallindex,axis=0)
+		genes = np.asarray(genes,dtype=int)
+		genes = genes.tolist()
 	FID = np.delete(FID,deleteallindex)
 	infection = np.delete(np.asarray(infection),deleteallindex)
 	
@@ -1103,6 +864,8 @@ def DDMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track_MDeat
 	# Keep genes around if within burnin faze
 	if gen >= geneswap:
 		genes = np.delete(genes,deleteallindex,axis=0)
+		genes = np.asarray(genes,dtype=int)
+		genes = genes.tolist()
 	FID = np.delete(FID,deleteallindex)
 	infection = np.delete(np.asarray(infection),deleteallindex)
 	

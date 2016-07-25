@@ -90,12 +90,12 @@ def GetProbArray(Fxycdmatrix,Mxycdmatrix,tempoffspring,index,freegrid,philopatry
 		currentoff = tempoffspring[index]
 		
 		# Append the freegrid probabilities for the offspring choice
-		if tempoffspring[index][4] == 0: # Female offspring
-			probarray = Fxycdmatrix[currentoff[0]][freegrid]
+		if int(currentoff[4]) == 0: # Female offspring
+			probarray = Fxycdmatrix[int(currentoff[0])][freegrid]
 			Fcount = Fcount + 1
 			sexans = 'F'
-		elif tempoffspring[index][4] == 1: # Male offspring
-			probarray = Mxycdmatrix[currentoff[0]][freegrid]
+		elif int(currentoff[4]) == 1: # Male offspring
+			probarray = Mxycdmatrix[int(currentoff[0])][freegrid]
 			Mcount = Mcount + 1
 			sexans = 'M'
 		else:
@@ -105,11 +105,11 @@ def GetProbArray(Fxycdmatrix,Mxycdmatrix,tempoffspring,index,freegrid,philopatry
 	elif philopatry == 'F':
 		# Get the first half of freegrid filled up by females
 		if Fcount < min(F_freegrid,len(F_off)):
-			probarray = Fxycdmatrix[F_off[Fcount][0]][freegrid]
+			probarray = Fxycdmatrix[int(F_off[Fcount][0])][freegrid]
 			Fcount = Fcount + 1
 			sexans = 'F'
 		elif Mcount < min(M_freegrid,len(M_off)):
-			probarray = Mxycdmatrix[M_off[Mcount][0]][freegrid]
+			probarray = Mxycdmatrix[int(M_off[Mcount][0])][freegrid]
 			Mcount = Mcount + 1
 			sexans = 'M'
 		# Extra spots and offspring
@@ -146,11 +146,11 @@ def GetProbArray(Fxycdmatrix,Mxycdmatrix,tempoffspring,index,freegrid,philopatry
 		
 		# Get the first half of freegrid filled up by males
 		if Mcount < min(M_freegrid,len(M_off)):
-			probarray = Mxycdmatrix[M_off[Mcount][0]][freegrid]
+			probarray = Mxycdmatrix[int(M_off[Mcount][0])][freegrid]
 			Mcount = Mcount + 1
 			sexans = 'M'
 		elif Fcount < min(F_freegrid,len(F_off)):
-			probarray = Fxycdmatrix[F_off[Fcount][0]][freegrid]
+			probarray = Fxycdmatrix[int(F_off[Fcount][0])][freegrid]
 			Fcount = Fcount + 1
 			sexans = 'F'
 		# Extra spots and offspring -randomly choose the left over offspring
@@ -194,7 +194,7 @@ def DoHeMortSelection(offspring,fitvals1,tempfreegrid,iteminlist,loci,cdevolvean
 	
 	# Get individuals heterozygosity - # het loci / loci
 	# -----------------------------
-	offgenes = np.asarray(offspring[6]) # Genes
+	offgenes = np.asarray(offspring[7]) # Genes
 	#all_freq_sq = (offgenes / 2.)**2 # Allele frequency ^ 2
 	#homozygosity = sum(all_freq_sq)/loci
 	#he = (1. - homozygosity)	
@@ -204,7 +204,7 @@ def DoHeMortSelection(offspring,fitvals1,tempfreegrid,iteminlist,loci,cdevolvean
 	# For GEA method
 	if cdevolveans == '1_HeMort_GEA':	
 		# If L0A0|L0A0 -- loci under selection:
-		if offspring[6][0] == 2:
+		if offgenes[0] == 2:
 
 			# The grab it's fitness values
 			m = float(fitvals1[tempfreegrid[iteminlist]][0][0])
@@ -213,7 +213,7 @@ def DoHeMortSelection(offspring,fitvals1,tempfreegrid,iteminlist,loci,cdevolvean
 			differentialmortality = (1. - y)/100.
 																	
 		# If L0A0|L0A1 -- loci under selection:
-		elif offspring[6][0] == 1 and offspring[6][1] == 1:
+		elif offgenes[0] == 1 and offgenes[1] == 1:
 
 			# The grab it's fitness values
 			m = float(fitvals1[tempfreegrid[iteminlist]][1][0])
@@ -221,7 +221,7 @@ def DoHeMortSelection(offspring,fitvals1,tempfreegrid,iteminlist,loci,cdevolvean
 			y = m * he + bint
 			differentialmortality = (1. - y)/100.
 														# If L0A1|L0A1 -- loci under selection
-		elif offspring[6][1] == 2:
+		elif offgenes[1] == 2:
 			
 			# The grab it's fitness values
 			m = float(fitvals1[tempfreegrid[iteminlist]][2][0])
@@ -255,19 +255,19 @@ def Do1LocusSelection(offspring,fitvals1,tempfreegrid,iteminlist):
 	'''
 	
 	# If L0A0|L0A0 -- loci under selection:
-	if offspring[6][0] == 2:
+	if offspring[7][0] == 2:
 
 		# The grab it's fitness values
 		differentialmortality = float(fitvals1[tempfreegrid[iteminlist]][0])/100.
 																
 	# If L0A0|L0A1 -- loci under selection:
-	elif offspring[6][0] == 1 and offspring[6][1] == 1:
+	elif offspring[7][0] == 1 and offspring[7][1] == 1:
 
 		# The grab it's fitness values
 		differentialmortality = float(fitvals1[tempfreegrid[iteminlist]][1])/100.
 																															
 	# If L0A1|L0A1 -- loci under selection
-	elif offspring[6][1] == 2:
+	elif offspring[7][1] == 2:
 		
 		# The grab it's fitness values
 		differentialmortality = float(fitvals1[tempfreegrid[iteminlist]][2])/100.
@@ -289,54 +289,54 @@ def Do2LocusSelection(offspring,fitvals2,tempfreegrid,iteminlist,alleles):
 	'''
 	
 	# If L0A0|L0A0|L1A0|L1A0 - AABB -- loci under selection:
-	if offspring[6][0] == 2 and offspring[6][alleles[0]] == 2:
+	if offspring[7][0] == 2 and offspring[7][alleles[0]] == 2:
 
 		# The grab it's fitness values
 		differentialmortality = float(fitvals2[tempfreegrid[iteminlist]][0])/100.
 									
 	# If L0A0|L0A1|L1A0|L1A0 - AaBB -- loci under selection:
-	elif offspring[6][0] == 1 and offspring[6][1] == 1 and offspring[6][alleles[0]] == 2:
+	elif offspring[7][0] == 1 and offspring[7][1] == 1 and offspring[7][alleles[0]] == 2:
 
 		# The grab it's fitness values
 		differentialmortality = float(fitvals2[tempfreegrid[iteminlist]][1])/100.
 																															
 	# If L0A1|L0A1|L1A0|L1A0 - aaBB -- loci under selection
-	elif offspring[6][1] == 2 and offspring[6][alleles[0]] == 2:
+	elif offspring[7][1] == 2 and offspring[7][alleles[0]] == 2:
 		
 		# The grab it's fitness values
 		differentialmortality = float(fitvals2[tempfreegrid[iteminlist]][2])/100.
 									
 	# If L0A0|L0A0|L1A0|L1A1 - AABb -- loci under selection:
-	elif offspring[6][0] == 2 and offspring[6][alleles[0]] == 1 and offspring[6][alleles[0]+1] == 1:
+	elif offspring[7][0] == 2 and offspring[7][alleles[0]] == 1 and offspring[7][alleles[0]+1] == 1:
 
 		# The grab it's fitness values
 		differentialmortality = float(fitvals2[tempfreegrid[iteminlist]][3])/100.
 									
 	# If L0A0|L0A1|L1A0|L1A1 - AaBb -- loci under selection:
-	elif offspring[6][0] == 1 and offspring[6][1] == 1 and offspring[6][alleles[0]] == 1 and offspring[6][alleles[0]+1] == 1:
+	elif offspring[7][0] == 1 and offspring[7][1] == 1 and offspring[7][alleles[0]] == 1 and offspring[7][alleles[0]+1] == 1:
 
 		# The grab it's fitness values
 		differentialmortality = float(fitvals2[tempfreegrid[iteminlist]][4])/100.
 																	
 	# If L0A1|L0A1|L1A0|L1A1 - aaBb -- loci under selection
-	elif offspring[6][1] == 2 and offspring[6][alleles[0]] == 1 and offspring[6][alleles[0]+1] == 1:
+	elif offspring[7][1] == 2 and offspring[7][alleles[0]] == 1 and offspring[7][alleles[0]+1] == 1:
 		
 		# The grab it's fitness values
 		differentialmortality = float(fitvals2[tempfreegrid[iteminlist]][5])/100.
 	
 	# If L0A0|L0A0|L1A1|L1A1 - AAbb -- loci under selection:
-	elif offspring[6][0] == 2 and offspring[6][alleles[0]+1] == 2:
+	elif offspring[7][0] == 2 and offspring[7][alleles[0]+1] == 2:
 
 		# The grab it's fitness values
 		differentialmortality = float(fitvals2[tempfreegrid[iteminlist]][6])/100.
 									
 	# If L0A0|L0A1|L1A1|L1A1 - Aabb -- loci under selection:
-	elif offspring[6][0] == 1 and offspring[6][1] == 1 and offspring[6][alleles[0]+1] == 2:
+	elif offspring[7][0] == 1 and offspring[7][1] == 1 and offspring[7][alleles[0]+1] == 2:
 
 		# The grab it's fitness values
 		differentialmortality = float(fitvals2[tempfreegrid[iteminlist]][7])/100.																													
 	# If L0A1|L0A1|L1A1|L1A1 - aabb -- loci under selection
-	elif offspring[6][1] == 2 and offspring[6][alleles[0]+1] == 2:
+	elif offspring[7][1] == 2 and offspring[7][alleles[0]+1] == 2:
 		
 		# The grab it's fitness values
 		differentialmortality = float(fitvals2[tempfreegrid[iteminlist]][8])/100.
@@ -392,7 +392,7 @@ males,males_nomate,burningen):
 		M_off = []
 		for row in offspring:
 			# Female offspring list
-			if row[4] == 0:
+			if int(row[4]) == 0:
 				F_off.append(row)
 			# Male offspring list
 			else:
@@ -403,7 +403,7 @@ males,males_nomate,burningen):
 		# Get offspring sex
 		for row in offspring:
 			# Female offspring list
-			if row[4] == 0:
+			if int(row[4]) == 0:
 				F_off.append(row)
 			# Male offspring list
 			else:
@@ -415,11 +415,11 @@ males,males_nomate,burningen):
 		
 		# Loop through offspring that are shuffled
 		for i in xrange(len(offspring)):
-			
+				
 			# Create a function here that gets indices for male and female
 			probarray,Fcount,Mcount,sexans = GetProbArray(Fxycdmatrix,Mxycdmatrix,offspring,i,\
 			tempfreegrid,philopatry,F_freegrid,M_freegrid,F_off,M_off,Fcount,Mcount)
-									
+								
 			# If statement to check if there are spots for offpsring to disperse to
 			if sum(probarray) != 0.0:
 				
@@ -487,7 +487,7 @@ males,males_nomate,burningen):
 					iteminlist = w_choice_item(probarray)
 											
 					# What subpopulation is offspring coming from
-					fromsubpop = subpop[offspring[i][0]]
+					fromsubpop = subpop[int(offspring[i][0])]
 					# Where is subpopulation proposing to go
 					tosubpop = subpop[tempfreegrid[iteminlist]]
 					
@@ -516,7 +516,7 @@ males,males_nomate,burningen):
 				# Append information to variable [offspring, grid it dispersed to, and name]
 				recd = [offspring[i],tempfreegrid[iteminlist],'T'+str(gen)+\
 				'M'+str(offspring[i][0])+'F'+str(offspring[i][1])+\
-				'Pop'+str(subpop[offspring[i][0]])]
+				'Pop'+str(subpop[int(offspring[i][0])])]
 							
 				# Record offspring disperse information	
 				OffDisperseIN.append(recd)
@@ -528,7 +528,7 @@ males,males_nomate,burningen):
 				CouldNotDisperse[gen].append(0)
 								
 				# Store the subpop dispersing to another subpop...what if 1, 3, 5 labeled subpop. either error intially or fix here....
-				dispersingfrom = subpop[recd[0][0]]
+				dispersingfrom = subpop[int(recd[0][0])]
 				dispersingto = subpop[tempfreegrid[iteminlist]]
 				if dispersingto != dispersingfrom:
 					subpopmigration[gen][int(dispersingto)-1].append(1)
@@ -597,10 +597,10 @@ FDispDistCDstd,MDispDistCDstd,Fthreshold,Mthreshold,FScaleMax,FScaleMin,MScaleMa
 	# Loop through each OffDisperseIN
 	for ioffspring in xrange(len(OffDisperseIN)):
 		# Store the ED/CD distance offspring went - split up into sex
-		if OffDisperseIN[ioffspring][0][4] == 0:
-			FtempAvgDispDistED.append(np.sqrt((xgridcopy[OffDisperseIN[ioffspring][0][2]]-xgridcopy[OffDisperseIN[ioffspring][1]])**2+(ygridcopy[OffDisperseIN[ioffspring][0][2]]-ygridcopy[OffDisperseIN[ioffspring][1]])**2))
+		if int(OffDisperseIN[ioffspring][0][4]) == 0:
+			FtempAvgDispDistED.append(np.sqrt((xgridcopy[int(OffDisperseIN[ioffspring][0][2])]-xgridcopy[int(OffDisperseIN[ioffspring][1])])**2+(ygridcopy[int(OffDisperseIN[ioffspring][0][2])]-ygridcopy[int(OffDisperseIN[ioffspring][1])])**2))
 			Fcount = Fcount + 1
-			probval = Fxycdmatrix[OffDisperseIN[ioffspring][0][2]][OffDisperseIN[ioffspring][1]]
+			probval = Fxycdmatrix[int(OffDisperseIN[ioffspring][0][2])][int(OffDisperseIN[ioffspring][1])]
 			
 			# If panmictic
 			if Fdispmoveno == '4' or Fdispmoveno == '6':
@@ -634,9 +634,9 @@ FDispDistCDstd,MDispDistCDstd,Fthreshold,Mthreshold,FScaleMax,FScaleMin,MScaleMa
 			
 		# Else a male
 		else:
-			MtempAvgDispDistED.append(np.sqrt((xgridcopy[OffDisperseIN[ioffspring][0][2]]-xgridcopy[OffDisperseIN[ioffspring][1]])**2+(ygridcopy[OffDisperseIN[ioffspring][0][2]]-ygridcopy[OffDisperseIN[ioffspring][1]])**2))
+			MtempAvgDispDistED.append(np.sqrt((xgridcopy[int(OffDisperseIN[ioffspring][0][2])]-xgridcopy[int(OffDisperseIN[ioffspring][1])])**2+(ygridcopy[int(OffDisperseIN[ioffspring][0][2])]-ygridcopy[int(OffDisperseIN[ioffspring][1])])**2))
 			Mcount = Mcount + 1
-			probval = Mxycdmatrix[OffDisperseIN[ioffspring][0][2]][OffDisperseIN[ioffspring][1]]
+			probval = Mxycdmatrix[int(OffDisperseIN[ioffspring][0][2])][int(OffDisperseIN[ioffspring][1])]
 			# If panmictic
 			if Mdispmoveno == '4' or Mdispmoveno == '6':
 				cdval = 0.0

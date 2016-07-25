@@ -638,7 +638,7 @@ def ReadCDMatrix(cdmatrixfilename,function,threshold,A,B,C,subpop):
 	# End::ReadMateCDMatrix
 
 # ---------------------------------------------------------------------------------------------------	 
-def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemoveno,Fdispmoveno,Mdispmoveno,matemovethresh,Fdispmovethresh,Mdispmovethresh,matemoveparA,matemoveparB,matemoveparC,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,subpop,Magemort,Fagemort,offno,lmbda,sigma,K_envvals,Mnewmortperc,Fnewmortperc,fitvals):
+def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemoveno,Fdispmoveno,Mdispmoveno,matemovethresh,Fdispmovethresh,Mdispmovethresh,matemoveparA,matemoveparB,matemoveparC,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,subpop,Magemort,Fagemort,offno,lmbda,sigma,K_envvals,Mnewmortperc,Fnewmortperc,fitvals,twinning):
 	'''
 	DoCDClimate()
 	Reads in cost distance matrices and converts to probabilities.
@@ -752,6 +752,10 @@ def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemo
 		MdispmoveparC = float(MdispmoveparC[icdtime])
 	else:
 		MdispmoveparC = float(MdispmoveparC)
+	if isinstance(twinning, (list,tuple)):
+		twinning = float(twinning[icdtime])/100.
+	else:
+		twinning = float(twinning)/100.
 	# Patch based parameters	
 	tempfitvals = []	
 	for isub in xrange(len(subpop)):
@@ -832,7 +836,7 @@ def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemo
 	
 	# Return this functions variables
 	tupClimate = matecdmatrix,Fdispcdmatrix,Mdispcdmatrix,matemovethresh,\
-	Fdispmovethresh,Mdispmovethresh,Fdisp_ScaleMin,Fdisp_ScaleMax,Mdisp_ScaleMin,Mdisp_ScaleMax,mate_ScaleMin,mate_ScaleMax,tempMmort,tempFmort,tempoffno,templmbda,tempsigma,tempK_env,tempMnewmort,tempFnewmort,tempfitvals,matemoveno,Fdispmoveno,Mdispmoveno	
+	Fdispmovethresh,Mdispmovethresh,Fdisp_ScaleMin,Fdisp_ScaleMax,Mdisp_ScaleMin,Mdisp_ScaleMax,mate_ScaleMin,mate_ScaleMax,tempMmort,tempFmort,tempoffno,templmbda,tempsigma,tempK_env,tempMnewmort,tempFnewmort,tempfitvals,matemoveno,Fdispmoveno,Mdispmoveno,twinning	
 	return tupClimate
 	
 	#End::DoCDClimate()

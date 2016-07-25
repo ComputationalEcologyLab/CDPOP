@@ -142,6 +142,7 @@ if __name__ == '__main__':
 		offnovals = batchVars['offno'][ibatch]
 		Femalepercent = int(batchVars['Femalepercent'][ibatch])
 		equalsexratio = batchVars['EqualsexratioBirth'][ibatch]
+		twinning_pass = batchVars['TwinningPercent'][ibatch]
 		popmodel = batchVars['popModel'][ibatch]
 		K_envvals = batchVars['K_env'][ibatch]
 		subpopmort = batchVars['subpopmortperc'][ibatch]
@@ -337,6 +338,7 @@ if __name__ == '__main__':
 			FSDMate = []
 			MSDMate = []
 			MateDistances = []
+			Twins = []
 					
 			# ------------------------------------	
 			# Call DoPreProcess()
@@ -411,7 +413,7 @@ if __name__ == '__main__':
 				# Check gen time equal to cdclimgentime
 				for icdtime in xrange(len(cdclimgentime)):						
 					if gen == int(cdclimgentime[icdtime]):
-						tupClimate = DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemoveno,Fdispmoveno,Mdispmoveno,matemovethresh,Fdispmovethresh,Mdispmovethresh,matemoveparA,matemoveparB,matemoveparC,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,subpop,Magemortvals,Fagemortvals,offnovals,egg_lmbdavals,egg_sigmavals,K_envvals,Mnewmortperc,Fnewmortperc,fitvals_pass)
+						tupClimate = DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemoveno,Fdispmoveno,Mdispmoveno,matemovethresh,Fdispmovethresh,Mdispmovethresh,matemoveparA,matemoveparB,matemoveparC,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,subpop,Magemortvals,Fagemortvals,offnovals,egg_lmbdavals,egg_sigmavals,K_envvals,Mnewmortperc,Fnewmortperc,fitvals_pass,twinning_pass)
 						
 						cdmatrix_mate = tupClimate[0]
 						cdmatrix_F = tupClimate[1]
@@ -436,7 +438,8 @@ if __name__ == '__main__':
 						fitvals = tupClimate[20]
 						mateno = tupClimate[21]
 						Fdispno = tupClimate[22]
-						Mdispno = tupClimate[23] 
+						Mdispno = tupClimate[23]
+						twinning = tupClimate[24]						
 												
 						# Error check for if nofiles == nogrids system exit
 						if nogrids != len(cdmatrix_mate):
@@ -447,7 +450,7 @@ if __name__ == '__main__':
 						stringout = 'DoCDCliamte(): '+str(datetime.datetime.now() -start_time1) + ''
 						logMsg(logfHndl,stringout)
 						print 'DoCDClimate(): ',str(datetime.datetime.now() -start_time1),''	
-			 
+				
 				# -------------------------------	
 				# Call ReadGrid()
 				# -------------------------------
@@ -499,7 +502,7 @@ if __name__ == '__main__':
 					stringout = 'ReadGrid(): '+str(datetime.datetime.now() -start_time1) + ''
 					logMsg(logfHndl,stringout)
 					print 'ReadGrid(): ',str(datetime.datetime.now() -start_time1),''
-									
+								
 				# ---------------------------------
 				# Call GetMetrics()
 				# ---------------------------------
@@ -518,13 +521,7 @@ if __name__ == '__main__':
 				stringout = 'GetMetrics(): '+str(datetime.datetime.now() -start_time1) + ''
 				logMsg(logfHndl,stringout)
 				print 'GetMetrics(): ',str(datetime.datetime.now() -start_time1),''
-				
-				#tempPop = np.asarray(Population,dtype='float')[:,0]
-				#growthPop = tempPop[1:]/tempPop[0:(len(tempPop)-1)]
-				#if gen != 0:
-			#		if growthPop[gen-1] < 1:
-			#			pdb.set_trace()
-				
+								
 				# ---------------------------------------
 				# Call DoMate()
 				# ---------------------------------------
@@ -563,7 +560,7 @@ if __name__ == '__main__':
 				
 				tupDoOff = DoOffspring(offno,eggs_lambda,Bearpairs,CDpairs,Femalepercent,\
 				Births,infection,transmissionprob,equalsexratio,\
-				Mnewmort,Fnewmort,Track_MOffDeaths,Track_FOffDeaths,eggs_sigma,age,sex)
+				Mnewmort,Fnewmort,Track_MOffDeaths,Track_FOffDeaths,eggs_sigma,age,sex,twinning,Twins)
 				
 				offspring = tupDoOff[0]	
 				offspringno = tupDoOff[1]
@@ -580,7 +577,7 @@ if __name__ == '__main__':
 				# Timing events: start
 				start_time1 = datetime.datetime.now()
 				
-				offpsring = InheritGenes(gen,AllelesMutated,offspringno,\
+				offspring = InheritGenes(gen,AllelesMutated,offspringno,\
 				offspring,genes,loci,muterate,mtdna,mutationans,geneswap)
 				
 				# Print to log
@@ -696,7 +693,7 @@ if __name__ == '__main__':
 			FDispDistEDstd,MDispDistEDstd,MateDistCDstd,FDispDistCDstd,MDispDistCDstd,subpopmigration,\
 			FAvgMate,MAvgMate,FSDMate,MSDMate,DisperseDeaths,Open,CouldNotDisperse,\
 			Female_BreedEvents,gridformat,subpopemigration,females_nomate,subgridtotal,Track_MOffDeaths,Track_FOffDeaths,Population_age,\
-			BreedFemales_age,subpopmatemort,Opt3SelectionDeaths,MateDistances,matedist_out)
+			BreedFemales_age,subpopmatemort,Opt3SelectionDeaths,MateDistances,matedist_out,Twins)
 			
 			# Print to log
 			stringout = 'DoPostProcess(): '+str(datetime.datetime.now() -start_time1) + ''
