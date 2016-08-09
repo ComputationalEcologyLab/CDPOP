@@ -1,3 +1,8 @@
+Changes 1.2.35.20160801T12:48:00MDT (ell)
+-1) Checking Stephen Rice error with philopatry...
+0) Begin coding in multiple allele selection option.
+a)
+
 Changes 1.2.34.2016.06.24T15:57:00MDT (ell)
 0) Add mortality option for females and males in AgeVars file. (Melissa Oscarson goat work). 
 a) Add tracking FDeaths and MDeaths to output.csv file.

@@ -103,6 +103,7 @@ def GetProbArray(Fxycdmatrix,Mxycdmatrix,tempoffspring,index,freegrid,philopatry
 			sys.exit(-1)	
 
 	elif philopatry == 'F':
+		
 		# Get the first half of freegrid filled up by females
 		if Fcount < min(F_freegrid,len(F_off)):
 			probarray = Fxycdmatrix[int(F_off[Fcount][0])][freegrid]
@@ -130,11 +131,11 @@ def GetProbArray(Fxycdmatrix,Mxycdmatrix,tempoffspring,index,freegrid,philopatry
 			if len(all_left_sex) != 0:
 				rand_left = random.randint(0, len(all_left_sex) - 1)
 				if all_left_sex[rand_left] == 0:
-					probarray = Fxycdmatrix[F_off[Fcount][0]][freegrid]
+					probarray = Fxycdmatrix[int(F_off[Fcount][0])][freegrid]
 					Fcount = Fcount + 1
 					sexans = 'F'
 				else:
-					probarray = Mxycdmatrix[M_off[Mcount][0]][freegrid]
+					probarray = Mxycdmatrix[int(M_off[Mcount][0])][freegrid]
 					Mcount = Mcount + 1
 					sexans = 'M'
 			else:
@@ -170,11 +171,11 @@ def GetProbArray(Fxycdmatrix,Mxycdmatrix,tempoffspring,index,freegrid,philopatry
 			if len(all_left_sex) != 0:	
 				rand_left = random.randint(0, len(all_left_sex) - 1)
 				if all_left_sex[rand_left] == 0:
-					probarray = Fxycdmatrix[F_off[Fcount][0]][freegrid]
+					probarray = Fxycdmatrix[int(F_off[Fcount][0])][freegrid]
 					Fcount = Fcount + 1
 					sexans = 'F'
 				else:
-					probarray = Mxycdmatrix[M_off[Mcount][0]][freegrid]
+					probarray = Mxycdmatrix[int(M_off[Mcount][0])][freegrid]
 					Mcount = Mcount + 1
 					sexans = 'M'
 			else:
