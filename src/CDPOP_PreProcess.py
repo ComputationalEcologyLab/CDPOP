@@ -1081,7 +1081,7 @@ def DoPreProcess(outdir,ibatch,ithmcrun,\
 xyfilename,agefilename,equalsexratio,\
 loci,intgenesans,allefreqfilename,alleles,gen,logfHndl,\
 cdevolveans,cdinfect,Infected,
-subpopmigration,subpopemigration,datadir,geneswap):
+subpopmigration,subpopemigration,datadir,geneswap,betaFile):
 	'''
 	DoPreProcess()
 	This function does all the pre-processing work before
@@ -1099,11 +1099,16 @@ subpopmigration,subpopemigration,datadir,geneswap):
 	# ------------------------------------------------------------------
 	xy = ReadXY(xyfilename)
 	
-	# Error statement for 5 column data
-	if len(xy[1]) != 17 and intgenesans!='known':
-		print('XY input file must be 17 columns, see example input files.')
-		sys.exit(-1)
-	
+	# Error statement for 5 column data - check special cases
+	if cdevolveans.split('_')[0] != 'M':
+		if len(xy[1]) != 17 and intgenesans!='known':
+			print('XY input file must be 17 columns, see example input files.')
+			sys.exit(-1)
+	else:
+		if (len(xy[1]) - int(cdevolveans.split('_')[1].split('X')[1])) != 17 and intgenesans!='known':
+			print('XY input file must be 17 columns plus the specified number of variables operating in the multiple loci selection model; see example input files.')
+			sys.exit(-1)
+		
 	# Store all information in lists by variable name
 	FID = []
 	subpop = []
@@ -1115,6 +1120,7 @@ subpopmigration,subpopemigration,datadir,geneswap):
 	genes = []
 	infection = []
 	fitvals = []
+	xvars = []
 	for i in xrange(len(xy)-1):
 		FID.append(i)
 		subpop.append(xy[i+1][0])
@@ -1134,11 +1140,19 @@ subpopmigration,subpopemigration,datadir,geneswap):
 				fitvals.append([xy[i+1][5],xy[i+1][6],xy[i+1][7]])
 			elif cdevolveans == '2':
 				fitvals.append([xy[i+1][8],xy[i+1][9],xy[i+1][10],xy[i+1][11],xy[i+1][12],xy[i+1][13],xy[i+1][14],xy[i+1][15],xy[i+1][16]])
+			elif cdevolveans.split('_')[0] == 'M':
+				xvars.append([])
+				for ixvars in xrange(int(cdevolveans.split('_')[1].split('X')[1])):
+					xvars[i].append(float(xy[i+1][17+ixvars]))
 		else:
 			if cdevolveans == '1' or cdevolveans == '3' or cdevolveans == '1_HeMort_GEA' or cdevolveans == '1_HeMort_All':
 				fitvals.append([xy[i+1][8],xy[i+1][9],xy[i+1][10]])
 			elif cdevolveans == '2':
 				fitvals.append([xy[i+1][11],xy[i+1][12],xy[i+1][13],xy[i+1][14],xy[i+1][15],xy[i+1][16],xy[i+1][17],xy[i+1][18],xy[i+1][19]])
+			elif cdevolveans.split('_')[0] == 'M':
+				xvars.append([])
+				for ixvars in xrange(int(cdevolveans.split('_')[1].split('X')[1])):
+					xvars[i].append(float(xy[i+1][20+ixvars]))
 		# Only grab sex information from the file is equal sex ratio is N
 		if equalsexratio == 'N' or equalsexratio == 'AtBirth':
 			if xy[i+1][3] == 'NA' and xy[i+1][4] != 'NA':
@@ -1254,6 +1268,25 @@ subpopmigration,subpopemigration,datadir,geneswap):
 		# Delete extra stuff
 		del(sextemp)
 		
+	# ---------------------------------------------
+	# Read in Beta File for Multiple loci selection
+	# ---------------------------------------------
+	betas = []
+	if cdevolveans.split('_')[0] == 'M':
+		# Read in Beta File
+		betavals = ReadXY(betaFile)
+		# Error check on beta file - should be x number of betas alleles * number of xvars * number of loci under selection
+		if (len(betavals)-1)*(len(betavals[0])-1) != alleles[0]*int(cdevolveans.split('_')[1].split('X')[1])*int(cdevolveans.split('_')[2].split('L')[1]):
+			print('Beta file is incorrect. Specify the beta for each variableXlociXallele combination.')
+			sys.exit(-1)
+		# Then extract betavals - in order of variable, loci, allele [var][loci][allele]
+		for ixvar in xrange(int(cdevolveans.split('_')[1].split('X')[1])):
+			betas.append([])
+			for iloci in xrange(int(cdevolveans.split('_')[2].split('L')[1])):
+				betas[ixvar].append([])
+				for iall in xrange(alleles[0]):
+					betas[ixvar][iloci].append(float(betavals[iall+1][ixvar*(int(cdevolveans.split('_')[2].split('L')[1]))+iloci+1]))
+	
 	# -------------------------------------------
 	# Initialize age structure
 	# ------------------------------------------- 
@@ -1280,7 +1313,7 @@ subpopmigration,subpopemigration,datadir,geneswap):
 			
 	# Return this functions variables
 	tupPreProcess = ithmcrundir,FID,id,sex,age,xgrid,ygrid,genes,\
-	nogrids,subpop,fitvals,infection,Infected,subpopmigration,subpopemigration,Magemort,Fagemort,egg_lmbdavals,egg_sigmavals,allelst,Mnewmortperc,Fnewmortperc,Mmature,Fmature,intgenesans
+	nogrids,subpop,fitvals,infection,Infected,subpopmigration,subpopemigration,Magemort,Fagemort,egg_lmbdavals,egg_sigmavals,allelst,Mnewmortperc,Fnewmortperc,Mmature,Fmature,intgenesans,betas,xvars
 	return tupPreProcess
 	
 	#End::DoPreProcess()

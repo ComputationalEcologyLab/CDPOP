@@ -158,6 +158,7 @@ if __name__ == '__main__':
 		geneswap = int(batchVars['startGenes'][ibatch]) 
 		cdevolveans = batchVars['cdevolveans'][ibatch]
 		burningen = int(batchVars['startSelection'][ibatch])
+		betaFile = datadir+batchVars['betaFile'][ibatch]
 		cdinfect = batchVars['cdinfect'][ibatch]
 		transmissionprob = float(batchVars['transmissionprob'][ibatch])
 		matedist_out = batchVars['output_matedistance'][ibatch]
@@ -217,7 +218,7 @@ if __name__ == '__main__':
 		# ---------------------------------
 		# If cdevolve is turned on must have 2 alleles
 		if cdevolveans != 'N' and alleles[0] != 2:
-			print('Warning: More than 2 alleles per locus specified. CDEVOLVE only considers first 2 alleles in selection models.')
+			print('Warning: More than 2 alleles per locus specified. CDEVOLVE only considers first 2 alleles in selection models, unless multiple loci selection model was specified.')
 		# Must have more than 1 loci
 		if loci <= 1:
 			print('Currently, CDPOP needs more than 1 locus to run.')
@@ -274,6 +275,12 @@ if __name__ == '__main__':
 		if cdevolveans != 'N' and burningen < geneswap:
 			print('Start selection time must be less than genetic exchange start time (startGenes < startSelection).')
 			sys.exit(-1)
+			
+		# Check multiple selection model and number of loci
+		if cdevolveans.split('_')[0] == 'M':
+			if int(cdevolveans.split('_')[2].split('L')[1]) > loci:
+				print('More loci under selection than specified number of total loci.')
+				sys.exit(-1)
 		
 		# ---------------------------------------------	
 		# Begin Monte-Carlo Looping
@@ -350,7 +357,7 @@ if __name__ == '__main__':
 			# Call function
 			tupPreProcess = DoPreProcess(outdir,ibatch,ithmcrun,\
 			xyfilename,agefilename,equalsexratio,loci,intgenesans,allefreqfilename,alleles,0,logfHndl,cdevolveans,cdinfect,Infected,\
-			subpopmigration,subpopemigration,datadir,geneswap)
+			subpopmigration,subpopemigration,datadir,geneswap,betaFile)
 						
 			ithmcrundir = tupPreProcess[0]	
 			FID = tupPreProcess[1]
@@ -379,6 +386,8 @@ if __name__ == '__main__':
 			Mmature = tupPreProcess[22]
 			Fmature = tupPreProcess[23]
 			intgenesans = tupPreProcess[24] # might have changed due to error geneswap != 0
+			betas = tupPreProcess[25]
+			xvars_betas = tupPreProcess[26]
 			
 			# ---------------------------------
 			# Error statements
@@ -624,7 +633,7 @@ if __name__ == '__main__':
 				logfHndl,cdevolveans,fitvals,FDispDistEDstd,MDispDistEDstd,\
 				FDispDistCDstd,MDispDistCDstd,subpop,subpopmigration,DisperseDeaths,CouldNotDisperse,\
 				subpopmortperc,philopatry,females,subpopemigration,females_nomate[gen],\
-				males,males_nomate[gen],burningen,thresh_F,thresh_M,Fdisp_ScaleMax,Fdisp_ScaleMin,Mdisp_ScaleMax,Mdisp_ScaleMin,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC)
+				males,males_nomate[gen],burningen,thresh_F,thresh_M,Fdisp_ScaleMax,Fdisp_ScaleMin,Mdisp_ScaleMax,Mdisp_ScaleMin,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,betas,xvars_betas)
 				
 				OffDisperseIN = tupDoDisp[0]
 				opengrids = tupDoDisp[1]
@@ -667,12 +676,6 @@ if __name__ == '__main__':
 				stringout = 'End Generation Loop'+str(gen)+': '+str(datetime.datetime.now() -start_timeGen) + '\n'
 				logMsg(logfHndl,stringout)
 				print 'End Generation Loop',str(gen),': ',str(datetime.datetime.now() -start_timeGen),'\n'
-				
-				#tempPop = np.asarray(Population,dtype='float')[:,0]
-				#growthPop = tempPop[1:]/tempPop[0:(len(tempPop)-1)]
-				#if gen != 0:
-				#	if growthPop[gen-1] < 1:
-				#		pdb.set_trace()
 					
 			# End::generation loop
 						

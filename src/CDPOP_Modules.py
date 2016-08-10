@@ -179,6 +179,10 @@ genesnew,equalsexratio,sexnew,subpopnew,infectionnew,allelst,geneswap,gen,intgen
 	
 	# If equal sex ratio is Y, then split up sex into equal parts
 	if equalsexratio == 'WrightFisher':
+		# Error check to make sure full grids
+		if len(np.where(np.asarray(age)=='NA')[0]) != 0:
+			print('WrightFisher is a special case assuming constant population size.')
+			sys.exit(-1)
 		sex = []
 		# Get unique number of subpops, make equal sex ratio for each subpopulation
 		nosubpops = len(np.unique(subpop))

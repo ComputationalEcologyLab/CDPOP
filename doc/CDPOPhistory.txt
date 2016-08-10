@@ -1,7 +1,12 @@
 Changes 1.2.35.20160801T12:48:00MDT (ell)
--1) Checking Stephen Rice error with philopatry...
-0) Begin coding in multiple allele selection option.
-a)
+-1) Checking Stephen Rice error with philopatry...fixed.
+0) Begin coding in multiple allele selection option. (SC)
+a) In XY file, add column for X1, X2, ..., XN. Have it be flexible and as many columns the user wants to enter *** with error checks. First create test grid surface for XY16 points that produce a Z score representative of a gradient of values: -1 to 1. Read this in if in inputvars CDEVOLVEans == 'M'. A separate file is then read in (create new field for this) that specifies the betas and number of loci/alleles under selection. Make it M_X3_L5...this will tell the program to look for a file for multiple loci selection model and that 3 variables are involved (which will be in the XY file) and 5 loci are under selection. Number of alleles will already be specified. 
+b) Read in beta file, and order [varible][loci][allele]
+c) Read in inputvars new cdevolveans and field for beta file
+d) Read in XY xvars field
+e) Add linear additive model to DoDisperse Module
+
 
 Changes 1.2.34.2016.06.24T15:57:00MDT (ell)
 0) Add mortality option for females and males in AgeVars file. (Melissa Oscarson goat work). 

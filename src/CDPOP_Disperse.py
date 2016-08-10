@@ -185,7 +185,50 @@ def GetProbArray(Fxycdmatrix,Mxycdmatrix,tempoffspring,index,freegrid,philopatry
 	return probarray,Fcount,Mcount,sexans
 	
 	# End::GetProbArray()
+
+# ---------------------------------------------------------------------------------------------------	
+def DoMLocusSelection(offspring,tempfreegrid,iteminlist,loci,cdevolveans,betas,xvars):
+	'''
+	DoMLocusSelection()
+	This function calculates offsprings differential mortality, given the individuals genotype, betas, and xvariables supplied for the linear additive model. 
+	'''
 	
+	# Get individuals genes under selection
+	# -----------------------------
+	offgenes = np.asarray(offspring[7]) # Genes
+	offgenes = offgenes.tolist()
+	offgenes = [offgenes[x:x+(len(offgenes)/loci)] for x in xrange(0, len(offgenes), (len(offgenes)/loci))]
+	# Assume the first N loci are under selection
+	selgenes = offgenes[0:int(cdevolveans.split('_')[2].split('L')[1])]
+	
+	# Apply linear model
+	atspot_xvars = xvars[tempfreegrid[iteminlist]]
+	
+	linmodel = [] # [xvar][loci][allele]
+	
+	for ixvar in xrange(int(cdevolveans.split('_')[1].split('X')[1])):
+		#linmodel.append([])
+		xvar = atspot_xvars[ixvar]
+		for iloci in xrange(int(cdevolveans.split('_')[2].split('L')[1])):
+			#linmodel[ixvar].append([])	
+			for iall in xrange(len(selgenes[iloci])):
+				beta = betas[ixvar][iloci][iall]
+				thisallele = selgenes[iloci][iall]
+				linmodel.append(xvar * beta * thisallele)	
+			
+	# Add the linear model together and logit
+	Fitness = np.exp(sum(linmodel)) / (1. + np.exp(sum(linmodel)))
+	
+	# Convert fitness to differential mortality - 1 - Finess
+	differentialmortality = 1. - Fitness
+	#pdb.set_trace()
+		
+	return differentialmortality
+	
+	# End::DoMLocusSelection()
+	
+
+
 # ---------------------------------------------------------------------------------------------------	
 def DoHeMortSelection(offspring,fitvals1,tempfreegrid,iteminlist,loci,cdevolveans):
 	'''
@@ -210,8 +253,10 @@ def DoHeMortSelection(offspring,fitvals1,tempfreegrid,iteminlist,loci,cdevolvean
 			# The grab it's fitness values
 			m = float(fitvals1[tempfreegrid[iteminlist]][0][0])
 			bint = float(fitvals1[tempfreegrid[iteminlist]][0][1])
-			y = m * he + bint
-			differentialmortality = (1. - y)/100.
+			y = m * he + bint # This is survival
+			if y > 100:
+				y = 100.
+			differentialmortality = (100. - y)/100.
 																	
 		# If L0A0|L0A1 -- loci under selection:
 		elif offgenes[0] == 1 and offgenes[1] == 1:
@@ -219,16 +264,20 @@ def DoHeMortSelection(offspring,fitvals1,tempfreegrid,iteminlist,loci,cdevolvean
 			# The grab it's fitness values
 			m = float(fitvals1[tempfreegrid[iteminlist]][1][0])
 			bint = float(fitvals1[tempfreegrid[iteminlist]][1][1])
-			y = m * he + bint
-			differentialmortality = (1. - y)/100.
+			y = m * he + bint # This is survival
+			if y > 100:
+				y = 100.
+			differentialmortality = (100. - y)/100.
 														# If L0A1|L0A1 -- loci under selection
 		elif offgenes[1] == 2:
 			
 			# The grab it's fitness values
 			m = float(fitvals1[tempfreegrid[iteminlist]][2][0])
 			bint = float(fitvals1[tempfreegrid[iteminlist]][2][1])
-			y = m * he + bint
-			differentialmortality = (1. - y)/100.
+			y = m * he + bint # This is survival
+			if y > 100:
+				y = 100.
+			differentialmortality = (100. - y)/100.
 		
 		# Another genotype
 		else:
@@ -239,8 +288,10 @@ def DoHeMortSelection(offspring,fitvals1,tempfreegrid,iteminlist,loci,cdevolvean
 		# The grab it's fitness values
 		m = float(fitvals1[tempfreegrid[iteminlist]][0][0])
 		bint = float(fitvals1[tempfreegrid[iteminlist]][0][1])
-		y = m * he + bint
-		differentialmortality = (1. - y)/100.
+		y = m * he + bint # This is survival
+		if y > 100:
+			y = 100.
+		differentialmortality = (100. - y)/100.
 	
 	return differentialmortality
 	
@@ -355,7 +406,7 @@ def DoEmigration(offspring,freegrid,Migrants,Open,loci,alleles,\
 Fxycdmatrix,Mxycdmatrix,gen,\
 offspringno,cdevolveans,fitvals,subpop,subpopmigration,DisperseDeaths,CouldNotDisperse,\
 subpopmortperc,philopatry,females,subpopemigration,females_nomate,\
-males,males_nomate,burningen):
+males,males_nomate,burningen,betas,xvars_betas):
 	'''
 	DoEmigration()
 	This function enforces emigration when there are
@@ -480,6 +531,25 @@ males,males_nomate,burningen):
 						DisperseDeaths[gen].append(1)
 						CouldNotDisperse[gen].append(0)
 						continue
+				
+				# CDEVOLVE - Multiple loci selection model
+				elif cdevolveans.split('_')[0] == 'M':
+					
+					# Select the w_choice item
+					iteminlist = w_choice_item(probarray)
+					
+					# Call M-locus selection model
+					differentialmortality = DoMLocusSelection(offspring[i],tempfreegrid,iteminlist,loci,cdevolveans,betas,xvars_betas)
+											
+					# Then flip the coin to see if offspring survives its location
+					randcheck = rand()
+					
+					# If offspring did not survive: break from loop, move to next offspring
+					if randcheck < differentialmortality:
+						offcount = offcount + 1
+						DisperseDeaths[gen].append(1)
+						CouldNotDisperse[gen].append(0)
+						continue				
 				
 				# If subpopulation differential mortality is on
 				elif sum(subpopmortperc) != 0.0:
@@ -708,7 +778,7 @@ xgridcopy,ygridcopy,FDispDistED,MDispDistED,FDispDistCD,MDispDistCD,
 logfHndl,cdevolveans,fitvals,FDispDistEDstd,MDispDistEDstd,\
 FDispDistCDstd,MDispDistCDstd,subpop,subpopmigration,DisperseDeaths,CouldNotDisperse,\
 subpopmortperc,philopatry,females,subpopemigration,females_nomate,males,males_nomate,\
-burningen,Fthreshold,Mthreshold,FScaleMax,FScaleMin,MScaleMax,MScaleMin,FA,FB,FC,MA,MB,MC):
+burningen,Fthreshold,Mthreshold,FScaleMax,FScaleMin,MScaleMax,MScaleMin,FA,FB,FC,MA,MB,MC,betas,xvars_betas):
 	'''
 	DoDisperse()
 	Disperse the new offspring to empty spots on grid
@@ -722,7 +792,7 @@ burningen,Fthreshold,Mthreshold,FScaleMax,FScaleMin,MScaleMax,MScaleMin,FA,FB,FC
 	cdevolveans,fitvals,subpop,subpopmigration,\
 	DisperseDeaths,CouldNotDisperse,subpopmortperc,philopatry,\
 	females,subpopemigration,females_nomate,males,males_nomate,\
-	burningen)
+	burningen,betas,xvars_betas)
 	
 	OffDisperseIN = tupDoEmi[0]
 	opengrids = tupDoEmi[1]
