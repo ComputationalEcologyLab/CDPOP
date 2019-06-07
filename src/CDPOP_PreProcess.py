@@ -33,6 +33,14 @@ except ImportError:
 # General python imports
 import os,sys
 
+# ---------------------------------------------------------------------------------------------------
+def count_unique(keys):
+    uniq_keys = np.unique(keys)
+    bins = uniq_keys.searchsorted(keys)
+    return uniq_keys, np.bincount(bins)
+	
+	#End::count_unique()
+
 # ----------------------------------------------------------------------------------
 def loadFile(filename, header_lines=0, delimiter=None, cdpop_inputvars=False): ###
 	'''
@@ -191,7 +199,8 @@ def CreateAlleleList(loci,alleles,xgenes):
 	for i in xrange(loci):
 		allelst.append([])
 		for k in xrange(alleles[i]):
-			allspot = alleles[i]*i+1+k
+			#allspot = alleles[i]*i+1+k
+			allspot = sum(alleles[0:i]) + k + 1
 			allelst[i].append([int(k),float(xgenes[allspot][1])])
 	
 	# Return variables
@@ -203,22 +212,22 @@ def CreateAlleleList(loci,alleles,xgenes):
 def InitializeGenes(intgenesans,allefreqfilename,loci,alleles,datadir):	
 	
 	allelst = []
-	
+		
 	# If genetic structure intialized by a file...
-	if intgenesans == 'file':
+	if intgenesans == 'file' or intgenesans == 'file_introduce' or intgenesans == 'file_var' or intgenesans == 'file_introduce_var':
 		
 		# Loop through allele frequency files given
 		for ifile in xrange(len(allefreqfilename)):
 			
 			fileans = allefreqfilename[ifile]
-		
+			
 			# If genetic structure intialized by a file...
 			if fileans != 'random':
 		
 				# Check statements
-				if os.path.exists(datadir+fileans):
+				if os.path.exists(datadir+fileans+'.csv'):
 					# Open file for reading
-					inputfile = open(datadir+fileans,'rU')
+					inputfile = open(datadir+fileans+'.csv','rU')
 				else:
 					print("CDPOP InitializeGenes() error: open failed, could not open %s"%(fileans))
 					sys.exit(-1)
@@ -244,7 +253,7 @@ def InitializeGenes(intgenesans,allefreqfilename,loci,alleles,datadir):
 				
 				# Delete lines from earlier
 				del(lines)
-			
+				
 				# Call CreateAlleleList()
 				allelst.append(CreateAlleleList(loci,alleles,xgenes))
 			
@@ -262,7 +271,7 @@ def InitializeGenes(intgenesans,allefreqfilename,loci,alleles,datadir):
 				allelst.append(CreateAlleleList(loci,alleles,xgenes))	
 	
 	# If just random for entire population
-	elif intgenesans == 'random':
+	elif intgenesans == 'random' or intgenesans == 'random_var':
 		
 		# Create even distribution
 		xgenes = []
@@ -296,8 +305,24 @@ def InitializeAge(agefilename,nogrids,datadir):
 	
 	# Loop through age files given
 	agelst = []
+	Magemort = []
+	Fagemort = []
+	eggs_mean = []
+	eggs_sigma = []	
+	Mmature = []
+	Fmature = []
+	Mnewmortperc = []
+	Fnewmortperc = []
 	for ifile in xrange(len(agefilename)):
 		agelst.append([])
+		Magemort.append([])
+		Fagemort.append([])
+		eggs_mean.append([])
+		eggs_sigma.append([])	
+		Mmature.append([])
+		Fmature.append([])
+		Mnewmortperc.append([])
+		Fnewmortperc.append([])
 		
 		fileans = agefilename[ifile]			
 				
@@ -335,50 +360,50 @@ def InitializeAge(agefilename,nogrids,datadir):
 		# Store all information in a list [age,probability]
 		ageclass = []
 		ageno = []
-		Magemort = []
-		Fagemort = []
-		eggs_mean = []
-		eggs_sigma = []	
-		Mmature = []
-		Fmature = []
 		for i in xrange(len(xage)-2): # i+2, only get Age 1+
 			ageclass.append(int(xage[i+2][0]))
 			ageno.append(float(xage[i+2][1]))
 			if len(xage[i+2][2].split('|')) == 1: 
-				Magemort.append(float(xage[i+2][2])/100.)
+				Magemort[ifile].append(float(xage[i+2][2])/100.)
 			else:
-				Magemort.append(xage[i+2][2].split('|'))
+				Magemort[ifile].append(xage[i+2][2].split('|'))
 			if len(xage[i+2][3].split('|')) == 1: 
-				Fagemort.append(float(xage[i+2][3])/100.)
+				Fagemort[ifile].append(float(xage[i+2][3])/100.)
 			else:
-				Fagemort.append(xage[i+2][3].split('|'))
+				Fagemort[ifile].append(xage[i+2][3].split('|'))
 			if len(xage[i+2][4].split('|')) == 1: 
-				eggs_mean.append(float(xage[i+2][4]))
+				eggs_mean[ifile].append(float(xage[i+2][4]))
 			else:
-				eggs_mean.append(xage[i+2][4].split('|'))
+				eggs_mean[ifile].append(xage[i+2][4].split('|'))
 			if len(xage[i+2][5].split('|')) == 1: 
-				eggs_sigma.append(float(xage[i+2][5]))
+				eggs_sigma[ifile].append(float(xage[i+2][5]))
 			else:
-				eggs_sigma.append(xage[i+2][5].split('|'))
-			Mmature.append(float(xage[i+2][6]))
-			Fmature.append(float(xage[i+2][7]))
-			
+				eggs_sigma[ifile].append(xage[i+2][5].split('|'))
+			if len(xage[i+2][6].split('|')) == 1:
+				Mmature[ifile].append(float(xage[i+2][6]))
+			else:
+				Mmature[ifile].append(xage[i+2][6].split('|'))
+			if len(xage[i+2][7].split('|')) == 1:
+				Fmature[ifile].append(float(xage[i+2][7]))
+			else:
+				Fmature[ifile].append(xage[i+2][7].split('|'))
+		
 		# Get age distribution list
 		for i in xrange(len(ageno)):
 			agelst[ifile].append([ageclass[i],ageno[i]/sum(ageno)])
 		
 		# Get Age 0 mortality for males and females
 		if len(xage[1][2].split('|')) == 1: 
-			Mnewmortperc = float(xage[1][2])/100.
+			Mnewmortperc[ifile] = float(xage[1][2])/100.
 		else:
-			Mnewmortperc = xage[1][2].split('|')
+			Mnewmortperc[ifile] = xage[1][2].split('|')
 		if len(xage[1][3].split('|')) == 1: 
-			Fnewmortperc = float(xage[1][3])/100.
+			Fnewmortperc[ifile] = float(xage[1][3])/100.
 		else:
-			Fnewmortperc = xage[1][3].split('|')
+			Fnewmortperc[ifile] = xage[1][3].split('|')
 			
 		# Error checks here: if number of classes does not equal mortality age classes
-		if len(agelst[ifile]) != len(Magemort):
+		if len(agelst[ifile]) != len(Magemort[ifile]):
 			print('Agedistribution data not fully entered correctly.')
 			sys.exit(-1)
 		# Error check that age 0s are initialized
@@ -465,6 +490,15 @@ def ReadCDMatrix(cdmatrixfilename,function,threshold,A,B,C,subpop):
 	# Calculate max and min of bigCD matrix
 	minbigCD = np.amin(bigCD)
 	maxbigCD = np.amax(bigCD)
+	
+	# Error checks on these values
+	if minbigCD < 0:
+		print('Cost matrix values should not be negative.')
+		sys.exit(-1)
+	if maxbigCD != 0:
+		if maxbigCD < 1 and (function == '2' or function == '5'):
+			print('Careful use of cost distance values less than 1 when using options 2 or 5.')
+			sys.exit(-1)
 			
 	# Get maximum cdvalue to use for movethreshold if specified
 	threshold = GetMaxCDValue(threshold,bigCD)
@@ -472,161 +506,201 @@ def ReadCDMatrix(cdmatrixfilename,function,threshold,A,B,C,subpop):
 	# Create a matrix of to be filled 
 	cdmatrix = []
 	
-	# Fill up matrix with float value of array x
-	for j in xrange(nofiles):
-		cdmatrix.append([])
-		for k in xrange(nofiles):
-			
-			# For the linear function
-			if function == '1':
-				scale_min = 0.
-				scale_max = threshold
-				# Set = to 0 if cdvalue is greater than movethreshold
-				if float(bigCD[j][k]) > threshold:
-					cdmatrix[j].append(0.0)
-				# If threshold is 0 (philopatry) set to 1 - can't dived by 0
-				elif float(bigCD[j][k]) <= threshold and threshold == 0.0:
-					cdmatrix[j].append(1.0)
-				# Else calculated function value and if not philopatry
-				elif float(bigCD[j][k]) <= threshold and threshold != 0.0:
-					cdmatrix[j].append(-(1./threshold)*float(bigCD[j][k]) + 1)
-				else:
-					print('Something off in linear function values.')
-					sys.exit(-1)
-						
-			# For the inverse square function
-			elif function == '2':
+	# If not the prob matrix directly
+	if function != '9':
+		# Fill up matrix with float value of array x
+		for j in xrange(nofiles):
+			cdmatrix.append([])
+			for k in xrange(nofiles):
 				
-				# This function gets rescale: calculate here
-				if threshold == 0:
+				# For the linear function
+				if function == '1':
 					scale_min = 0.
-				else:
-					scale_min = 1./(pow(threshold,2))
-				scale_max = 1.
-				
-				# Set = to 0 if cdvalue is greater than movethreshold
-				if float(bigCD[j][k]) > threshold:
-					cdmatrix[j].append(0.0)
-				# If threshold is 0 (philopatry) set to 1 - can't dived by 0
-				elif float(bigCD[j][k]) <= threshold and threshold == 0.0:
-					cdmatrix[j].append(1.0)
-				# If cd mat is 0. 
-				elif float(bigCD[j][k]) <= threshold and threshold != 0.0 and float(bigCD[j][k]) == 0.0 or (minbigCD == maxbigCD or int(maxbigCD) == 0):
-					cdmatrix[j].append(1.0)
-				# Else calculated function value
-				elif float(bigCD[j][k]) <= threshold and threshold != 0.0 and float(bigCD[j][k]) != 0.0 and (minbigCD != maxbigCD and int(maxbigCD) != 0):
-					invsq_val = 1./(pow(float(bigCD[j][k]),2))
-					invsq_val = (invsq_val - scale_min) / (scale_max - scale_min)
-					cdmatrix[j].append(invsq_val)# Else something else.
-				else:
-					print('Something off in inv squ function values.')
-					sys.exit(-1)
-					
+					scale_max = threshold
+					# Set = to 0 if cdvalue is greater than or equal to movethreshold
+					if float(bigCD[j][k]) >= threshold:
+						cdmatrix[j].append(0.0)
+					# If threshold is 0 (philopatry) set to 1 - can't dived by 0
+					elif float(bigCD[j][k]) < threshold and threshold == 0.0:
+						cdmatrix[j].append(1.0)
+					# Else calculated function value and if not philopatry
+					elif float(bigCD[j][k]) < threshold and threshold != 0.0:
+						cdmatrix[j].append(-(1./threshold)*float(bigCD[j][k]) + 1)
+					else:
+						print('Something off in linear function values.')
+						sys.exit(-1)
 							
-			# Nearest neighbor function here
-			elif function == '3':
-				print('Nearest neighbor function is not currently implemented.')
-				print('You can use Linear function with neighbor threshold for approximation. Email Erin.')
-				sys.exit(-1)
-				
-			# Random function here
-			elif function == '4':
-				scale_min = 0.
-				scale_max = threshold
-				# Set = to 0 if cdvalue is greater than movethreshold
-				if float(bigCD[j][k]) > threshold:
-					cdmatrix[j].append(0.0)
-				# Else calculated function value
-				else:
-					cdmatrix[j].append(1.0)
-			
-			# For the negative binomial function
-			elif function == '5':
-			
-				# This function gets rescale: calculate here
-				scale_min = A*pow(10,-B*float(threshold))
-				scale_max = A*pow(10,-B*float(minbigCD))
-			
-				# Set = to 0 if cdvalue is greater than movethreshold
-				if float(bigCD[j][k]) > threshold:
-					cdmatrix[j].append(0.0)
-				# Rescaled value divide by zero check cases
-				elif float(bigCD[j][k]) <= threshold and threshold == 0.0 and (minbigCD == maxbigCD or int(maxbigCD) == 0):
-					cdmatrix[j].append(1.0)
-				# Else calculated function value
-				elif float(bigCD[j][k]) <= threshold and threshold != 0.0 and (minbigCD != maxbigCD and int(maxbigCD) != 0):
-					negexp = A*pow(10,-B*float(bigCD[j][k]))
-					negexp = (negexp - scale_min) / (scale_max - scale_min)
-					cdmatrix[j].append(negexp)
-				# Else something else.
-				else:
-					print('Something off in neg exp function values.')
+				# For the inverse square function
+				elif function == '2':
+					
+					# This function gets rescale: calculate here
+					if threshold == 0:
+						scale_min = 0.
+					else:
+						scale_min = 1./(pow(threshold,2))
+					scale_max = 1.
+					
+					# Set = to 0 if cdvalue is greater than movethreshold
+					if float(bigCD[j][k]) >= threshold:
+						cdmatrix[j].append(0.0)
+					# If threshold is 0 (philopatry) set to 1 - can't dived by 0
+					elif float(bigCD[j][k]) < threshold and threshold == 0.0:
+						cdmatrix[j].append(1.0)
+					# If cd mat is 0. 
+					elif float(bigCD[j][k]) < threshold and threshold != 0.0 and float(bigCD[j][k]) == 0.0 or (minbigCD == maxbigCD or int(maxbigCD) == 0):
+						cdmatrix[j].append(1.0)
+					# Else calculated function value
+					elif float(bigCD[j][k]) < threshold and threshold != 0.0 and float(bigCD[j][k]) != 0.0 and (minbigCD != maxbigCD and int(maxbigCD) != 0):
+						invsq_val = 1./(pow(float(bigCD[j][k]),2))
+						#invsq_val = (invsq_val - scale_min) / (scale_max - scale_min)
+						cdmatrix[j].append(invsq_val)# Else something else.
+					else:
+						print('Something off in inv squ function values.')
+						sys.exit(-1)
+						#probarray.append([fgspot,1./(pow(float(freeoffcd[fgspot]),2))])
+								
+								
+				# Nearest neighbor function here
+				elif function == '3':
+					print('Nearest neighbor function is not currently implemented.')
+					print('You can use Linear function with neighbor threshold for approximation. Email Erin.')
 					sys.exit(-1)
 					
-			# For in a subpopulation only
-			elif function == '6':
+				# Random function here
+				elif function == '4':
+					scale_min = 0.
+					scale_max = threshold
+					if threshold != 0: # If matrix is not all 0s
+						# Set = to 0 if cdvalue is greater than movethreshold
+						if float(bigCD[j][k]) >= threshold:
+							cdmatrix[j].append(0.0)
+						# Else calculated function value
+						else:
+							cdmatrix[j].append(1.0)
+					else:
+						cdmatrix[j].append(1.0)
 				
-				scale_min = 0.
-				scale_max = 1.
-				# Check if within the same subpopulation
-				if subpop[j] == subpop[k]:
-					cdmatrix[j].append(1.0)
-				else:
-					cdmatrix[j].append(0.0)
-			
-			# For Gaussian function 
-			elif function == '7':
-				if C == 0.0:
-					print('Parameter C for Gaussian function is 0.')
-					sys.exit(-1)
-				# This function gets rescale: calculate here
-				scale_min = A*np.exp(-((float(threshold)-B)**2)/(2*C**2))
-				scale_max = A*np.exp(-((float(minbigCD)-B)**2)/(2*C**2))
-			
-				# Set = to 0 if cdvalue is greater than movethreshold
-				if float(bigCD[j][k]) > threshold:
-					cdmatrix[j].append(0.0)
-				# Rescaled value divide by zero check cases
-				elif float(bigCD[j][k]) <= threshold and threshold == 0.0 and (minbigCD == maxbigCD or int(maxbigCD) == 0):
-					cdmatrix[j].append(1.0)
-				# Else calculated function value
-				elif float(bigCD[j][k]) <= threshold and threshold != 0.0 and (minbigCD != maxbigCD and int(maxbigCD) != 0):
-					gauss_val = A*np.exp(-((float(bigCD[j][k])-B)**2)/(2*C**2))
-					gauss_val = (gauss_val - scale_min) / (scale_max - scale_min)
-					cdmatrix[j].append(gauss_val)
-				# Else something else.
-				else:
-					print('Something off in gauss function values.')
-					sys.exit(-1)
+				# For the negative binomial function
+				elif function == '5':
+				
+					# This function gets rescale: calculate here
+					scale_min = A*pow(10,-B*float(threshold))
+					scale_max = A*pow(10,-B*float(minbigCD))
+				
+					# Set = to 0 if cdvalue is greater than movethreshold
+					if float(bigCD[j][k]) >= threshold:
+						cdmatrix[j].append(0.0)
+					# Rescaled value divide by zero check cases
+					elif float(bigCD[j][k]) < threshold and threshold == 0.0 and (minbigCD == maxbigCD or int(maxbigCD) == 0):
+						cdmatrix[j].append(1.0)
+					# Else calculated function value
+					elif float(bigCD[j][k]) < threshold and threshold != 0.0 and (minbigCD != maxbigCD and int(maxbigCD) != 0):
+						negexp = A*pow(10,-B*float(bigCD[j][k]))
+						negexp = (negexp - scale_min) / (scale_max - scale_min)
+						cdmatrix[j].append(negexp)
+					# Else something else.
+					else:
+						print('Something off in neg exp function values.')
+						sys.exit(-1)
+						
+				# For in a subpopulation only
+				elif function == '6':
 					
-			# For cost distance matrix only function 
-			elif function == '8':
+					# Skip if only one subpopulation
+					if len(count_unique(np.asarray(subpop))[0]) != 1:
+						# Check if within the same subpopulation
+						if subpop[j] == subpop[k]:
+							# This function gets rescale: calculate here
+							if threshold == 0:
+								scale_min = 0.
+							else:
+								scale_min = 1./(pow(threshold,2))
+							scale_max = 1.
+							
+							# Set = to 0 if cdvalue is greater than movethreshold
+							if float(bigCD[j][k]) >= threshold:
+								cdmatrix[j].append(0.0)
+							# If threshold is 0 (philopatry) set to 1 - can't dived by 0
+							elif float(bigCD[j][k]) < threshold and threshold == 0.0:
+								cdmatrix[j].append(1.0)
+							# If cd mat is 0. 
+							elif float(bigCD[j][k]) < threshold and threshold != 0.0 and float(bigCD[j][k]) == 0.0 or (minbigCD == maxbigCD or int(maxbigCD) == 0):
+								cdmatrix[j].append(1.0)
+							# Else calculated function value
+							elif float(bigCD[j][k]) < threshold and threshold != 0.0 and float(bigCD[j][k]) != 0.0 and (minbigCD != maxbigCD and int(maxbigCD) != 0):
+								invsq_val = 1./(pow(float(bigCD[j][k]),2))
+								invsq_val = (invsq_val - scale_min) / (scale_max - scale_min)
+								cdmatrix[j].append(invsq_val)# Else something else.
+							else:
+								print('Something off in inv squ function values.')
+								sys.exit(-1)					
+						else:
+							cdmatrix[j].append(0.0)
+					else:
+						cdmatrix[j].append(1.0)
+						scale_max = 1.
+						scale_min = 0.
 				
-				scale_min = minbigCD
-				scale_max = threshold
+				# For Gaussian function 
+				elif function == '7':
+					if C == 0.0:
+						print('Parameter C for Gaussian function is 0.')
+						sys.exit(-1)
+					# This function gets rescale: calculate here
+					scale_min = A*np.exp(-((float(threshold)-B)**2)/(2*C**2))
+					scale_max = A*np.exp(-((float(minbigCD)-B)**2)/(2*C**2))
 				
-				# Set = to 0 if cdvalue is greater than movethreshold
-				if float(bigCD[j][k]) > threshold:
-					cdmatrix[j].append(0.0) 
-				# Rescaled value divide by zero check cases - philopatry
-				elif (float(bigCD[j][k]) <= threshold and threshold == 0.0) and (minbigCD == maxbigCD or int(maxbigCD) == 0 or threshold == minbigCD):
-					cdmatrix[j].append(1.0)
-				# If cd mat is 0. 
-				elif (float(bigCD[j][k]) <= threshold and threshold != 0.0 and float(bigCD[j][k]) == 0.0) or (minbigCD == maxbigCD or int(maxbigCD) == 0 or threshold == minbigCD):
-					cdmatrix[j].append(1.0)
-				# Else calculated function value
-				elif (float(bigCD[j][k]) <= threshold and threshold != 0.0 and float(bigCD[j][k]) != 0.0) and (minbigCD != maxbigCD and int(maxbigCD) != 0 and threshold != minbigCD):
-					cd_val = (float(bigCD[j][k]) - scale_min) / (scale_max - scale_min)
-					cdmatrix[j].append(1. - cd_val)
-				# Else something else.
-				else:
-					print('Something off in 8 function values.')
-					sys.exit(-1)
+					# Set = to 0 if cdvalue is greater than movethreshold
+					if float(bigCD[j][k]) >= threshold:
+						cdmatrix[j].append(0.0)
+					# Rescaled value divide by zero check cases
+					elif float(bigCD[j][k]) < threshold and threshold == 0.0 and (minbigCD == maxbigCD or int(maxbigCD) == 0):
+						cdmatrix[j].append(1.0)
+					# Else calculated function value
+					elif float(bigCD[j][k]) < threshold and threshold != 0.0 and (minbigCD != maxbigCD and int(maxbigCD) != 0):
+						gauss_val = A*np.exp(-((float(bigCD[j][k])-B)**2)/(2*C**2))
+						gauss_val = (gauss_val - scale_min) / (scale_max - scale_min)
+						cdmatrix[j].append(gauss_val)
+					# Else something else.
+					else:
+						print('Something off in gauss function values.')
+						sys.exit(-1)
+						
+				# For cost distance matrix only function 
+				elif function == '8':
 					
-			# error
-			else:
-				print('This movement function option does not exist.')
-				sys.exit(-1)
+					scale_min = minbigCD
+					scale_max = threshold
+					
+					# Set = to 0 if cdvalue is greater than movethreshold
+					if float(bigCD[j][k]) >= threshold:
+						cdmatrix[j].append(0.0) 
+					# Rescaled value divide by zero check cases - philopatry
+					elif (float(bigCD[j][k]) < threshold and threshold == 0.0) and (minbigCD == maxbigCD or int(maxbigCD) == 0 or threshold == minbigCD):
+						cdmatrix[j].append(1.0)
+					# If cd mat is 0. 
+					elif (float(bigCD[j][k]) < threshold and threshold != 0.0 and float(bigCD[j][k]) == 0.0) or (minbigCD == maxbigCD or int(maxbigCD) == 0 or threshold == minbigCD):
+						cdmatrix[j].append(1.0)
+					# Else calculated function value
+					elif (float(bigCD[j][k]) < threshold and threshold != 0.0 and float(bigCD[j][k]) != 0.0) and (minbigCD != maxbigCD and int(maxbigCD) != 0 and threshold != minbigCD):
+						cd_val = (float(bigCD[j][k]) - scale_min) / (scale_max - scale_min)
+						cdmatrix[j].append(1. - cd_val)
+					# Else something else.
+					else:
+						print('Something off in 8 function values.')
+						sys.exit(-1)
+				
+				# error
+				else:
+					print('This movement function option does not exist.')
+					sys.exit(-1)
+	else: # For option 9
+		cdmatrix = bigCD
+		scale_min = minbigCD
+		sclae_max = maxbigCD
+	
+	# Transpose all matrices here (this was because gdistance asymetrical matrices read by column
+	cdmatrix = np.transpose(np.asarray(cdmatrix))
 	
 	# Delete variables
 	del(bigCD)
@@ -638,7 +712,7 @@ def ReadCDMatrix(cdmatrixfilename,function,threshold,A,B,C,subpop):
 	# End::ReadMateCDMatrix
 
 # ---------------------------------------------------------------------------------------------------	 
-def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemoveno,Fdispmoveno,Mdispmoveno,matemovethresh,Fdispmovethresh,Mdispmovethresh,matemoveparA,matemoveparB,matemoveparC,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,subpop,Magemort,Fagemort,offno,lmbda,sigma,K_envvals,Mnewmortperc,Fnewmortperc,fitvals,twinning):
+def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemoveno,Fdispmoveno,Mdispmoveno,matemovethresh,Fdispmovethresh,Mdispmovethresh,matemoveparA,matemoveparB,matemoveparC,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,subpop,Magemort,Fagemort,offno,lmbda,sigma,K_envvals,Mnewmortperc,Fnewmortperc,fitvals,twinning,Mmature,Fmature,betaFile_selection,xvars_betas_pass,epimod_pass,epireset_pass,betaFile_epigene,cdevolveans,epigeneans,xEvars_pass):
 	'''
 	DoCDClimate()
 	Reads in cost distance matrices and converts to probabilities.
@@ -654,36 +728,121 @@ def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemo
 			print('If not using CDClimate option, set begin time loop with cdclimgentime at 0.')
 			sys.exit(-1)
 	
+	# --------------------------------------
+	# For values linked to subpops (AgeVars)
+	# --------------------------------------
+	
 	# Get age mortality here
 	tempMmort = []
 	tempFmort = []
 	templmbda = []
 	tempsigma = []
-	for i in xrange(len(Magemort)):
-		if not isinstance(Magemort[i], float):
-			tempMmort.append(float(Magemort[i][icdtime])/100.)
+	tempMnewmort = []
+	tempFnewmort = []
+	tempMmat = []
+	tempFmat = []
+	# Loop through subpops
+	for jpop in xrange(len(Magemort)):
+		tempMmort.append([])
+		tempFmort.append([])
+		templmbda.append([])
+		tempsigma.append([])
+		tempMnewmort.append([])
+		tempFnewmort.append([])
+		tempMmat.append([])
+		tempFmat.append([])
+		# Loop through the ages
+		for i in xrange(len(Magemort[jpop])):
+			
+			if not isinstance(Magemort[jpop][i], float):
+				tempMmort[jpop].append(float(Magemort[jpop][i][icdtime])/100.)
+			else:
+				tempMmort[jpop].append(Magemort[jpop][i])
+			if not isinstance(Fagemort[jpop][i], float):
+				tempFmort[jpop].append(float(Fagemort[jpop][i][icdtime])/100.)
+			else:
+				tempFmort[jpop].append(Fagemort[jpop][i])
+			if not isinstance(lmbda[jpop][i], float):
+				templmbda[jpop].append(float(lmbda[jpop][i][icdtime]))
+			else:
+				templmbda[jpop].append(lmbda[jpop][i])
+			if not isinstance(sigma[jpop][i], float):
+				tempsigma[jpop].append(float(sigma[jpop][i][icdtime]))
+			else:
+				tempsigma[jpop].append(sigma[jpop][i])
+			if not isinstance(Mmature[jpop][i], float):
+				tempMmat[jpop].append(float(Mmature[jpop][i][icdtime]))
+			else:
+				tempMmat[jpop].append(Mmature[jpop][i])
+			if not isinstance(Fmature[jpop][i], float):
+				tempFmat[jpop].append(float(Fmature[jpop][i][icdtime]))
+			else:
+				tempFmat[jpop].append(Fmature[jpop][i])
+	
+		if not isinstance(Magemort[jpop][i], float):
+			tempMnewmort[jpop] = float(Mnewmortperc[jpop][icdtime])/100.
 		else:
-			tempMmort.append(Magemort[i])
-		if not isinstance(Fagemort[i], float):
-			tempFmort.append(float(Fagemort[i][icdtime])/100.)
+			tempMnewmort[jpop] = Mnewmortperc[jpop]
+		if not isinstance(Fagemort[jpop][i], float):
+			tempFnewmort[jpop] = float(Fnewmortperc[jpop][icdtime])/100.
 		else:
-			tempFmort.append(Fagemort[i])
-		if not isinstance(lmbda[i], float):
-			templmbda.append(float(lmbda[i][icdtime]))
-		else:
-			templmbda.append(lmbda[i])
-		if not isinstance(sigma[i], float):
-			tempsigma.append(float(sigma[i][icdtime]))
-		else:
-			tempsigma.append(sigma[i])
-	if not isinstance(Magemort[i], float):
-		tempMnewmort = float(Mnewmortperc[icdtime])/100.
-	else:
-		tempMnewmort = Mnewmortperc
-	if not isinstance(Fagemort[i], float):
-		tempFnewmort = float(Fnewmortperc[icdtime])/100.
-	else:
-		tempFnewmort = Fnewmortperc
+			tempFnewmort[jpop] = Fnewmortperc[jpop]
+	
+	# ----------------------
+	# Patch based parameters
+	# ----------------------
+	tempfitvals = []
+	tempxvars_betas = []
+	tempepimod = []
+	tempepireset = []
+	tempxEvars = []
+	for isub in xrange(len(subpop)):
+		if len(fitvals) > 0:
+			tempfitvals.append([])
+			for i in xrange(len(fitvals[isub])):
+				if len(fitvals[isub][i].split('|')) > 1:
+					tempfitvals[isub].append(fitvals[isub][i].split('|')[icdtime])
+				else:
+					tempfitvals[isub].append(fitvals[isub][i])
+				# Check if ; separated for 1_HetMort
+				if len(tempfitvals[isub][i].split(';')) > 1:
+					# Quick error check
+					if len(tempfitvals[isub][i].split(';')) != 2:
+						print('Two values used for 1_HeMort option.')
+						sys.exit(-1)
+					tempfitvals[isub][i] = tempfitvals[isub][i].split(';')
+		if len(xvars_betas_pass) > 0:		
+			tempxvars_betas.append([])
+			for i in xrange(len(xvars_betas_pass[isub])):
+				if len(xvars_betas_pass[isub][i].split('|')) > 1:
+					tempxvars_betas[isub].append(xvars_betas_pass[isub][i].split('|')[icdtime])
+				else:
+					tempxvars_betas[isub].append(xvars_betas_pass[isub][i])
+		if len(epimod_pass) > 0:		
+			tempepimod.append([])
+			for i in xrange(len(epimod_pass[isub])):
+				if len(epimod_pass[isub][i].split('|')) > 1:
+					tempepimod[isub].append(epimod_pass[isub][i].split('|')[icdtime])
+				else:
+					tempepimod[isub].append(epimod_pass[isub][i])	
+		if len(epireset_pass) > 0:		
+			tempepireset.append([])
+			for i in xrange(len(epireset_pass[isub])):
+				if len(epireset_pass[isub][i].split('|')) > 1:
+					tempepireset[isub].append(epireset_pass[isub][i].split('|')[icdtime])
+				else:
+					tempepireset[isub].append(epireset_pass[isub][i])
+		if len(xEvars_pass) > 0:		
+			tempxEvars.append([])
+			for i in xrange(len(xEvars_pass[isub])):
+				if len(xEvars_pass[isub][i].split('|')) > 1:
+					tempxEvars[isub].append(xEvars_pass[isub][i].split('|')[icdtime])
+				else:
+					tempxEvars[isub].append(xEvars_pass[isub][i])
+	
+	# ----------------------
+	# Variables in PopVars
+	# ----------------------
 	
 	# Get birth rate values here, r and K_env
 	if isinstance(offno, (list,tuple)):
@@ -756,33 +915,70 @@ def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemo
 		twinning = float(twinning[icdtime])/100.
 	else:
 		twinning = float(twinning)/100.
-	# Patch based parameters	
-	tempfitvals = []	
-	for isub in xrange(len(subpop)):
-		if len(fitvals) > 0:
-			tempfitvals.append([])
-			for i in xrange(len(fitvals[isub])):
-				if len(fitvals[isub][i].split('|')) > 1:
-					tempfitvals[isub].append(fitvals[isub][i].split('|')[icdtime])
-				else:
-					tempfitvals[isub].append(fitvals[isub][i])
-				# Check if ; separated for 1_HetMort
-				if len(tempfitvals[isub][i].split(';')) > 1:
-					# Quick error check
-					if len(tempfitvals[isub][i].split(';')) != 2:
-						print('Two values used for 1_HeMort option.')
-						sys.exit(-1)
-					tempfitvals[isub][i] = tempfitvals[isub][i].split(';')
-					
+	
+	# Files in popvars to read in
+	if isinstance(betaFile_selection,(list,tuple)):
+		tempbetaFile_selection = datadir+betaFile_selection[icdtime]
+	else:
+		tempbetaFile_selection = datadir+betaFile_selection
+	if isinstance(betaFile_epigene,(list,tuple)):
+		tempbetaFile_epigene = datadir+betaFile_epigene[icdtime]
+	else:
+		tempbetaFile_epigene = datadir+betaFile_epigene
+	
+	# ---------------------------------------------
+	# Read in Beta File for Multiple loci selection
+	# ---------------------------------------------
+	tempbetas_selection = []	
+	if cdevolveans.split('_')[0] == 'M':
+		# Read in Beta File
+		betavals = ReadXY(tempbetaFile_selection)
+	
+		# Error check on beta file - should be x number of betas alleles * number of xvars * number of loci under selection
+		if (len(betavals)-1)*(len(betavals[0])-1) != int(cdevolveans.split('_')[3].split('A')[1])*int(cdevolveans.split('_')[1].split('X')[1])*int(cdevolveans.split('_')[2].split('L')[1]):
+			print('Beta file for selection is incorrect. Specify the beta for each variableXlociXallele combination.')
+			sys.exit(-1)
+		# Then extract betavals - in order of variable, loci, allele [var][loci][allele]
+		for ixvar in xrange(int(cdevolveans.split('_')[1].split('X')[1])):
+			tempbetas_selection.append([])
+			for iloci in xrange(int(cdevolveans.split('_')[2].split('L')[1])):
+				tempbetas_selection[ixvar].append([])
+				for iall in xrange(int(cdevolveans.split('_')[3].split('A')[1])):
+					tempbetas_selection[ixvar][iloci].append(float(betavals[iall+1][ixvar*(int(cdevolveans.split('_')[2].split('L')[1]))+iloci+1]))
+		# Add beta0 - will be the last spot in betas vars 
+		if len(betavals[0][0]) == 0:
+			tempbetas_selection.append(0.0)
+		else:
+			tempbetas_selection.append(float(betavals[0][0])) 
+	
+	# ---------------------------------------------
+	# Read in Beta File for Epigenetic fitness
+	# ---------------------------------------------
+	tempbetas_epigene = []
+	if epigeneans != 'N':
+		# Read in Beta File
+		betavals = ReadXY(tempbetaFile_epigene)		
+		# Error check on beta file - number of loci under selection * number of alleles
+		if (len(betavals)-1)*(len(betavals[0])-1) != int(epigeneans.split('_')[2].split('A')[1])*int(epigeneans.split('_')[1].split('L')[1]):
+			print('Beta file for epigenetics is incorrect. Specify the beta for each lociXallele combination.')
+			sys.exit(-1)
+		# Then extract betavals - in order of loci, allele [loci][allele]
+		for iloci in xrange(int(epigeneans.split('_')[1].split('L')[1])):
+			tempbetas_epigene.append([])
+			for iall in xrange(int(epigeneans.split('_')[2].split('A')[1])):
+				tempbetas_epigene[iloci].append(float(betavals[iall+1][iloci+1]))
+		
+		# Add beta0 - will be the last spot in betas vars 
+		if len(betavals[0][0]) == 0:
+			tempbetas_epigene.append(0.0)
+		else:
+			tempbetas_epigene.append(float(betavals[0][0]))	
 						
 	# ---------------------------------------------------------
 	# Read in cdmatrix.csv and convert to a probability matrix
 	# ---------------------------------------------------------
-	
 	# If mate and disp are the same, then only read in once.
-	if (matecdmatfile == dispcdmatfile) \
-	and (Fdispmoveno == Mdispmoveno == matemoveno) \
-	and (Fdispmovethresh == Mdispmovethresh == matemovethresh):
+	if (matecdmatfile == dispcdmatfile) and (Fdispmoveno == Mdispmoveno == matemoveno) and (Fdispmovethresh == Mdispmovethresh == matemovethresh):
 		tupReadMat = ReadCDMatrix(matecdmatfile,matemoveno,\
 		matemovethresh,matemoveparA,matemoveparB,matemoveparC,subpop)
 		
@@ -793,14 +989,14 @@ def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemo
 		mate_ScaleMax = tupReadMat[3]
 		
 		# Then Set disp = mate
-		Fdispcdmatrix = matecdmatrix
-		Mdispcdmatrix = matecdmatrix
-		Fdispmovethresh = matemovethresh
-		Mdispmovethresh = matemovethresh
-		Fdisp_ScaleMin = mate_ScaleMin
-		Fdisp_ScaleMax = mate_ScaleMax
-		Mdisp_ScaleMin = mate_ScaleMin
-		Mdisp_ScaleMax = mate_ScaleMax		
+		Fdispcdmatrix = copy.deepcopy(matecdmatrix)
+		Mdispcdmatrix = copy.deepcopy(matecdmatrix)
+		Fdispmovethresh = copy.deepcopy(matemovethresh)
+		Mdispmovethresh = copy.deepcopy(matemovethresh)
+		Fdisp_ScaleMin = copy.deepcopy(mate_ScaleMin)
+		Fdisp_ScaleMax = copy.deepcopy(mate_ScaleMax)
+		Mdisp_ScaleMin = copy.deepcopy(mate_ScaleMin)
+		Mdisp_ScaleMax = copy.deepcopy(mate_ScaleMax)		
 
 	# Else if anything is different	
 	else: 
@@ -836,7 +1032,7 @@ def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemo
 	
 	# Return this functions variables
 	tupClimate = matecdmatrix,Fdispcdmatrix,Mdispcdmatrix,matemovethresh,\
-	Fdispmovethresh,Mdispmovethresh,Fdisp_ScaleMin,Fdisp_ScaleMax,Mdisp_ScaleMin,Mdisp_ScaleMax,mate_ScaleMin,mate_ScaleMax,tempMmort,tempFmort,tempoffno,templmbda,tempsigma,tempK_env,tempMnewmort,tempFnewmort,tempfitvals,matemoveno,Fdispmoveno,Mdispmoveno,twinning	
+	Fdispmovethresh,Mdispmovethresh,Fdisp_ScaleMin,Fdisp_ScaleMax,Mdisp_ScaleMin,Mdisp_ScaleMax,mate_ScaleMin,mate_ScaleMax,tempMmort,tempFmort,tempoffno,templmbda,tempsigma,tempK_env,tempMnewmort,tempFnewmort,tempfitvals,matemoveno,Fdispmoveno,Mdispmoveno,twinning,tempMmat,tempFmat,tempbetas_selection,tempxvars_betas,tempepimod,tempepireset,tempbetas_epigene,tempxEvars	
 	return tupClimate
 	
 	#End::DoCDClimate()
@@ -898,15 +1094,14 @@ id,sex,age,agelst,genes,intgenesans,infection,allelst,subpopmigration,subpopemig
 	DoGridOut_cdpop0()
 	Output grid0.csv in cdpop format
 	'''			
+	hindex = []
+	
 	# Create file to write matrix to
 	outputfile = open(ithmcrundir+'grid'+str(0)+'.csv','w')
 		
-	# Write out the titles
-	title = ['Subpopulation','XCOORD','YCOORD','ID','sex','age','infection','DisperseCDist']
-			
-	# Write out the title from xy points
-	for i in xrange(len(title)):
-		outputfile.write(title[i]+',')
+	# Write out the titles 
+	title = ['Subpopulation,XCOORD,YCOORD,ID,sex,age,infection,DisperseCDist,hindex,']
+	outputfile.write(title[0])
 	
 	# Write out the genes title informations
 	# Loop through loci
@@ -932,17 +1127,18 @@ id,sex,age,agelst,genes,intgenesans,infection,allelst,subpopmigration,subpopemig
 			outputfile.write('OPEN,') #id
 			outputfile.write('NA,') # sex
 			outputfile.write('NA,') # age
-			if intgenesans != 'known':
-				age.append('NA')
+			if (intgenesans != 'known'): 
+				if (intgenesans != 'file_introduce') and (intgenesans != 'file_introduce_var'):
+					age.append('NA') # Store age for other cases
 			outputfile.write('NA,') # infection
 			outputfile.write('NA,') # dispersalDist
 		else:
 			outputfile.write(id[i]+',')
 			outputfile.write(str(sex[i])+',')
-			if intgenesans == 'known':
+			if intgenesans == 'known' or intgenesans == 'file_introduce' or intgenesans == 'file_introduce_var':
 				outputfile.write(age[i]+',')			
 			else:
-				if len(agelst) > 1:
+				if len(agelst) > 1: # For multiple AgeVars files
 					agetemp = w_choice_general(agelst[int(subpop[i])-1])[0]
 				else:
 					agetemp = w_choice_general(agelst[0])[0]
@@ -952,69 +1148,159 @@ id,sex,age,agelst,genes,intgenesans,infection,allelst,subpopmigration,subpopemig
 			outputfile.write('Initial,')
 		
 		# if known genes 
-		if intgenesans == 'known' and geneswap == 0:
-			
-			# Write out gene info
-			for jk in xrange(loci-1):
-				for kl in xrange(alleles[jk]):
-					if sex[i] == 'NA':
-						outputfile.write('NA,')
-					else:
-						outputfile.write(str(genes[i][jk][kl])+',')
-			# To get return character on end
-			for jk in xrange(alleles[loci-1]-1):
-				if sex[i] == 'NA':
-					outputfile.write('NA,')
-				else:
-					outputfile.write(str(genes[i][loci-1][jk])+',')
-			if sex[i] == 'NA':
-				outputfile.write('NA\n')
-			else:
-				outputfile.write(str(genes[i][loci-1][alleles[loci-1]-1])+'\n')
-			
-		# NA values for when geneswap > gen
-		elif intgenesans != 'known' and geneswap != 0:
-			
-			# Write out gene info
-			for jk in xrange(loci-1):
-				for kl in xrange(alleles[jk]):
-					if sex[i] == 'NA':
-						outputfile.write('NA,')
-					else:
-						outputfile.write(str(genes[i][jk][kl])+',')
-			# To get return character on end
-			for jk in xrange(alleles[loci-1]-1):
-				if sex[i] == 'NA':
-					outputfile.write('NA,')
-				else:
-					outputfile.write(str(genes[i][loci-1][jk])+',')
-			if sex[i] == 'NA':
-				outputfile.write('NA\n')
-			else:
-				outputfile.write(str(genes[i][loci-1][alleles[loci-1]-1])+'\n')
-			
-		# if file genes or random genes 			
-		elif intgenesans != 'known' and geneswap == 0:
+		if intgenesans == 'known':	
+			if geneswap == 0:
 				
+				# ---------------------------------------------
+				# Get AA / aa p value for genetag
+				# ---------------------------------------------
+				if sex[i] == 'NA':
+					outputfile.write('NA,')
+					hindex.append(-9999)
+				else:
+					if genes[i][0] == 2:
+						hindex.append(1.0)
+					elif genes[i][1] == 2:
+						hindex.append(0.0)
+					elif genes[i][0] == 1 and genes[i][1] == 1:
+						hindex.append(0.5)
+					else:
+						hindex.append(-9999)
+					outputfile.write(str(hindex)+',')
+				
+				# Write out gene info
+				for iall in xrange(len(genes[i])):
+					if sex[i] == 'NA':
+						outputfile.write('NA,')
+					else:
+						outputfile.write(str(genes[i][iall])+',')
+				outputfile.write('\n')
+			else:
+				# Store for hindex
+				hindex.append(-9999)
+							
+		# These allelst values correspond to multiple subpops
+		elif intgenesans == 'file' or intgenesans == 'random' or intgenesans == 'random_var' or intgenesans == 'file_var':
+			if geneswap != 0: # NA values for when geneswap > gen:
+				# ---------------------------------------------
+				# Get AA / aa p value for genetag
+				# ---------------------------------------------
+				if sex[i] == 'NA':
+					outputfile.write('NA,')
+					hindex.append(-9999)
+				else:
+					if genes[i][0] == 2:
+						hindex.append(1.0)
+					elif genes[i][1] == 2:
+						hindex.append(0.0)
+					elif genes[0][0] == 1 and genes[i][1] == 1:
+						hindex.append(0.5)
+					else:
+						hindex.append(-9999)
+					outputfile.write(str(hindex[i])+',')				
+				# Write out gene info
+				for iall in xrange(len(genes[i])):
+					if sex[i] == 'NA':
+						outputfile.write('NA,')
+					else:
+						outputfile.write(str(genes[i][iall])+',')
+				outputfile.write('\n')
+			else:
+				#Store empty array to be appended to for gene info
+				indall = []							
+				# And store genes information
+				genes.append([])							
+				# For each loci:
+				for j in xrange(loci):
+				
+					# Take a random draw from the w_choice function at jth locus
+					if len(allelst) > 1:
+						rand1 = w_choice_general(allelst[int(subpop[i])-1][j])[0]
+						rand2 = w_choice_general(allelst[int(subpop[i])-1][j])[0]
+					else:					
+						rand1 = w_choice_general(allelst[0][j])[0]
+						rand2 = w_choice_general(allelst[0][j])[0]
+
+					# Store genes loci spot
+					#genes[i].append([])
+					
+					# Append assinment onto indall array - run through each condition for assignment of 1s or 2s or 0s
+					# 	1s = heterozygous at that locus
+					#	2s = homozygous at that locus
+					#	0s = absence of allele
+					for k in xrange(alleles[j]):
+						
+						# Somebody not in this spot
+						if sex[i] == 'NA':
+							# THen append tempindall to indall
+							indall.append('NA')
+							# And to genes list
+							#genes[i][j].append('NA')
+							genes[i].append('NA')
+							
+						# Else if somebody is in spot, assign genes
+						else:					
+							# Assignment of 2, the rest 0
+							if rand1 == rand2: 
+								if k < rand1 or k > rand1:
+									tempindall = 0
+								elif k == rand1:
+									tempindall = 2
+									
+							# Assignment of 1s, the rest 0
+							if rand1 != rand2:
+								if k < min(rand1,rand2) or k > max(rand1,rand2):
+									tempindall = 0
+								elif k == rand1 or k == rand2:
+									tempindall = 1
+								else:
+									tempindall = 0
+									
+							# THen append tempindall to indall
+							indall.append(tempindall)						
+							# And to genes list
+							#genes[i][j].append(tempindall)
+							genes[i].append(tempindall)
+				
+				# ---------------------------------------------
+				# Get AA / aa p value for genetag
+				# ---------------------------------------------
+				if sex[i] == 'NA':
+					outputfile.write('NA,')
+					hindex.append(-9999)
+				else:
+					if genes[i][0] == 2:
+						hindex.append(1.0)
+					elif genes[i][1] == 2:
+						hindex.append(0.0)
+					elif genes[i][0] == 1 and genes[i][1] == 1:
+						hindex.append(0.5)
+					else:
+						hindex.append(-9999)
+					outputfile.write(str(hindex[i])+',')
+				
+				# Add indall information to outputfile text
+				for j in xrange(len(indall)-1):
+					outputfile.write(str(indall[j])+',')				
+				# To get return character on the end
+				outputfile.write(str(indall[len(indall)-1])+'\n')
+		
+		# These allelst values correspond to introduced individuals through time, use first one.
+		elif intgenesans == 'file_introduce' or intgenesans == 'file_introduce_var':
 			#Store empty array to be appended to for gene info
-			indall = []
-						
+			indall = []							
 			# And store genes information
-			genes.append([])
-						
+			genes.append([])							
 			# For each loci:
 			for j in xrange(loci):
 			
 				# Take a random draw from the w_choice function at jth locus
-				if len(allelst) > 1:
-					rand1 = w_choice_general(allelst[int(subpop[i])-1][j])[0]
-					rand2 = w_choice_general(allelst[int(subpop[i])-1][j])[0]
-				else:					
-					rand1 = w_choice_general(allelst[0][j])[0]
-					rand2 = w_choice_general(allelst[0][j])[0]
+				# Using the first allele file in list
+				rand1 = w_choice_general(allelst[0][j])[0]
+				rand2 = w_choice_general(allelst[0][j])[0]
 
 				# Store genes loci spot
-				genes[i].append([])
+				#genes[i].append([])
 				
 				# Append assinment onto indall array - run through each condition for assignment of 1s or 2s or 0s
 				# 	1s = heterozygous at that locus
@@ -1027,7 +1313,7 @@ id,sex,age,agelst,genes,intgenesans,infection,allelst,subpopmigration,subpopemig
 						# THen append tempindall to indall
 						indall.append('NA')
 						# And to genes list
-						genes[i][j].append('NA')
+						genes[i].append('NA')
 						
 					# Else if somebody is in spot, assign genes
 					else:					
@@ -1050,14 +1336,31 @@ id,sex,age,agelst,genes,intgenesans,infection,allelst,subpopmigration,subpopemig
 						# THen append tempindall to indall
 						indall.append(tempindall)						
 						# And to genes list
-						genes[i][j].append(tempindall)
+						genes[i].append(tempindall)
 		
+			# ---------------------------------------------
+			# Get AA / aa p value for genetag
+			# ---------------------------------------------
+			if sex[i] == 'NA':
+				outputfile.write('NA,')
+				hindex.append(-9999)
+			else:
+				if genes[i][0] == 2:
+					hindex.append(1.0)
+				elif genes[i][1] == 2:
+					hindex.append(0.0)
+				elif genes[i][0] == 1 and genes[i][1] == 1:
+					hindex.append(0.5)
+				else:
+					hindex.append(-9999)
+				outputfile.write(str(hindex[i])+',')
+			
 			# Add indall information to outputfile text
 			for j in xrange(len(indall)-1):
 				outputfile.write(str(indall[j])+',')				
 			# To get return character on the end
 			outputfile.write(str(indall[len(indall)-1])+'\n')
-			
+		
 	# Here add unique number of subpop spot in list (make list of lists)
 	nosubpops = len(np.unique(subpop))
 	unique_subpops = np.unique(subpop)
@@ -1072,7 +1375,7 @@ id,sex,age,agelst,genes,intgenesans,infection,allelst,subpopmigration,subpopemig
 	outputfile.close()
 	
 	# Return variables
-	return genes,subpopmigration,subpopemigration
+	return genes,subpopmigration,subpopemigration,hindex
 	
 	# End::DoGridOut_cdpop0()	
 	
@@ -1081,7 +1384,7 @@ def DoPreProcess(outdir,ibatch,ithmcrun,\
 xyfilename,agefilename,equalsexratio,\
 loci,intgenesans,allefreqfilename,alleles,gen,logfHndl,\
 cdevolveans,cdinfect,Infected,
-subpopmigration,subpopemigration,datadir,geneswap,betaFile):
+subpopmigration,subpopemigration,datadir,geneswap,epigeneans,epistasis):
 	'''
 	DoPreProcess()
 	This function does all the pre-processing work before
@@ -1097,30 +1400,74 @@ subpopmigration,subpopemigration,datadir,geneswap,betaFile):
 	# ------------------------------------------------------------------
 	# Read in xy points file and store info in list
 	# ------------------------------------------------------------------
-	xy = ReadXY(xyfilename)
+	xy = ReadXY(datadir+xyfilename[0]) # For PreProcessing, use the first xyfile
 	
 	# Error statement for 5 column data - check special cases
-	if cdevolveans.split('_')[0] != 'M':
-		if len(xy[1]) != 17 and intgenesans!='known':
-			print('XY input file must be 17 columns, see example input files.')
+	# File and random use 17, file_introduce has 19, known has 20 plus genotypes, M adds more to each
+	if intgenesans == 'file_introduce' or intgenesans == 'file_introduce_var':
+		if len(xy[1]) != 19:
+			print('File_introduce option uses 19 columns in XY file, see example input files.')
 			sys.exit(-1)
+	elif intgenesans =='file' or intgenesans == 'random' or intgenesans == 'random_var' or intgenesans == 'file_var':
+		if cdevolveans.split('_')[0] == 'M':	# Mloci selection On		
+			if epigeneans == 'N' and epistasis == 'N': # No epigenetics and no epistasis
+				if (len(xy[1]) - int(cdevolveans.split('_')[1].split('X')[1])) != 17:
+					print('XY input file must be 17 columns plus the specified number of variables operating in the multiple loci selection model; see example input files.')
+					sys.exit(-1)
+			elif epigeneans == 'N' and epistasis != 'N': # No epigenetics and epistasis
+				if (len(xy[1]) - int(cdevolveans.split('_')[1].split('X')[1]) - 1) != 17:
+					print('XY input file must be 17 columns plus the specified number of variables operating in the multiple loci selection model and one extra column operating in the epistasis term; see example input files.')
+					sys.exit(-1)
+			elif epigeneans != 'N' and epistasis == 'N': # epigenetics on and epistasis off
+				if len(xy[1]) - int(cdevolveans.split('_')[1].split('X')[1]) - 2*int(epigeneans.split('_')[1].split('L')[1]) != 17:
+					print('XY input file must be 17 columns plus the variables and reset parameters needed for epigenetic model; see example input files.')
+					sys.exit(-1)
+			else: # epigenetics on and epistasis on
+				if len(xy[1]) - int(cdevolveans.split('_')[1].split('X')[1]) - 2*int(epigeneans.split('_')[1].split('L')[1]) - 1 != 17:
+					print('XY input file must be 17 columns plus the variables and reset parameters needed for epigenetic model, plus one extra column for epistasis; see example input files.')
+					sys.exit(-1)
+		elif cdevolveans.split('_')[0] == 'Hindex': #Hindex option
+			if epigeneans != 'N':
+				print('Epigenetics and Hindex options currently not implemented together.')
+				sys.exit(-1)
+			else:
+				if len(xy[1]) != 18:
+					print('Hindex option given for cdevolveans and XY input file must be 18 columns; see example input files.')
+					sys.exit(-1)
+			if epistasis != 'N':
+				print('Epistasis option and Hindex option currently not implemented together.')
+				sys.exit(-1)
+				
+		else: # anything else
+			if 	epigeneans == 'N': # No epigenetics
+				if len(xy[1]) != 17:
+					print('File and random options use 17 columns in XY file, see example input files.')
+					sys.exit(-1)
+			else: # epigenetics
+				if len(xy[1]) - 2*int(epigeneans.split('_')[1].split('L')[1]) != 17:
+					print('XY input file must be 17 columns plus the variables and reset parameters needed for epigenetic model; see example input files.')
+					sys.exit(-1)
+					
 	else:
-		if (len(xy[1]) - int(cdevolveans.split('_')[1].split('X')[1])) != 17 and intgenesans!='known':
-			print('XY input file must be 17 columns plus the specified number of variables operating in the multiple loci selection model; see example input files.')
-			sys.exit(-1)
-		
+		print('Warning: Known option given and XY file uses 20 columns plus genotype columns. See example input files.')
+	
 	# Store all information in lists by variable name
 	FID = []
 	subpop = []
 	xgrid = []
 	ygrid=[]
 	id = []
+	fitvals = [] # selection for 1-2 locus model
+	xvars = [] # selection for multilocus/hindex options 
+	xEvars = [] # epistasis selection environment
 	sex = []	
 	age = []	
 	genes = []
 	infection = []
-	fitvals = []
-	xvars = []
+	epimod_vals = [] # epigenetic modification
+	epireset_vals = [] # epigenetic reset values
+	hindex = [] # Hindex value
+	
 	for i in xrange(len(xy)-1):
 		FID.append(i)
 		subpop.append(xy[i+1][0])
@@ -1135,25 +1482,63 @@ subpopmigration,subpopemigration,datadir,geneswap,betaFile):
 		ygrid.append(float(xy[i+1][2]))
 		id.append(xy[i+1][3])
 		
-		if intgenesans != 'known':
-			if cdevolveans == '1' or cdevolveans == '3' or cdevolveans == '1_HeMort_GEA' or cdevolveans == '1_HeMort_All':
-				fitvals.append([xy[i+1][5],xy[i+1][6],xy[i+1][7]])
-			elif cdevolveans == '2':
-				fitvals.append([xy[i+1][8],xy[i+1][9],xy[i+1][10],xy[i+1][11],xy[i+1][12],xy[i+1][13],xy[i+1][14],xy[i+1][15],xy[i+1][16]])
-			elif cdevolveans.split('_')[0] == 'M':
-				xvars.append([])
-				for ixvars in xrange(int(cdevolveans.split('_')[1].split('X')[1])):
-					xvars[i].append(float(xy[i+1][17+ixvars]))
+		# Get fitvals and xvars
+		# ---------------------
+		# For file or random case - get index spots for fitness values (1-2 locus model)
+		if intgenesans == 'file' or intgenesans == 'random' or intgenesans == 'file_var' or intgenesans == 'random_var': # 17 columns 
+			indexspot = 5
+		# for known case
+		elif intgenesans == 'known':
+			indexspot = 8
+		# for file_introduce
+		elif intgenesans == 'file_introduce' or intgenesans == 'file_introduce_var':
+			indexspot = 6
 		else:
-			if cdevolveans == '1' or cdevolveans == '3' or cdevolveans == '1_HeMort_GEA' or cdevolveans == '1_HeMort_All':
-				fitvals.append([xy[i+1][8],xy[i+1][9],xy[i+1][10]])
-			elif cdevolveans == '2':
-				fitvals.append([xy[i+1][11],xy[i+1][12],xy[i+1][13],xy[i+1][14],xy[i+1][15],xy[i+1][16],xy[i+1][17],xy[i+1][18],xy[i+1][19]])
-			elif cdevolveans.split('_')[0] == 'M':
-				xvars.append([])
-				for ixvars in xrange(int(cdevolveans.split('_')[1].split('X')[1])):
-					xvars[i].append(float(xy[i+1][20+ixvars]))
-		# Only grab sex information from the file is equal sex ratio is N
+			print('intgenesans does not exist, see user manual for options.')
+			sys.exit(-1)
+		xvars_indexspot = indexspot + 12 # for getting the xvars for M and Hindex options
+		
+		# Get fitvals and xvars here
+		if cdevolveans == '1' or cdevolveans == '3' or cdevolveans == '1_HeMort_GEA' or cdevolveans == '1_HeMort_All':
+			fitvals.append([xy[i+1][indexspot+0],xy[i+1][indexspot+1],xy[i+1][indexspot+2]])
+		elif cdevolveans == '2':
+			fitvals.append([xy[i+1][indexspot+3],xy[i+1][indexspot+4],xy[i+1][indexspot+5],xy[i+1][indexspot+6],xy[i+1][indexspot+7],xy[i+1][indexspot+8],xy[i+1][indexspot+9],xy[i+1][indexspot+10],xy[i+1][indexspot+11]])
+		elif cdevolveans.split('_')[0] == 'M':
+			xvars.append([])
+			for ixvars in xrange(int(cdevolveans.split('_')[1].split('X')[1])):
+				xvars[i].append(xy[i+1][xvars_indexspot+ixvars])
+			# IF epistasis
+			if epistasis != 'N':
+				xEvars.append([])
+				xEvars[i].append(xy[i+1][xvars_indexspot+ixvars])
+		elif cdevolveans.split('_')[0] == 'Hindex':
+			xvars.append([])# So far just 1 xvars can be given for Hindex option
+			xvars[i].append(xy[i+1][xvars_indexspot])
+				
+		# Get epigenetic information, comes after selection, careful of epistasis index
+		if epigeneans != 'N':
+			epimod_vals.append([])
+			epireset_vals.append([])
+			if cdevolveans.split('_')[0] != 'M':
+				for ixvars in xrange(int(epigeneans.split('_')[0].split('X')[1])):
+					epimod_vals[i].append(xy[i+1][xvars_indexspot+ixvars])
+				for ireset in xrange(int(epigeneans.split('_')[1].split('L')[1])):
+					epireset_vals[i].append(xy[i+1][xvars_indexspot+int(epigeneans.split('_')[0].split('X')[1])+ireset])
+			elif cdevolveans.split('_')[0] == 'M' and epistasis == 'N':
+				for ixvars in xrange(int(epigeneans.split('_')[0].split('X')[1])):
+					epimod_vals[i].append(xy[i+1][xvars_indexspot+ixvars+int(cdevolveans.split('_')[1].split('X')[1])])
+				for ireset in xrange(int(epigeneans.split('_')[1].split('L')[1])):
+					epireset_vals[i].append(xy[i+1][xvars_indexspot+int(epigeneans.split('_')[0].split('X')[1])+ireset+int(cdevolveans.split('_')[1].split('X')[1])])
+			elif cdevolveans.split('_')[0] == 'M' and epistasis != 'N':
+				for ixvars in xrange(int(epigeneans.split('_')[0].split('X')[1])):
+					epimod_vals[i].append(xy[i+1][xvars_indexspot+1+ixvars+int(cdevolveans.split('_')[1].split('X')[1])])
+				for ireset in xrange(int(epigeneans.split('_')[1].split('L')[1])):
+					epireset_vals[i].append(xy[i+1][xvars_indexspot+1+int(epigeneans.split('_')[0].split('X')[1])+ireset+int(cdevolveans.split('_')[1].split('X')[1])])
+		
+		# -----------------------------------------------------------------------------------------
+		
+		# Only grab sex information from the file if equal sex ratio is N
+		# -------------------------
 		if equalsexratio == 'N' or equalsexratio == 'AtBirth':
 			if xy[i+1][3] == 'NA' and xy[i+1][4] != 'NA':
 				print('Must specify NA for the sex value of all empty starting locations.')
@@ -1169,53 +1554,68 @@ subpopmigration,subpopemigration,datadir,geneswap,betaFile):
 				sex[i] = '0'
 			elif sex[i] == 'M':
 				sex[i] = '1'
+		# ---------------------------
 		
-		# Known genes check and switch to randomo
-		if intgenesans == 'known' and geneswap != 0:
-			print('Warning: Known gene file can not be used with gene start time > 0 Will continue but with random gene assignment.')
-			intgenesans = 'random'
-		
-		# Get known information from file 
-		elif intgenesans == 'known' and geneswap == 0:
-			if len(xy[1]) != 20+sum(alleles):
-				print('Specified known genetic initializtion file. Not correct format. See example files for number of fields needed.')
-				sys.exit(-1)
+		# Grab age and genes for special cases
+		# ----------------------------------------------------------
+		if intgenesans == 'known': 			
+			if geneswap != 0:# switch to random genes			
+				print('Warning: Known gene file can not be used with gene start time > 0 Will continue but with random gene assignment.')
+				intgenesans = 'random'
+			else:
+				addindex = 0 # in case selection or epigenetics added
+				if epigeneans != 'N':
+					addindex = addindex + int(epigeneans.split('_')[0].split('X')[1]) + int(epigeneans.split('_')[1].split('L')[1])
+				if cdevolveans.split('_')[0] == 'M':
+					addindex = addindex + int(cdevolveans.split('_')[1].split('X')[1])
+				
+				if len(xy[1]) != 20+addindex+sum(alleles):
+					print('Specified known genetic initializtion file. Not correct format. See example files for number of fields needed.')
+					sys.exit(-1)
+				else:					
+					# Age storage here for known file
+					age.append(xy[i+1][5])
+					# Error check for age in known file must be 1 or greater
+					if age[i] != 'NA':
+						if int(age[i]) < 1:
+							print('Known file must initize with age 1+.')
+							sys.exit(-1)
+					# genes[individual]
+					#genes.append([])			
+					# Error check here to make sure gene file matches specified loci and alleles
+					if sum(alleles) != len(xy[i+1][int(20+addindex):len(xy[i+1])]):
+						print('Known genes file does not match loci and alleles given.')
+						sys.exit(-1)							
+					genes.append(xy[i+1][20+addindex:])
+			
+		# For other cases when geneswap is great than 0
+		if intgenesans != 'known' and geneswap != 0:
+			genes.append(['NA']*(sum(alleles))) # genes[individual]
+			
+		# -----------------------------------------------
+		# Grab age and infection for 'file_introduce' special case
+		if intgenesans == 'file_introduce' or intgenesans == 'file_introduce_var':
 			# Age storage here for known file
 			age.append(xy[i+1][5])
 			# Error check for age in known file must be 1 or greater
 			if age[i] != 'NA':
 				if int(age[i]) < 1:
 					print('Known file must initize with age 1+.')
-					sys.exit(-1)	
-			
-			# genes[individual][locus][allele]
-			genes.append([])			
-			# Error check here to make sure gene file matches specified loci and alleles
-			if sum(alleles) != len(xy[i+1][20:len(xy[i+1])]):
-				print('Known genes file does not match loci and alleles given.')
-				sys.exit(-1)							
-			for j in xrange(loci):
-				genes[i].append(xy[i+1][int(20+sum(alleles[0:j])):int(20+sum(alleles[0:j+1]))])	
-		
-		# For other cases when geneswap is great than 0
-		if intgenesans != 'known' and geneswap != 0:
-			# genes[individual][locus][allele]
-			genes.append([])
-			for j in xrange(loci):
-				genes[i].append([])
-				for iall in xrange(alleles[j]):
-					genes[i][j].append('NA')
-			
+					sys.exit(-1)
+			infection.append(xy[i+1][6])
+	
+	# Tally infection
+	if intgenesans == 'file_introduce' or intgenesans == 'file_introduce_var':		
+		Infected.append(len(np.where(np.asarray(infection)=='1')[0]))		
 	# Store the number of grids
 	nogrids = len(xy)-1
 	
 	# Delete x variable
 	del(xy)
-	
+		
 	# --------------------------
 	# Error Checks
 	# --------------------------	
-	
 	# For now, subpops need to be ordered 1 to N and not skipping, no 0s
 	if len(np.where(np.unique(subpop)=='0')[0]) != 0:
 		print('Subpopulation identification field can not have 0 values.')
@@ -1268,25 +1668,6 @@ subpopmigration,subpopemigration,datadir,geneswap,betaFile):
 		# Delete extra stuff
 		del(sextemp)
 		
-	# ---------------------------------------------
-	# Read in Beta File for Multiple loci selection
-	# ---------------------------------------------
-	betas = []
-	if cdevolveans.split('_')[0] == 'M':
-		# Read in Beta File
-		betavals = ReadXY(betaFile)
-		# Error check on beta file - should be x number of betas alleles * number of xvars * number of loci under selection
-		if (len(betavals)-1)*(len(betavals[0])-1) != alleles[0]*int(cdevolveans.split('_')[1].split('X')[1])*int(cdevolveans.split('_')[2].split('L')[1]):
-			print('Beta file is incorrect. Specify the beta for each variableXlociXallele combination.')
-			sys.exit(-1)
-		# Then extract betavals - in order of variable, loci, allele [var][loci][allele]
-		for ixvar in xrange(int(cdevolveans.split('_')[1].split('X')[1])):
-			betas.append([])
-			for iloci in xrange(int(cdevolveans.split('_')[2].split('L')[1])):
-				betas[ixvar].append([])
-				for iall in xrange(alleles[0]):
-					betas[ixvar][iloci].append(float(betavals[iall+1][ixvar*(int(cdevolveans.split('_')[2].split('L')[1]))+iloci+1]))
-	
 	# -------------------------------------------
 	# Initialize age structure
 	# ------------------------------------------- 
@@ -1295,9 +1676,10 @@ subpopmigration,subpopemigration,datadir,geneswap,betaFile):
 	# ------------------------------------------
 	# Initialize infection
 	# ------------------------------------------
-	tupInf = InitializeInfect(cdinfect,Infected,nogrids,sex)
-	infection = tupInf[0]
-	Infected = tupInf[1]
+	if intgenesans != 'file_introduce' or intgenesans == 'file_introduce_var':
+		tupInf = InitializeInfect(cdinfect,Infected,nogrids,sex)
+		infection = tupInf[0]
+		Infected = tupInf[1]
 	
 	# ----------------------------------------------
 	# Initialize genetic structure
@@ -1307,13 +1689,14 @@ subpopmigration,subpopemigration,datadir,geneswap,betaFile):
 	# --------------------------------------------------------------------
 	# Create output file grid0.csv and write to it and return genes
 	# -------------------------------------------------------------------- 
-	genes,subpopmigration,subpopemigration = DoGridOut_cdpop0(ithmcrundir,0,loci,alleles,\
+	genes,subpopmigration,subpopemigration, hindex = DoGridOut_cdpop0(ithmcrundir,0,loci,alleles,\
 	nogrids,subpop,xgrid,ygrid,id,sex,age,agelst,genes,intgenesans,\
 	infection,allelst,subpopmigration,subpopemigration,geneswap)
 			
 	# Return this functions variables
 	tupPreProcess = ithmcrundir,FID,id,sex,age,xgrid,ygrid,genes,\
-	nogrids,subpop,fitvals,infection,Infected,subpopmigration,subpopemigration,Magemort,Fagemort,egg_lmbdavals,egg_sigmavals,allelst,Mnewmortperc,Fnewmortperc,Mmature,Fmature,intgenesans,betas,xvars
+	nogrids,subpop,fitvals,infection,Infected,subpopmigration,subpopemigration,Magemort,Fagemort,egg_lmbdavals,egg_sigmavals,allelst,Mnewmortperc,Fnewmortperc,Mmature,Fmature,intgenesans,xvars,epimod_vals,epireset_vals,hindex,xEvars
+	nogrids,subpop,fitvals,infection,Infected,subpopmigration,subpopemigration,Magemort,Fagemort,egg_lmbdavals,egg_sigmavals,allelst,Mnewmortperc,Fnewmortperc,Mmature,Fmature,intgenesans,xvars,epimod_vals,epireset_vals,hindex,xEvars
 	return tupPreProcess
 	
 	#End::DoPreProcess()

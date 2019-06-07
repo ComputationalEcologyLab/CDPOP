@@ -10,7 +10,7 @@ try:
 	import numpy as np 
 except ImportError:
 	raise ImportError, "Numpy required."
-import pdb,random,os,sys,glob
+import pdb,random,os,sys,glob,itertools
 # ----------------------------------------------------------
 # Global symbols, if any :))
 #-----------------------------------------------------------
@@ -34,6 +34,21 @@ def logMsg(outf,msg):
 		print("%s"%(msg))
 		
 	# End::logMsg()
+
+# --------------------------------------------------------------------------	
+def nest(flat,levels):
+    '''Turn a flat list into a nested list, with a specified number of lists per nesting level.
+    Excess elements are silently ignored.'''
+    return _nest(flat,levels).next()
+
+def _nest(flat,levels):
+    if levels:
+        it = _nest(flat,levels[1:])
+        while 1:
+            yield list(itertools.islice(it,levels[0]))
+    else:
+        for d in flat:
+            yield d
 	
 # ---------------------------------------------------------------------------------------------------	 
 def w_choice_general(lst):
@@ -53,318 +68,9 @@ def w_choice_general(lst):
 	
 	#End::w_choice_general()
 
-# ---------------------------------------------------------------------------------------------------	
-def DoDaGeneticDistance(loci,nogrids,alleles,\
-ithmcrundir,nthfile,logfHndl):
-	'''
-	DoDaGeneticDistance()
-	This function outputs the genetic distance matrix 
-	following Nei's algorithm.
-	'''	
-	
-	print('Nei Da is not functional yet for versions greater than 1.2. Email Erin.')
-	sys.exit(-1)
-	
-	# Insert -1 at beginning of nthfile, to get grid0.csv
-	nthfile.insert(0,-1)
-	
-	# Get the specified nthfile's grid to calculated matrix
-	for i in xrange(len(nthfile)):
-						
-		# Open file for reading
-		inputfile = open(ithmcrundir+'grid'+str(nthfile[i]+1)+'.csv','r')
-		
-		# Read lines from the file
-		lines = inputfile.readlines()
-		
-		#Close the file
-		inputfile.close()
-		
-		# Create an empty matrix to append to
-		x = []
-		
-		# Split up each line in file and append to empty matrix, x
-		for l in lines:
-			thisline = l.split(',')
-			x.append(thisline)
-				
-		# Store genetic information: genes[individual], but need them as float values
-		genes = []
-		tempgenes = []
-		for k in xrange(len(x)-1):
-			# Get list from read in file
-			tempgenes.append(x[k+1][8:int(8+sum(alleles))])
-			# Create spot in genes
-			genes.append([])
-			for j in xrange(sum(alleles)):
-				# Make each list spot an integer
-				genes[k].append(float(tempgenes[k][j]))
-		
-		# Create a matrix of zeros to be filled
-		gendmatrix = np.zeros((nogrids,nogrids),float)
-		
-		# Loop through each individual k
-		for k in xrange(nogrids):
-			# Compare individual k to every other inidividual j
-			for j in xrange(nogrids):
-				# Create a tempvariable to be written over for each comparison
-				tempsqrt=[]
-				# Loop through each locus
-				for locus in xrange(loci):						
-					# Loop through each allele value
-					for alle in xrange(alleles[locus]):
-						# Find the allele frequencies between k and j checking the 4 conditions
-						if genes[k][alle+sum(alleles[0:locus])]==2.0:
-							if genes[j][alle+sum(alleles[0:locus])]==2.0:
-								tempsqrt.append(np.sqrt(1.0))
-							elif genes[j][alle+sum(alleles[0:locus])]==1.0:
-								tempsqrt.append(np.sqrt(1.0*0.5))
-						elif genes[k][alle+sum(alleles[0:locus])]==1.0:
-							if genes[j][alle+sum(alleles[0:locus])]==1.0:
-								tempsqrt.append(np.sqrt(0.5*0.5))
-							elif genes[j][alle+sum(alleles[0:locus])]==2.0:
-								tempsqrt.append(np.sqrt(0.5*1.0))
-				# Write the Da value to gendmatrix
-				gendmatrix[k][j] = 1-float(sum(tempsqrt))/(loci)
-		
-		# Transpose cdmatrix to get vertical display (just being picky)
-		gendmatrix = np.transpose(gendmatrix)
-		
-		# Create file to write matrix to
-		outputfile = open(ithmcrundir+'Gdmatrix'+str(nthfile[i]+1)+'.csv','w')
-		
-		# Sequence each row in the matrix
-		for seqrow in gendmatrix:
-		
-			# Grab each element in each row and write element to outputfile
-			for ele in xrange(len(seqrow)):
-				outputfile.write(str(seqrow[ele]))
-				# Add comma
-				outputfile.write(',')
-			
-			# Return line
-			outputfile.write('\n')
-		
-		# Close file
-		outputfile.close()
-		
-		# Logging message
-		stringout = 'Gdmatrix'+str(nthfile[i])+'.csv has been created'
-		logMsg(logfHndl,stringout)
-	
-	# Delete the -1
-	del(nthfile[0])
-	
-	# End::DoDaGeneticDistance()
-
-# ---------------------------------------------------------------------------------------------------	
-def DoDpsGeneticDistance(loci,nogrids,alleles,\
-ithmcrundir,nthfile,logfHndl):
-	'''
-	DoDpsGeneticDistance()
-	This function outputs the genetic distance matrix 
-	following proportion of shared alleles algorithm.
-	'''	
-	# List the grid files in directory
-	csvfileList = glob.glob(ithmcrundir+'grid*.csv')
-		
-	# Get the specified nthfile's grid to calculated matrix
-	for i in xrange(len(csvfileList)):
-						
-		# Open file for reading
-		inputfile = open(csvfileList[i],'r')
-			
-		# Read lines from the file
-		lines = inputfile.readlines()
-		
-		#Close the file
-		inputfile.close()
-		
-		# Create an empty matrix to append to
-		x = []
-		
-		# Split up each line in file and append to empty matrix, x
-		for l in lines:
-			thisline = l.split(',')
-			x.append(thisline)
-				
-		# Store genetic information: genes[individual], but need them as float values
-		genes = []
-		tempgenes = []
-		for k in xrange(len(x)-1):
-			# Get list from read in file
-			tempgenes.append(x[k+1][8:int(8+sum(alleles))])
-			# Create spot in genes
-			genes.append([])
-			for j in xrange(sum(alleles)):
-				# Make each list spot an integer
-				genes[k].append(tempgenes[k][j].strip('\n'))
-		
-		# Create a matrix of zeros to be filled
-		gendmatrix = []
-		
-		# Loop through each individual k
-		tempcount = 0		
-		for k in xrange(nogrids):
-			
-			# Break if NA
-			if genes[k][0] == 'NA':
-				continue
-			else:
-				gendmatrix.append([])
-				tempcount = tempcount+1
-				# Compare individual k to every other inidividual j
-				for j in xrange(nogrids):
-					
-					# Break if NA
-					if genes[j][0] == 'NA':
-						continue
-					else:
-						# Create a tempvariable to be written over for each comparison
-						tempmin=[]
-						# Loop through each allele value
-						for alle in xrange(sum(alleles)):
-							# Find the shared alleles between k and j checking the 4 conditions
-							if genes[k][alle]=='2':
-								if genes[j][alle]=='2':
-									tempmin.append(2)
-								elif genes[j][alle]=='1':
-									tempmin.append(1)
-							elif genes[k][alle]=='1':
-								if genes[j][alle]=='1':
-									tempmin.append(1)
-								elif genes[j][alle]=='2':
-									tempmin.append(1)
-						# Write the Dps value to gendmatrix
-						gendmatrix[tempcount-1].append(1-float(sum(tempmin))/(2*loci))
-		
-		# Strip directory/filename of grid and add 'Gdmatrix.csv'
-		gdpathname = csvfileList[i].replace('grid','Gdmatrix')
-	
-		# Create file to write matrix to
-		outputfile = open(gdpathname,'w')
-		
-		# Sequence each row in the matrix
-		for seqrow in gendmatrix:
-		
-			# Grab each element in each row and write element to outputfile
-			for ele in xrange(len(seqrow)):
-				outputfile.write(str(seqrow[ele]))
-				# Add comma
-				outputfile.write(',')
-			
-			# Return line
-			outputfile.write('\n')
-		
-		# Close file
-		outputfile.close()
-		
-		# Logging message
-		stringout = gdpathname+' has been created'
-		logMsg(logfHndl,stringout)
-		print('The genetic distance matrix '+gdpathname+' has been created.')
-		
-	# End::DoDpsGeneticDistance()
-		
-# ---------------------------------------------------------------------------------------------------	
-def DoBrayCurtisGeneticDistance(loci,nogrids,alleles,\
-ithmcrundir,nthfile,logfHndl):
-	'''
-	DoBrayCurtisGeneticDistance()
-	This function outputs the genetic distance matrix 
-	following the Bray-Curtis algorithm.
-	'''	
-	print('Bray-Curtis is not functional yet for versions greater than 1.2. Email Erin.')
-	sys.exit(-1)
-	A = loci*2
-	B = loci*2
-	
-	# Insert -1 at beginning of nthfile, to get grid0.csv
-	nthfile.insert(0,-1)
-	
-	# Get the specified nthfile's grid to calculated matrix
-	for i in xrange(len(nthfile)):
-						
-		# Open file for reading
-		inputfile = open(ithmcrundir+'grid'+str(nthfile[i]+1)+'.csv','r')
-			
-		# Read lines from the file
-		lines = inputfile.readlines()
-		
-		#Close the file
-		inputfile.close()
-		
-		# Create an empty matrix to append to
-		x = []
-		
-		# Split up each line in file and append to empty matrix, x
-		for l in lines:
-			thisline = l.split(',')
-			x.append(thisline)
-				
-		# Store genetic information: genes[individual], but need them as float values
-		genes = []
-		tempgenes = []
-		for k in xrange(len(x)-1):
-			# Get list from read in file
-			tempgenes.append(x[k+1][8:int(8+sum(alleles))])
-			# Create spot in genes
-			genes.append([])
-			for j in xrange(sum(alleles)):
-				# Make each list spot an integer
-				genes[k].append(float(tempgenes[k][j]))	
-		
-		# Create a matrix of zeros to be filled
-		gendmatrix = np.zeros((nogrids,nogrids),float)
-
-		# Loop through the rows
-		for igrids in range(nogrids):
-			
-			# Loop through the columns
-			for j in range(nogrids):
-				
-				# Create a tempvariable to be written over
-				tempW=[]
-				
-				# Loop through each allele value
-				for k in range(sum(alleles)):
-					
-					# Find the minimum value between the i and jth entry
-					tempW.append(min(int(genes[igrids][k]),int(genes[j][k])))
-					
-				# Write the Curtis-Bray value to gendmatrix
-				gendmatrix[igrids][j] = 1-(float((2*sum(tempW)))/(A+B))
-
-		# Create file to write matrix to
-		outputfile = open(ithmcrundir+'Gdmatrix'+str(nthfile[i]+1)+'.csv','w')
-		
-		# Sequence each row in the matrix
-		for seqrow in gendmatrix:
-
-			# Grab each element in each row and write element to outputfile
-			for ele in xrange(len(seqrow)):
-				outputfile.write(str(seqrow[ele]))
-				# Add comma
-				outputfile.write(',')
-			
-			# Return line
-			outputfile.write('\n')
-
-		# Close file
-		outputfile.close()
-
-		# Logging message
-		stringout = 'Gdmatrix'+str(nthfile[i])+'.csv has been created'
-		logMsg(logfHndl,stringout)
-	
-	# Delete the -1
-	del(nthfile[0])
-	
-	# End::DoBrayCurtisGeneticDistance()
-	
 # ---------------------------------------------------------------------------------------------------	 
 def DoGridOut_cdpop(ithmcrundir,gen,loci,alleles,nogrids,subpopnew,xgridnew,\
-ygridnew,idnew,sexnew,agenew,genesnew,logfHndl,infection,AllDispDistCD):
+ygridnew,idnew,sexnew,agenew,genesnew,logfHndl,infection,AllDispDistCD,hindexnew,geneswap):
 	'''
 	DoGridOut_cdpop()
 	Output grid.csv in cdpopformat	
@@ -373,13 +79,9 @@ ygridnew,idnew,sexnew,agenew,genesnew,logfHndl,infection,AllDispDistCD):
 	# Create file to write info to
 	outputfile = open(ithmcrundir+'grid'+str(gen+1)+'.csv','w')
 	
-	# Write out the titles - Add Titles from xypoints
-	title = ['Subpopulation','XCOORD','YCOORD','ID','sex','age','infection','DisperseCDist']
-	
-	# Write out the title from xy points
-	for i in xrange(len(title)):
-		# Write out FID number
-		outputfile.write(title[i]+',')
+	# Write out the titles 
+	title = ['Subpopulation,XCOORD,YCOORD,ID,sex,age,infection,DisperseCDist,hindex,']
+	outputfile.write(title[0])
 			
 	# Write out the loci title info
 	# Loop for loci length
@@ -391,10 +93,9 @@ ygridnew,idnew,sexnew,agenew,genesnew,logfHndl,infection,AllDispDistCD):
 	for i in xrange(alleles[loci-1]-1):
 		outputfile.write('L'+str(loci-1)+'A'+str(i)+',')
 	outputfile.write('L'+str(loci-1)+'A'+str(alleles[loci-1]-1)+'\n')
-
+	
 	# Loop through each grid spot and output
-	for i in xrange(nogrids):
-		
+	for i in xrange(nogrids):		
 		outputfile.write(subpopnew[i]+',')
 		outputfile.write(str(float(xgridnew[i]))+',')
 		outputfile.write(str(float(ygridnew[i]))+',')
@@ -403,21 +104,22 @@ ygridnew,idnew,sexnew,agenew,genesnew,logfHndl,infection,AllDispDistCD):
 		outputfile.write(str(agenew[i])+',')
 		outputfile.write(str(infection[i])+',')
 		outputfile.write(str(AllDispDistCD[i])+',')
+		if gen >= geneswap:
+			outputfile.write(str(hindexnew[i])+',')
+		else:			
+			outputfile.write('NA,')
 		# Write out gene info
-		for jk in xrange(loci-1):
-			for kl in xrange(alleles[jk]):
-				outputfile.write(str(genesnew[i][jk][kl])+',')
-		# TO get return character on end
-		for jk in xrange(alleles[loci-1]-1):
-			outputfile.write(str(genesnew[i][loci-1][jk])+',')
-		outputfile.write(str(genesnew[i][loci-1][alleles[loci-1]-1])+'\n')
-										
+		for iall in xrange(sum(alleles)):
+			outputfile.write(str(genesnew[i][iall])+',')
+		outputfile.write('\n')
+												
 	# Logging message
 	stringout = 'The file grid'+str(gen+1)+'.csv has been created'
 	logMsg(logfHndl,stringout)		
 	
 	# Close file
 	outputfile.close()
+	
 	# End::DoGridOut_cdpop()
 	
 # ---------------------------------------------------------------------------------------------------	 
@@ -487,7 +189,7 @@ def DoGridOut_general(loci,alleles,ithmcrundir,logfHndl):
 		for ispot in xrange(nogrids):
 			genes_cdpop.append([])
 			for jspot in xrange(loci):
-				genes_cdpop[ispot].append(x[ispot+1][int(8+sum(alleles[0:jspot])):int(8+sum(alleles[0:jspot+1]))])
+				genes_cdpop[ispot].append(x[ispot+1][int(9+sum(alleles[0:jspot])):int(9+sum(alleles[0:jspot+1]))])
 		
 		# Delete x variable
 		del(x)
@@ -659,7 +361,7 @@ def DoGridOut_genalex(loci,alleles,ithmcrundir,logfHndl,subgridtotal):
 		for ispot in xrange(nogrids):
 			genes_cdpop.append([])
 			for jspot in xrange(loci):
-				genes_cdpop[ispot].append(x[ispot+1][int(8+sum(alleles[0:jspot])):int(8+sum(alleles[0:jspot+1]))])
+				genes_cdpop[ispot].append(x[ispot+1][int(9+sum(alleles[0:jspot])):int(9+sum(alleles[0:jspot+1]))])
 		
 		# Delete x variable
 		del(x)
@@ -822,7 +524,7 @@ def DoGridOut_structure(loci,alleles,ithmcrundir,logfHndl):
 		for ispot in xrange(nogrids):
 			genes_cdpop.append([])
 			for jspot in xrange(loci):
-				genes_cdpop[ispot].append(x[ispot+1][int(8+sum(alleles[0:jspot])):int(8+sum(alleles[0:jspot+1]))])
+				genes_cdpop[ispot].append(x[ispot+1][int(9+sum(alleles[0:jspot])):int(9+sum(alleles[0:jspot+1]))])
 		
 		# Delete x variable
 		del(x)
@@ -974,7 +676,7 @@ def DoGridOut_genepop(loci,alleles,ithmcrundir,logfHndl,subgridtotal,subpop):
 		for ispot in xrange(nogrids):
 			genes_cdpop.append([])
 			for jspot in xrange(loci):
-				genes_cdpop[ispot].append(x[ispot+1][int(8+sum(alleles[0:jspot])):int(8+sum(alleles[0:jspot+1]))])
+				genes_cdpop[ispot].append(x[ispot+1][int(9+sum(alleles[0:jspot])):int(9+sum(alleles[0:jspot+1]))])
 		
 		# Delete x variable
 		del(x)
@@ -1075,7 +777,7 @@ def DoGridOut_genepop(loci,alleles,ithmcrundir,logfHndl,subgridtotal,subpop):
 # ---------------------------------------------------------------------------------------------------	 
 def DoOutput(nogrids,FID,OffDisperseIN,xgridcopy,ygridcopy,gen,\
 id,sex,age,xgrid,ygrid,genes,nthfile,ithmcrundir,loci,alleles,subpop,\
-logfHndl,gridformat,infection,Infected,cdinfect,opengrids,OffDispDistCD,geneswap):
+logfHndl,gridformat,infection,Infected,cdinfect,opengrids,OffDispDistCD,geneswap,hindex):
 	'''
 	DoOutput()
 	Generate .txt file of old+new+Immigration generations
@@ -1083,43 +785,15 @@ logfHndl,gridformat,infection,Infected,cdinfect,opengrids,OffDispDistCD,geneswap
 	Output: ithmcrundir will have .csv files of x,y coord location values of
 	cost distance dispersal of the old+new generation with gene info	
 	'''	
-	
-	# ----------------------------------------------------------------------------------------
-	# Order the grids back from the random processes - 0,1,2,...nogrids
-	# ----------------------------------------------------------------------------------------
-	
-	# Storage lists for ordering id and no
-	orderofgridid = []
-	orderofgridno = []
+		
+	# ----------------------------------------------------------
+	# Update grid: grid IDS either FID, OffDisperseIN, opengrids
+	# -----------------------------------------------------------
 	
 	# checks
 	if (len(FID) + len(OffDisperseIN) + len(opengrids)) != nogrids:
-		pdb.set_trace()
-	
-	# Loop through all grid points
-	for i in xrange(nogrids):
-	
-		# Loop through the FID values if any - existing adults
-		for jFID in xrange(len(FID)):
-			if int(FID[jFID])==i:
-				orderofgridid.append('FID'+str(jFID))
-				orderofgridno.append(jFID)
-				
-		# Loop through the dispersal values if any
-		for jFG in xrange(len(OffDisperseIN)):
-			if int(OffDisperseIN[jFG][1])==i:
-				orderofgridid.append('FG'+str(jFG))
-				orderofgridno.append(jFG)
-				
-		# Loop through the immigrant values if any
-		for jopen in xrange(len(opengrids)):
-			if int(opengrids[jopen])==i:
-				orderofgridid.append('OPEN'+str(jopen))
-				orderofgridno.append(jopen)
-	
-	# ------------------------------------------------------------------------------------------------------------------
-	# Store the OffDisperseIN and Newimmigrants generation information: Update grid...
-	# ------------------------------------------------------------------------------------------------------------------
+		print('Error with total grids.')
+		sys.exit(-1)
 	
 	# Store new grid values
 	FIDnew = []
@@ -1131,113 +805,93 @@ logfHndl,gridformat,infection,Infected,cdinfect,opengrids,OffDispDistCD,geneswap
 	agenew = []	
 	genesnew = []
 	infectionnew = []
-	AllDispDistCD = []
-	
+	AllDispDistCD = []	
+	hindexnew = []
 	
 	# Keep genes in within burn in period
 	if gen < geneswap:
-		genesnew = genes		
+		genesnew = genes	
 	
-	# Extract information from OffDisperseIN
-	if len(OffDisperseIN)!=0:
+	# Get OffDisperseIN grid locations
+	OffDisperseIN_gridlocs = np.asarray([OffDisperseIN[i][1] for i in xrange(len(OffDisperseIN))])
 	
-		# Temp variables storage
-		xtempoff = []
-		ytempoff = []
-		offsex=[]
-		offid=[]
-		tempinf = []		
-		
-		# Extract grid x and y location, id,sex
-		for dispot in xrange(len(OffDisperseIN)):
-			xtempoff.append(xgridcopy[int(OffDisperseIN[dispot][1])])
-			ytempoff.append(ygridcopy[int(OffDisperseIN[dispot][1])])
-			offsex.append(OffDisperseIN[dispot][0][4])
-			offid.append(OffDisperseIN[dispot][2])
-			tempinf.append(OffDisperseIN[dispot][0][5])
-		
-# check orderofgridno	
 	# Loop through each grid spot to find the right output index...
 	for jgrid in xrange(nogrids):
 			
-		# Get the ordered grid location for the jth FID value
-		if orderofgridid[jgrid][0:3] == 'FID':
-				
-			# Write out the old generation
-			FIDnew.append(FID[orderofgridno[jgrid]])
-			idnew.append(id[orderofgridno[jgrid]])
-			sexnew.append(str(sex[orderofgridno[jgrid]]))
-			# This adds a year to the age class
-			if orderofgridno[jgrid] == 'NA':
-				pdb.set_trace()
-			if age[orderofgridno[jgrid]] == 'NA':
-				pdb.set_trace()
-			agenew.append(int(age[orderofgridno[jgrid]])+1)
-			xgridnew.append(float(xgrid[orderofgridno[jgrid]]))
-			ygridnew.append(float(ygrid[orderofgridno[jgrid]]))
-			# Make sure this is the correct order writing to file!
-			# Write out gene info
+		# Find where jgrid is - FID (existing adults), OffDisperseIN (new offspring), or opengrids
+		if len(np.where(FID == jgrid)[0]) == 1:
+			# Where is this spot in FID, use thisindex for some vars, jgrid for others
+			thisindex = np.where(FID == jgrid)[0][0]
+			FIDnew.append(jgrid)
+			idnew.append(id[thisindex])
+			sexnew.append(str(sex[thisindex]))
+			agenew.append(int(age[thisindex])+1) # age this individual
+			xgridnew.append(xgridcopy[jgrid])
+			ygridnew.append(ygridcopy[jgrid])
+			# Write out genes info
 			if gen >= geneswap:
-				genesnew.append(genes[orderofgridno[jgrid]])
+				genesnew.append(genes[thisindex])
+				hindexnew.append(hindex[thisindex])
 			subpopnew.append(subpop[jgrid])
-			infectionnew.append(infection[orderofgridno[jgrid]])
-			AllDispDistCD.append('NoMove')
-					
-		# Get the ordered grid location for the jth FG value (the OffDisperseIN)
-		elif orderofgridid[jgrid][0:2] == 'FG':
-				
-			# Write out the OffDisperseIN generation
-			FIDnew.append(int(OffDisperseIN[orderofgridno[jgrid]][1]))
-			idnew.append(offid[orderofgridno[jgrid]])
-			sexnew.append(str(int(offsex[orderofgridno[jgrid]])))
-			# This makes the age of the offspring 0
-			agenew.append(1)
-			xgridnew.append(xtempoff[orderofgridno[jgrid]])
-			ygridnew.append(ytempoff[orderofgridno[jgrid]])
+			infectionnew.append(infection[thisindex])
+			AllDispDistCD.append('NoMove')			
+						
+		elif len(np.where(OffDisperseIN_gridlocs == jgrid)[0]) == 1:
+			# Where is this spot in OffDisperseIN
+			thisindex = np.where(OffDisperseIN_gridlocs == jgrid)[0][0]
+			# Get this individuals information
+			thisind = OffDisperseIN[thisindex]
+			# Extract information to new vars
+			FIDnew.append(int(thisind[1]))
+			idnew.append(thisind[2])
+			sexnew.append(str(int(thisind[0][4])))
+			agenew.append(1) # Age is now 1
+			xgridnew.append(xgridcopy[int(thisind[1])])
+			ygridnew.append(ygridcopy[int(thisind[1])])
 			subpopnew.append(subpop[jgrid])
-			infectionnew.append(int(tempinf[orderofgridno[jgrid]]))
-			# Write out gene info
+			infectionnew.append(int(thisind[0][5]))
+			# Write out gene info			
 			if gen >= geneswap:
-				genesnew.append([])
-				for jloci in xrange(loci):
-					genesnew[jgrid].append([])
-					for jalleles in xrange(alleles[jloci]):
-						genesnew[jgrid][jloci].append(OffDisperseIN[orderofgridno[jgrid]][0][7][jalleles+sum(alleles[0:jloci])])
-			AllDispDistCD.append(OffDispDistCD[orderofgridno[jgrid]])			
-		# Get the ordered grid location for the jth IMM value (the Newimmigrants)
-		elif orderofgridid[jgrid][0:4] == 'OPEN':
-					
-			# Write out the Immigration generation
-			FIDnew.append(opengrids[orderofgridno[jgrid]])
+				thisgenes = thisind[0][7]
+				#genesnew.append(nest(thisgenes,[loci,alleles[0]]))
+				genesnew.append(thisgenes)
+				hindexnew.append(float(thisind[0][8]))
+			AllDispDistCD.append(OffDispDistCD[thisindex])			
+						
+		elif len(np.where(np.asarray(opengrids) == jgrid)[0]) == 1:
+			# Where is this spot in opengrids, just use the jgrid index for full length vars
+			# Extract information to new vars
+			FIDnew.append(jgrid)
 			idnew.append('OPEN')
 			sexnew.append('NA')
 			agenew.append('NA')
-			xgridnew.append(float(xgridcopy[opengrids[orderofgridno[jgrid]]]))
-			ygridnew.append(float(ygridcopy[opengrids[orderofgridno[jgrid]]]))
+			xgridnew.append(xgridcopy[jgrid])
+			ygridnew.append(ygridcopy[jgrid])
 			subpopnew.append(subpop[jgrid])
 			infectionnew.append('NA')
 			# Write out gene info
 			if gen >= geneswap:
-				genesnew.append([])
-				for jloci in xrange(loci):
-					genesnew[jgrid].append([])
-					for jalleles in xrange(alleles[jloci]):
-						genesnew[jgrid][jloci].append('NA')
-							
-			AllDispDistCD.append('NA')	
-	
+				thisgenes = ['NA']*(sum(alleles))
+				#genesnew.append(nest(thisgenes,[loci,alleles[0]]))
+				genesnew.append(thisgenes)
+				hindexnew.append('NA')
+			AllDispDistCD.append('NA')
+									
+		else:
+			print('Grid location missing. DoOutput()')
+			sys.exit(-1)
+			
 	# ------------------------------------------------------------
 	# Write out text file for generations specified by nthfile
 	# ------------------------------------------------------------
 	
 	# Check if nthfile == generation.
 	for inthfile in xrange(len(nthfile)):				
-		if gen == nthfile[inthfile]:
-			
+		if gen == nthfile[inthfile]:			
 			# Call DoGridOut_cdpop()
 			DoGridOut_cdpop(ithmcrundir,gen,loci,alleles,nogrids,\
 			subpopnew,xgridnew,ygridnew,idnew,sexnew,agenew,genesnew,\
-			logfHndl,infectionnew,AllDispDistCD)
+			logfHndl,infectionnew,AllDispDistCD,hindexnew,geneswap)
 	
 	# Sum infectednew to Infected
 	temp = []
@@ -1249,14 +903,14 @@ logfHndl,gridformat,infection,Infected,cdinfect,opengrids,OffDispDistCD,geneswap
 	
 	# Return variables from this argument
 	tupDoOut = FIDnew,idnew,sexnew,agenew,xgridnew,ygridnew,\
-	genesnew,subpopnew,infectionnew,Infected
+	genesnew,subpopnew,infectionnew,hindexnew
 	return tupDoOut
 	
 	# End::DoOutput()
 	
 # ---------------------------------------------------------------------------------------------------	 
 def DoPostProcess(ithmcrundir,nogrids,\
-xgridcopy,ygridcopy,gendmatans,\
+xgridcopy,ygridcopy,\
 loci,alleles,looptime,Population,ToTFemales,ToTMales,\
 BreedFemales,BreedMales,Migrants,Births,\
 MDeaths,FDeaths,Alleles,He,Ho,AllelesMutated,\
@@ -1266,27 +920,12 @@ MateDistEDstd,FDispDistEDstd,MDispDistEDstd,MateDistCDstd,\
 FDispDistCDstd,MDispDistCDstd,subpopmigration,FAvgMate,MAvgMate,\
 FSDMate,MSDMate,DisperseDeaths,Open,CouldNotDisperse,\
 Female_BreedEvents,gridformat,subpopemigration,females_nomate,\
-subgridtotal,MOffDeaths,FOffDeaths,Population_age,BreedFemales_age,subpopmatemort,SelectionDeaths,MateDistances,matedist_out,Twins):
+subgridtotal,MOffDeaths,FOffDeaths,Population_age,Females_age,Males_age,BreedFemales_age,subpopmatemort,SelectionDeaths,MateDistances,matedist_out,Twins,Track_EpigeneMod1,Track_EpigeneMod2,Track_EpigeneDeaths,Track_EpigeneReset1,Track_EpigeneReset2):
 	'''
 	DoPostProcess()
 	Create Distance Matrices - Geographic, Genetic, and Cost
 	and output.csv file.
 	'''	
-	
-	# -----------------------------
-	# Matrix calculations
-	# -----------------------------	
-	# Create Genetic distance matrix with Bray-Curtis algorithm
-	if gendmatans == 'braycurtis':	
-		DoBrayCurtisGeneticDistance(loci,nogrids,alleles,ithmcrundir,nthfile,logfHndl)
-	
-	# Create Genetic distance matrix with proportion of shared alleles algorithm
-	elif gendmatans == 'Dps':		
-		DoDpsGeneticDistance(loci,nogrids,alleles,ithmcrundir,nthfile,logfHndl)
-	
-	# Create Genetic distance matrix with Nei's algorithm
-	elif gendmatans == 'Da':	
-		DoDaGeneticDistance(loci,nogrids,alleles,ithmcrundir,nthfile,logfHndl)
 		
 	# ------------------------
 	# Grid format options
@@ -1329,9 +968,9 @@ subgridtotal,MOffDeaths,FOffDeaths,Population_age,BreedFemales_age,subpopmatemor
 	# Write out the titles
 	# Add Titles from xypoints
 	if matedist_out == 'Y':
-		outputtitle = ['Year','Population','Population_Age','GrowthRate','ToTFemales','ToTMales','BreedFemales','BreedFemales_Age','BreedMales','BreedEvents_Females','Females_NoMate','Migrants','DisperseDeaths','Births','Male_Age0Deaths','Female_Age0Deaths','Male_AgeDeaths','Female_AgeDeaths','Alleles','He','Ho','Mutations','MateDistED','MateDistEDstd','Female_DispDistED','Female_DispDistEDstd','Male_DispDistED','Male_DispDistEDstd','MateDistCD','MateDistCDstd','Female_DispDistCD','Female_DispDistCDstd','Male_DispDistCD','Male_DispDistCDstd','p1','p2','q1','q2','Infected','SubpopImmigration','SubpopEmigration','SubpopNoMate','FemalesMeanMate','MalesMeanMate','FemalesSDMate','MalesSDMate','OpenLocations','CouldNotDisperse','MatureSelectionDeaths','Twins','AllMateCDistances',]
+		outputtitle = ['Year','Population','Population_Age1+','GrowthRate','ToTFemales','ToTFemales_Age1+','ToTMales','ToTMales_Age1+','BreedFemales','BreedFemales_Age1+','BreedMales','BreedEvents_Females','Females_NoMate','Migrants','SelectionDeaths','Births','Male_Age0Deaths','Female_Age0Deaths','Male_AgeDeaths1+','Female_AgeDeaths1+','Alleles','He','Ho','Mutations','MateDistED','MateDistEDstd','Female_DispDistED','Female_DispDistEDstd','Male_DispDistED','Male_DispDistEDstd','MateDistCD','MateDistCDstd','Female_DispDistCD','Female_DispDistCDstd','Male_DispDistCD','Male_DispDistCDstd','p1','p2','q1','q2','Infected','SubpopImmigration','SubpopEmigration','SubpopNoMate','FemalesMeanMate','MalesMeanMate','FemalesSDMate','MalesSDMate','OpenLocations','CouldNotDisperse','MatureSelectionDeaths','Twins','EpigeneMod_A1','EpigeneMod_A2','EpigeneDeaths','EpigeneResets_A1','EpigeneResets_A2','AllMateCDistances']
 	else:
-		outputtitle = ['Year','Population','Population_Age','GrowthRate','ToTFemales','ToTMales','BreedFemales','BreedFemales_Age','BreedMales','BreedEvents_Females','Females_NoMate','Migrants','DisperseDeaths','Births','Male_Age0Deaths','Female_Age0Deaths','Male_AgeDeaths','Female_AgeDeaths','Alleles','He','Ho','Mutations','MateDistED','MateDistEDstd','Female_DispDistED','Female_DispDistEDstd','Male_DispDistED','Male_DispDistEDstd','MateDistCD','MateDistCDstd','Female_DispDistCD','Female_DispDistCDstd','Male_DispDistCD','Male_DispDistCDstd','p1','p2','q1','q2','Infected','SubpopImmigration','SubpopEmigration','SubpopNoMate','FemalesMeanMate','MalesMeanMate','FemalesSDMate','MalesSDMate','OpenLocations','CouldNotDisperse','MatureSelectionDeaths','Twins']
+		outputtitle = ['Year','Population','Population_Age1+','GrowthRate','ToTFemales','ToTFemales_Age1+','ToTMales','ToTMales_Age1+','BreedFemales','BreedFemales_Age1+','BreedMales','BreedEvents_Females','Females_NoMate','Migrants','DisperseDeaths','Births','Male_Age0Deaths','Female_Age0Deaths','Male_AgeDeaths1+','Female_AgeDeaths1+','Alleles','He','Ho','Mutations','MateDistED','MateDistEDstd','Female_DispDistED','Female_DispDistEDstd','Male_DispDistED','Male_DispDistEDstd','MateDistCD','MateDistCDstd','Female_DispDistCD','Female_DispDistCDstd','Male_DispDistCD','Male_DispDistCDstd','p1','p2','q1','q2','Infected','SubpopImmigration','SubpopEmigration','SubpopNoMate','FemalesMeanMate','MalesMeanMate','FemalesSDMate','MalesSDMate','OpenLocations','CouldNotDisperse','MatureSelectionDeaths','Twins','EpigeneMod_A1','EpigeneMod_A2','EpigeneDeaths','EpigeneResets_A1','EpigeneResets_A2']
 		
 	
 	# Write out the title
@@ -1348,9 +987,11 @@ subgridtotal,MOffDeaths,FOffDeaths,Population_age,BreedFemales_age,subpopmatemor
 		for j in xrange(nosubpops+1):
 			outputfile.write(str(Population[i][j])+'|')
 		outputfile.write(',')
-		for j in xrange(len(Population_age[i])):
-			outputfile.write(str(Population_age[i][j])+'|')
-		outputfile.write(',')
+		for j in xrange(len(Population_age[i])):#Split by population
+			for iage in xrange(len(Population_age[0][0])-1):#Split by age
+				outputfile.write(str(Population_age[i][j][iage])+';')				
+			outputfile.write(str(Population_age[i][j][len(Population_age[0][0])-1])+'|')
+		outputfile.write(',')		
 		if i != len(time)-1:
 			outputfile.write(str(growthPop[i])+',')
 		else:
@@ -1358,8 +999,18 @@ subgridtotal,MOffDeaths,FOffDeaths,Population_age,BreedFemales_age,subpopmatemor
 		for j in xrange(nosubpops+1):
 			outputfile.write(str(ToTFemales[i][j])+'|')
 		outputfile.write(',')
+		for j in xrange(len(Females_age[i])):#Split by population
+			for iage in xrange(len(Females_age[0][0])-1):#Split by age
+				outputfile.write(str(Females_age[i][j][iage])+';')				
+			outputfile.write(str(Females_age[i][j][len(Females_age[0][0])-1])+'|')
+		outputfile.write(',')
 		for j in xrange(nosubpops+1):
 			outputfile.write(str(ToTMales[i][j])+'|')
+		outputfile.write(',')
+		for j in xrange(len(Males_age[i])):#Split by population
+			for iage in xrange(len(Males_age[0][0])-1):#Split by age
+				outputfile.write(str(Males_age[i][j][iage])+';')				
+			outputfile.write(str(Males_age[i][j][len(Males_age[0][0])-1])+'|')
 		outputfile.write(',')
 		for j in xrange(nosubpops+1):
 			outputfile.write(str(BreedFemales[i][j])+'|')
@@ -1377,11 +1028,27 @@ subgridtotal,MOffDeaths,FOffDeaths,Population_age,BreedFemales_age,subpopmatemor
 		outputfile.write(str(Births[i])+',')
 		outputfile.write(str(MOffDeaths[i])+',')
 		outputfile.write(str(FOffDeaths[i])+',')
-		for j in xrange(len(MDeaths[i])):
-			outputfile.write(str(MDeaths[i][j])+'|')
+		for j in xrange(len(MDeaths[i])):#Split by population
+			for iage in xrange(len(Population_age[0][0])-1):#Split by age
+				if len(MDeaths[i][j]) == len(Population_age[0][0]):
+					outputfile.write(str(MDeaths[i][j][iage])+';')
+				else:
+					outputfile.write('NA;')
+			if len(MDeaths[i][j]) == (len(Population_age[0][0])):
+				outputfile.write(str(MDeaths[i][j][len(Population_age[0][0])-1])+'|')
+			else:
+				outputfile.write('NA|')
 		outputfile.write(',')
-		for j in xrange(len(FDeaths[i])):
-			outputfile.write(str(FDeaths[i][j])+'|')
+		for j in xrange(len(FDeaths[i])):#Split by population
+			for iage in xrange(len(Population_age[0][0])-1):#Split by age 
+				if len(FDeaths[i][j]) == len(Population_age[0][0]):
+					outputfile.write(str(FDeaths[i][j][iage])+';')
+				else:
+					outputfile.write('NA;')
+			if len(FDeaths[i][j]) == (len(Population_age[0][0])):
+				outputfile.write(str(FDeaths[i][j][len(Population_age[0][0])-1])+'|')
+			else:
+				outputfile.write('NA|')
 		outputfile.write(',')
 		for j in xrange(nosubpops+1):
 			outputfile.write(str(Alleles[i][j])+'|')
@@ -1425,6 +1092,18 @@ subgridtotal,MOffDeaths,FOffDeaths,Population_age,BreedFemales_age,subpopmatemor
 		outputfile.write(str(CouldNotDisperse[i])+',')
 		outputfile.write(str(SelectionDeaths[i])+',')
 		outputfile.write(str(Twins[i])+',')
+		if len(Track_EpigeneMod1) != 0:
+			outputfile.write(str(Track_EpigeneMod1[i])+',')
+			outputfile.write(str(Track_EpigeneMod2[i])+',')
+			outputfile.write(str(Track_EpigeneDeaths[i])+',')
+			outputfile.write(str(Track_EpigeneReset1[i])+',')
+			outputfile.write(str(Track_EpigeneReset2[i])+',')
+		else:
+			outputfile.write('NA,')
+			outputfile.write('NA,')
+			outputfile.write('NA,')
+			outputfile.write('NA,')
+			outputfile.write('NA,')
 		if matedist_out == 'Y':
 			outputfile.write(str(MateDistances[i]))
 			#for j in xrange(len(MateDistances[i])):

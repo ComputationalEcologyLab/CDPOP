@@ -5,9 +5,9 @@
 # ----------------------------------------------------------------------------
 # General CDPOP information
 appName = "CDPOP"
-appVers = "version 1.2.35"
-appRele = "2016.08.01-00:00:00MDT"
-authorNames = "Erin L Landguth"
+appVers = "version 1.3.06"
+appRele = "2019.05.023-16:53:00MDT"
+authorNames = "Erin L Landguth et al."
 
 # ---------------
 # Global symbols
@@ -24,7 +24,7 @@ SRC_PATH =  "../src/"
 # ------------------------------------------
 # Python specific functions
 import datetime,time,pdb,os,sys,shutil
-	
+
 # Numpy functions
 try:
 	import numpy as np                    
@@ -41,10 +41,28 @@ if CDPOP_folder not in sys.path:
 # CDPOP functions
 try:
 	from CDPOP_Modules import * 
+except ImportError:
+	raise ImportError, "CDPOP_Modules required."
+try:
 	from CDPOP_PostProcess import *
+except ImportError:
+	raise ImportError, "CDPOP_PostProcess required."
+try:
 	from CDPOP_PreProcess import *
 except ImportError:
-	raise ImportError, "CDPOP_Modules required."	
+	raise ImportError, "CDPOP_PreProcess required."
+try:
+	from CDPOP_Mate import *
+except ImportError:
+	raise ImportError, "CDPOP_Mate required."
+try:
+	from CDPOP_Offspring import *
+except ImportError:
+	raise ImportError, "CDPOP_Offspring required."
+try:
+	from CDPOP_Disperse import *
+except ImportError:
+	raise ImportError, "CDPOP_Disperse required."	
 
 #------------------------------------------------------------
 # Begin main file execution
@@ -110,7 +128,8 @@ if __name__ == '__main__':
 		start_timeB = datetime.datetime.now()
 		
 		# Store all information and the type of each, also do some error checks 
-		xyfilename = datadir+batchVars['xyfilename'][ibatch]
+		xyfilename = batchVars['xyfilename'][ibatch]
+		allefreqfilename = batchVars['allefreqfilename'][ibatch]
 		agefilename = batchVars['agefilename'][ibatch]
 		matecdmatfile = batchVars['matecdmat'][ibatch]
 		dispcdmatfile = batchVars['dispcdmat'][ibatch]
@@ -146,23 +165,27 @@ if __name__ == '__main__':
 		popmodel = batchVars['popModel'][ibatch]
 		K_envvals = batchVars['K_env'][ibatch]
 		subpopmort = batchVars['subpopmortperc'][ibatch]
-		gendmatans = batchVars['gendmatans'][ibatch]
 		gridformat = batchVars['gridformat'][ibatch]
 		muterate = float(batchVars['muterate'][ibatch])
 		mutationans = batchVars['mutationtype'][ibatch]
 		loci = int(batchVars['loci'][ibatch])
 		intgenesans = batchVars['intgenesans'][ibatch]
-		allefreqfilename = batchVars['allefreqfilename'][ibatch]
-		alleles = int(batchVars['alleles'][ibatch])*np.ones(loci,int)
+		alleles = batchVars['alleles'][ibatch]
 		mtdna = batchVars['mtdna'][ibatch]
 		geneswap = int(batchVars['startGenes'][ibatch]) 
 		cdevolveans = batchVars['cdevolveans'][ibatch]
-		burningen = int(batchVars['startSelection'][ibatch])
-		betaFile = datadir+batchVars['betaFile'][ibatch]
+		startSelection = int(batchVars['startSelection'][ibatch])
+		betaFile_selection = batchVars['betaFile_selection'][ibatch]
+		epistasis = batchVars['epistasis'][ibatch]
+		epigeneans = batchVars['epigeneans'][ibatch]
+		startEpigene = int(batchVars['startEpigene'][ibatch])
+		betaFile_epigene = batchVars['betaFile_epigene'][ibatch]
 		cdinfect = batchVars['cdinfect'][ibatch]
 		transmissionprob = float(batchVars['transmissionprob'][ibatch])
 		matedist_out = batchVars['output_matedistance'][ibatch]
 						
+		# Distill and some error checking
+		# -------------------------------
 		# Grab the nthfile list range specific to user input, list or sequence
 		if not isinstance(nthfile_out, (list,tuple)):
 			nthfile_out = int(nthfile_out)
@@ -184,7 +207,7 @@ if __name__ == '__main__':
 			print('nthfile selection maximum value must be less than to looptime.')
 			sys.exit(-1)
 		
-		# Split up subpopulation mortality percentage if |
+		# Split up subpopulation mortality percentage if separated by '|'
 		subpopmortperc = []
 		# Convert to float
 		for inum in xrange(len(subpopmort)):
@@ -207,18 +230,49 @@ if __name__ == '__main__':
 		if intgenesans == 'file' and allefreqfilename == 'N':
 			print('Allele frequency file option specified, must give name of file.')
 			sys.exit(-1)
+		elif intgenesans == 'file_var' and allefreqfilename == 'N':
+			print('Allele frequency file option specified, must give name of file.')
+			sys.exit(-1)
 		elif intgenesans == 'file' and allefreqfilename != 'N':
 			if not isinstance(allefreqfilename,(list,tuple)):
 				allefreqfilename = [allefreqfilename]
 			else:
-				allefreqfilename = allefreqfilename				
+				allefreqfilename = allefreqfilename
+		elif intgenesans == 'file_var' and allefreqfilename != 'N':
+			if not isinstance(allefreqfilename,(list,tuple)):
+				allefreqfilename = [allefreqfilename]
+			else:
+				allefreqfilename = allefreqfilename
+		
+		# If multiple XY files were specified for introducing individuals, then put in list as above
+		if not isinstance(xyfilename,(list,tuple)):
+			xyfilename = [xyfilename]
+		else:	
+			xyfilename = xyfilename
+					
+		# Create allele array
+		if len(alleles.split(';')) == 1:
+			alleles = int(batchVars['alleles'][ibatch])*np.ones(loci,int)
+		else:
+			alleles = np.asarray(alleles.split(';'),dtype = int)			
 		
 		# ---------------------------------
-		# Some Error checking
+		# Some more Error checking
 		# ---------------------------------
+		# Have to have at least 2 alleles
+		if len(np.where(alleles == 0)[0]) != 0:
+			print('Must have at least 2 alleles per locus.')
+			sys.exit(-1)
+		if len(np.where(alleles == 1)[0]) != 0:
+			print('Must have at least 2 alleles per locus.')
+			sys.exit(-1)		
+		
 		# If cdevolve is turned on must have 2 alleles
 		if cdevolveans != 'N' and alleles[0] != 2:
-			print('Warning: More than 2 alleles per locus specified. CDEVOLVE only considers first 2 alleles in selection models, unless multiple loci selection model was specified.')
+			print('Warning: More than 2 alleles per locus specified. CDEVOLVE only considers first 2 alleles in selection and epigenetic models, unless multiple loci models were specified.')
+		if epigeneans != 'N' and alleles[0] != 2:
+			print('Input Error: More than 2 alleles per locus specified. Epigenetics only considers 2 alleles in selection and epigenetic models.')
+			sys.exit(-1)
 		# Must have more than 1 loci
 		if loci <= 1:
 			print('Currently, CDPOP needs more than 1 locus to run.')
@@ -250,19 +304,14 @@ if __name__ == '__main__':
 		elif philopatry != 'N':
 			print('Philopatry answer either has to be Male biased (M), Female biased (F), or unbiased (N).')
 			sys.exit(-1)
-			
-		# Gd matrix answers
-		if (gendmatans == 'N' or gendmatans == 'Dps' or gendmatans == 'braycurtis' or gendmatans == 'Da') == False:
-			print('Genetic distance matrix output not an option.')
-			sys.exit(-1)
-			
+					
 		# grid format
 		if (gridformat == 'cdpop' or gridformat == 'general' or gridformat == 'genalex' or gridformat == 'genepop' or gridformat == 'structure') == False:
 			print('Grid format parameter not an option.')
 			sys.exit(-1)
 		
 		# If genepop, some conditions
-		if gridformat == 'genepop' and (alleles[0] > 99 or loci > 99):
+		if gridformat == 'genepop' and (len(np.where(alleles >= 99)[0]) > 0 or loci > 99):
 			print('GENEPOP format requires less than 99 alleles and 99 loci.')
 			sys.exit(-1)
 			
@@ -272,14 +321,71 @@ if __name__ == '__main__':
 			sys.exit(-1)
 		
 		# Check burn in times
-		if cdevolveans != 'N' and burningen < geneswap:
+		if cdevolveans != 'N' and startSelection < geneswap:
 			print('Start selection time must be less than genetic exchange start time (startGenes < startSelection).')
+			sys.exit(-1)
+		if epigeneans != 'N' and startEpigene < geneswap:
+			print('Start epigenetics time must be less than genetic exchange start time (startGenes < startEpigene).')
 			sys.exit(-1)
 			
 		# Check multiple selection model and number of loci
 		if cdevolveans.split('_')[0] == 'M':
 			if int(cdevolveans.split('_')[2].split('L')[1]) > loci:
 				print('More loci under selection than specified number of total loci.')
+				sys.exit(-1)
+			if len(cdevolveans.split('_')) != 5:
+				print('Multilocus selection specified, must have 6 arguments, see usermanual examples.')
+				sys.exit(-1)
+			if alleles[0] != int(cdevolveans.split('_')[3].split('A')[1]):
+				print('Multilocus selection specified, must specify number of alleles for both neutral and selection markers.')
+				sys.exit(-1)
+			if intgenesans == 'random_var' or intgenesans == 'file_var':
+				print('Variable allele assignment per locus can not be used with multi-locus selection.')
+				sys.exit(-1)
+		if epigeneans != 'N':
+			if int(epigeneans.split('_')[1].split('L')[1]) > loci:
+				print('More loci in epigenetic model than specified number of total loci.')
+				sys.exit(-1)
+			if len(epigeneans.split('_')) != 5:
+				print('Epigenetic module specified, must have 4 arguments, see usermanual examples.')
+				sys.exit(-1)
+		if epigeneans != 'N' and cdevolveans.split('_')[0] == 'M':
+			if int(cdevolveans.split('_')[2].split('L')[1]) + int(epigeneans.split('_')[1].split('L')[1]) > loci:
+				print('More loci in epigenetic and selection model than specified number of total loci.')
+				sys.exit(-1)		
+		# Multiple files listed must equal cdclimgentime
+		if len(xyfilename) > 1:
+			if len(cdclimgentime) != len(xyfilename):
+				print('Multiple xyfiles given, then must match the number of CDClimate generations.')
+				sys.exit(-1)
+			if intgenesans != 'file_introduce' and intgenesans != 'file_introduce_var':
+				print('Multiple xyfiles given, then must use option file_introduce for genes.')
+				sys.exit(-1)
+			if len(allefreqfilename) != len(xyfilename):
+				print('Multiple xyfiles given, then must match the number of allele frequency files given.')
+				sys.exit(-1)
+			if equalsexratio != 'N':
+				print('Multiple xyfiles given, set equal sex ratio to N')
+				sys.exit(-1)
+			
+		# Error checking for intgenesans special case for file_introduce
+		if intgenesans == 'file_introduce' or intgenesans == 'file_introduce_var':
+			if geneswap != 0:
+				print('Gene swap starts immediately.')
+		
+		if popmodel == 'logistic':
+			print('Logistic disabled temporarily, email erin.landguth@mso.umt.edu.')
+			sys.exit(-1)
+			
+		# For Hindex answer
+		if cdevolveans.split('_')[0] == 'Hindex':
+			# Split for Gaussian
+			if cdevolveans.split('_')[1] == 'Linear':
+				if len(cdevolveans.split('_')[2].split(';')) != 6:
+					print('CDEVOLVE answer is Hindex and 6 parameters for the Linear function must be specified, see user manual and example files.')
+					sys.exit(-1)
+			else:
+				print('CDEVOLVE answer Hindex and only Linear option is allowed for now.')
 				sys.exit(-1)
 		
 		# ---------------------------------------------	
@@ -298,6 +404,8 @@ if __name__ == '__main__':
 			# These variables will be stored in output.csv at the end of the simulation
 			Population = []
 			Population_age = []
+			Females_age = []
+			Males_age = []
 			Migrants = []
 			Open = []
 			Track_MDeaths = []
@@ -346,6 +454,13 @@ if __name__ == '__main__':
 			MSDMate = []
 			MateDistances = []
 			Twins = []
+			Track_EpigeneMod1 = []
+			Track_EpigeneMod2 = []
+			Track_EpigeneDeaths = []
+			Track_EpigeneReset1 = []
+			Track_EpigeneReset2 = []
+			maxfit = []
+			minfit = []
 					
 			# ------------------------------------	
 			# Call DoPreProcess()
@@ -357,7 +472,7 @@ if __name__ == '__main__':
 			# Call function
 			tupPreProcess = DoPreProcess(outdir,ibatch,ithmcrun,\
 			xyfilename,agefilename,equalsexratio,loci,intgenesans,allefreqfilename,alleles,0,logfHndl,cdevolveans,cdinfect,Infected,\
-			subpopmigration,subpopemigration,datadir,geneswap,betaFile)
+			subpopmigration,subpopemigration,datadir,geneswap,epigeneans,epistasis)
 						
 			ithmcrundir = tupPreProcess[0]	
 			FID = tupPreProcess[1]
@@ -383,11 +498,14 @@ if __name__ == '__main__':
 			allelst = tupPreProcess[19]
 			Mnewmortperc = tupPreProcess[20]
 			Fnewmortperc = tupPreProcess[21]
-			Mmature = tupPreProcess[22]
-			Fmature = tupPreProcess[23]
-			intgenesans = tupPreProcess[24] # might have changed due to error geneswap != 0
-			betas = tupPreProcess[25]
-			xvars_betas = tupPreProcess[26]
+			Mmaturevals = tupPreProcess[22]
+			Fmaturevals = tupPreProcess[23]
+			intgenesans = tupPreProcess[24] 
+			xvars_betas_pass = tupPreProcess[25]
+			epimod_pass = tupPreProcess[26]
+			epireset_pass = tupPreProcess[27]
+			hindex = tupPreProcess[28]
+			xEvars_pass = tupPreProcess[29]
 			
 			# ---------------------------------
 			# Error statements
@@ -420,46 +538,53 @@ if __name__ == '__main__':
 				start_time1 = datetime.datetime.now()
 				
 				# Check gen time equal to cdclimgentime
-				for icdtime in xrange(len(cdclimgentime)):						
-					if gen == int(cdclimgentime[icdtime]):
-						tupClimate = DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemoveno,Fdispmoveno,Mdispmoveno,matemovethresh,Fdispmovethresh,Mdispmovethresh,matemoveparA,matemoveparB,matemoveparC,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,subpop,Magemortvals,Fagemortvals,offnovals,egg_lmbdavals,egg_sigmavals,K_envvals,Mnewmortperc,Fnewmortperc,fitvals_pass,twinning_pass)
-						
-						cdmatrix_mate = tupClimate[0]
-						cdmatrix_F = tupClimate[1]
-						cdmatrix_M = tupClimate[2]				
-						thresh_mate = tupClimate[3]
-						thresh_F = tupClimate[4]
-						thresh_M = tupClimate[5]				
-						Fdisp_ScaleMin = tupClimate[6]
-						Fdisp_ScaleMax = tupClimate[7]
-						Mdisp_ScaleMin = tupClimate[8]
-						Mdisp_ScaleMax = tupClimate[9]
-						mate_ScaleMin = tupClimate[10]
-						mate_ScaleMax = tupClimate[11]
-						Magemort = tupClimate[12]
-						Fagemort = tupClimate[13]
-						offno = tupClimate[14]
-						eggs_lambda = tupClimate[15]
-						eggs_sigma = tupClimate[16]
-						K_env = tupClimate[17]
-						Mnewmort = tupClimate[18]
-						Fnewmort = tupClimate[19]
-						fitvals = tupClimate[20]
-						mateno = tupClimate[21]
-						Fdispno = tupClimate[22]
-						Mdispno = tupClimate[23]
-						twinning = tupClimate[24]						
-												
-						# Error check for if nofiles == nogrids system exit
-						if nogrids != len(cdmatrix_mate):
-							print 'The cost distance matrix dimensions are not the same as the number of individuals.'
-							sys.exit(-1)
-						
-						# Print to log
-						stringout = 'DoCDCliamte(): '+str(datetime.datetime.now() -start_time1) + ''
-						logMsg(logfHndl,stringout)
-						print 'DoCDClimate(): ',str(datetime.datetime.now() -start_time1),''	
-				
+				if len(np.where(np.asarray(cdclimgentime) == str(gen))[0]) == 1:
+					tupClimate = DoCDClimate(datadir,np.where(np.asarray(cdclimgentime) == str(gen))[0][0],cdclimgentime,matecdmatfile,dispcdmatfile,matemoveno,Fdispmoveno,Mdispmoveno,matemovethresh,Fdispmovethresh,Mdispmovethresh,matemoveparA,matemoveparB,matemoveparC,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,subpop,Magemortvals,Fagemortvals,offnovals,egg_lmbdavals,egg_sigmavals,K_envvals,Mnewmortperc,Fnewmortperc,fitvals_pass,twinning_pass,Mmaturevals,Fmaturevals,betaFile_selection,xvars_betas_pass,epimod_pass,epireset_pass,betaFile_epigene,cdevolveans,epigeneans,xEvars_pass)
+					
+					cdmatrix_mate = tupClimate[0]
+					cdmatrix_F = tupClimate[1]
+					cdmatrix_M = tupClimate[2]				
+					thresh_mate = tupClimate[3]
+					thresh_F = tupClimate[4]
+					thresh_M = tupClimate[5]				
+					Fdisp_ScaleMin = tupClimate[6]
+					Fdisp_ScaleMax = tupClimate[7]
+					Mdisp_ScaleMin = tupClimate[8]
+					Mdisp_ScaleMax = tupClimate[9]
+					mate_ScaleMin = tupClimate[10]
+					mate_ScaleMax = tupClimate[11]
+					Magemort = tupClimate[12]
+					Fagemort = tupClimate[13]
+					offno = tupClimate[14]
+					eggs_lambda = tupClimate[15]
+					eggs_sigma = tupClimate[16]
+					K_env = tupClimate[17]
+					Mnewmort = tupClimate[18]
+					Fnewmort = tupClimate[19]
+					fitvals = tupClimate[20]
+					mateno = tupClimate[21]
+					Fdispno = tupClimate[22]
+					Mdispno = tupClimate[23]
+					twinning = tupClimate[24]
+					Mmature = tupClimate[25]
+					Fmature = tupClimate[26]
+					betas_selection = tupClimate[27]
+					xvars_betas = tupClimate[28]
+					epimod = tupClimate[29]
+					epireset = tupClimate[30]
+					betas_epigene = tupClimate[31]
+					xEvars = tupClimate[32]
+											
+					# Error check for if nofiles == nogrids system exit
+					if nogrids != len(cdmatrix_mate):
+						print 'The cost distance matrix dimensions are not the same as the number of individuals.'
+						sys.exit(-1)
+					
+					# Print to log
+					stringout = 'DoCDCliamte(): '+str(datetime.datetime.now() -start_time1) + ''
+					logMsg(logfHndl,stringout)
+					print 'DoCDClimate(): ',str(datetime.datetime.now() -start_time1),''	
+					
 				# -------------------------------	
 				# Call ReadGrid()
 				# -------------------------------
@@ -470,9 +595,33 @@ if __name__ == '__main__':
 					# Timing events: start
 					start_time1 = datetime.datetime.now()
 					
+					# ---------------------------------
+					# Add individuals if specified
+					# ---------------------------------					
+					if len(xyfilename) > 1:
+						# Check gen time equal to cdclimgentime
+						if len(np.where(np.asarray(cdclimgentime) == str(gen))[0]) == 1:
+							
+							# Timing events: start
+							start_time1 = datetime.datetime.now()
+							
+							tupAddInds = AddIndividuals(cdclimgentime,gen,idnew,agenew,genesnew,sexnew,subpopnew,infectionnew,allelst,xyfilename,datadir,alleles,hindexnew)
+														
+							idnew = tupAddInds[0]
+							sexnew = tupAddInds[1]
+							agenew = tupAddInds[2]
+							genesnew = tupAddInds[3]
+							infectionnew = tupAddInds[4]
+							hindexnew = tupAddInds[5]
+							
+							# Print to log
+							stringout = 'AddIndividuals(): '+str(datetime.datetime.now() -start_time1) + ''
+							logMsg(logfHndl,stringout)
+							print('AddIndividuals()',str(datetime.datetime.now() -start_time1),'')		
+					
 					tupReadGrid = ReadGrid(FIDnew,idnew,agenew,xgridnew,\
 					ygridnew,genesnew,equalsexratio,sexnew,subpopnew,\
-					infectionnew,allelst,geneswap,gen,intgenesans)	
+					infectionnew,allelst,geneswap,gen,intgenesans,hindexnew)	
 
 					FID = tupReadGrid[0]
 					sex = tupReadGrid[1]
@@ -486,7 +635,8 @@ if __name__ == '__main__':
 					nogrids = tupReadGrid[9]
 					subpop = tupReadGrid[10]
 					infection = tupReadGrid[11]
-					filledgrids = tupReadGrid[12]
+					filledgrids = tupReadGrid[12]					
+					hindex = tupReadGrid[13]
 					
 					# Exit system if population is 0 or 1
 					if filledgrids == 0 or filledgrids == 1:
@@ -515,22 +665,42 @@ if __name__ == '__main__':
 				# ---------------------------------
 				# Call GetMetrics()
 				# ---------------------------------
-				
+				#pdb.set_trace()
 				# Timing events: start
 				start_time1 = datetime.datetime.now()
 				
 				tupGetMetrics = GetMetrics(Population,nogrids,loci,alleles,genes,\
-				gen,Ho,Alleles,He,subpop,p1,p2,q1,q2,Population_age,age,Magemort,geneswap,allelst)
+				gen,Ho,Alleles,He,subpop,p1,p2,q1,q2,Population_age,Females_age,Males_age,age,sex,Magemort,geneswap,cdevolveans,xvars_betas,betas_selection,maxfit,minfit,xEvars,epistasis)
 				
-				Alleles = tupGetMetrics[0]
-				filledgrids = tupGetMetrics[1]
-				subgridtotal = tupGetMetrics[2]
+				filledgrids = tupGetMetrics[0]
+				subgridtotal = tupGetMetrics[1]
 				
 				# Print to log
 				stringout = 'GetMetrics(): '+str(datetime.datetime.now() -start_time1) + ''
 				logMsg(logfHndl,stringout)
 				print 'GetMetrics(): ',str(datetime.datetime.now() -start_time1),''
-								
+				#pdb.set_trace()
+				# --------------------------------
+				# Call DoEpigenetics
+				# --------------------------------
+				# Add time step to each tracker variable here
+				if epigeneans != 'N':
+					# Timing events: start
+					start_time1 = datetime.datetime.now()
+					
+					tupEpigene = DoEpigenetics(epimod,betas_epigene,sex,id,age,genes,infection,Track_EpigeneMod1,Track_EpigeneMod2,Track_EpigeneDeaths,gen,cdevolveans,epigeneans,startEpigene,geneswap)
+
+					id = tupEpigene[0]
+					sex = tupEpigene[1]
+					age = tupEpigene[2]
+					genes = tupEpigene[3]
+					infection = tupEpigene[4]
+					
+					# Print to log
+					stringout = 'DoEpigenetics(): '+str(datetime.datetime.now() -start_time1) + ''
+					logMsg(logfHndl,stringout)
+					print 'DoEpigenetics(): ',str(datetime.datetime.now() -start_time1),''
+									
 				# ---------------------------------------
 				# Call DoMate()
 				# ---------------------------------------
@@ -538,11 +708,11 @@ if __name__ == '__main__':
 				# Timing events: start
 				start_time1 = datetime.datetime.now()
 				
-				tupMate = DoMate(nogrids,sex,eggs_lambda,age,\
+				tupMate = DoMate(nogrids,sex,age,\
 				freplace,mreplace,mateno,thresh_mate,\
 				cdmatrix_mate,MateDistED,MateDistCD,xgridcopy,\
 				ygridcopy,ToTMales,ToTFemales,BreedMales,BreedFemales,\
-				sexans,selfans,FID,\
+				sexans,selfans,\
 				MateDistEDstd, MateDistCDstd,FAvgMate,MAvgMate,\
 				FSDMate,MSDMate,filledgrids,Female_BreedEvents,gen,subpop,BreedFemales_age,Magemort,subpopmatemort,subpopmortperc,Mmature,Fmature,mate_ScaleMax,mate_ScaleMin,matemoveparA,matemoveparB,matemoveparC,MateDistances)
 				Bearpairs = tupMate[0]
@@ -559,7 +729,7 @@ if __name__ == '__main__':
 				stringout = 'DoMate(): '+str(datetime.datetime.now() -start_time1) + ''
 				logMsg(logfHndl,stringout)
 				print 'DoMate(): ',str(datetime.datetime.now() -start_time1),''
-									
+								
 				# ---------------------------------------
 				# Call DoOffspring()
 				# ---------------------------------------
@@ -569,7 +739,7 @@ if __name__ == '__main__':
 				
 				tupDoOff = DoOffspring(offno,eggs_lambda,Bearpairs,CDpairs,Femalepercent,\
 				Births,infection,transmissionprob,equalsexratio,\
-				Mnewmort,Fnewmort,Track_MOffDeaths,Track_FOffDeaths,eggs_sigma,age,sex,twinning,Twins)
+				Mnewmort,Fnewmort,Track_MOffDeaths,Track_FOffDeaths,eggs_sigma,age,sex,twinning,Twins,subpop)
 				
 				offspring = tupDoOff[0]	
 				offspringno = tupDoOff[1]
@@ -586,8 +756,9 @@ if __name__ == '__main__':
 				# Timing events: start
 				start_time1 = datetime.datetime.now()
 				
-				offspring = InheritGenes(gen,AllelesMutated,offspringno,\
-				offspring,genes,loci,muterate,mtdna,mutationans,geneswap)
+				offspring = InheritGenes(gen,AllelesMutated,offspringno,offspring,genes,loci,muterate,mtdna,\
+                             mutationans,geneswap,epireset,Track_EpigeneReset1,Track_EpigeneReset2,\
+                             startEpigene,epigeneans,cdevolveans,alleles,hindex)
 				
 				# Print to log
 				stringout = 'InheritGenes(): '+str(datetime.datetime.now() -start_time1) + ''
@@ -601,8 +772,9 @@ if __name__ == '__main__':
 				# Timing events: start
 				start_time1 = datetime.datetime.now()
 				
-				tupAMort = DoMortality(filledgrids,nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track_MDeaths,Track_FDeaths,alleles,FID,Magemort,Fagemort,\
-				infection,geneswap,popmodel,K_env,fitvals,mature,cdevolveans,Opt3SelectionDeaths,burningen)
+				tupAMort = DoMortality(nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track_MDeaths,Track_FDeaths,\
+                           FID,Magemort,Fagemort,infection,geneswap,popmodel,K_env,fitvals,\
+                           mature,cdevolveans,Opt3SelectionDeaths,startSelection,subpop,hindex)
 				
 				freegrid = tupAMort[0]
 				id = tupAMort[1]
@@ -613,16 +785,18 @@ if __name__ == '__main__':
 				genes = tupAMort[6]	
 				FID = tupAMort[7]
 				infection = tupAMort[8]
+				# Mature skipped, not used from here on out
+				hindex = tupAMort[10]
 							
 				# Print to log
 				stringout = 'DoAdultMortality(): '+str(datetime.datetime.now() -start_time1) + ''
 				logMsg(logfHndl,stringout)
 				print 'DoAdultMortality(): ',str(datetime.datetime.now() -start_time1),''
-										
+									
 				# ------------------------------------------
 				# Call DoDisperse()
 				# ------------------------------------------			
-			
+				
 				# Timing events: start
 				start_time1 = datetime.datetime.now()
 				
@@ -633,7 +807,9 @@ if __name__ == '__main__':
 				logfHndl,cdevolveans,fitvals,FDispDistEDstd,MDispDistEDstd,\
 				FDispDistCDstd,MDispDistCDstd,subpop,subpopmigration,DisperseDeaths,CouldNotDisperse,\
 				subpopmortperc,philopatry,females,subpopemigration,females_nomate[gen],\
-				males,males_nomate[gen],burningen,thresh_F,thresh_M,Fdisp_ScaleMax,Fdisp_ScaleMin,Mdisp_ScaleMax,Mdisp_ScaleMin,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,betas,xvars_betas)
+                males,males_nomate[gen],startSelection,thresh_F,thresh_M,Fdisp_ScaleMax,\
+                Fdisp_ScaleMin,Mdisp_ScaleMax,Mdisp_ScaleMin,FdispmoveparA,FdispmoveparB,\
+                FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,betas_selection,xvars_betas,maxfit,minfit)
 				
 				OffDisperseIN = tupDoDisp[0]
 				opengrids = tupDoDisp[1]
@@ -643,19 +819,19 @@ if __name__ == '__main__':
 				stringout = 'DoDisperse(): '+str(datetime.datetime.now() -start_time1) + ''
 				logMsg(logfHndl,stringout)
 				print 'DoDisperse(): ',str(datetime.datetime.now() -start_time1),''
-					
+				
 				# ------------------------------------------
 				# Call DoOutput()
 				# ------------------------------------------	
 				
 				# Timing events: start
 				start_time1 = datetime.datetime.now()
-								
+							
 				tupDoOut = DoOutput(nogrids,FID,OffDisperseIN,\
 				xgridcopy,ygridcopy,gen,id,sex,age,xgrid,\
 				ygrid,genes,nthfile,ithmcrundir,loci,alleles,subpop,\
 				logfHndl,gridformat,infection,Infected,cdinfect,\
-				opengrids,DispDistCD,geneswap)
+				opengrids,DispDistCD,geneswap,hindex)
 				
 				FIDnew = tupDoOut[0]
 				idnew = tupDoOut[1]
@@ -665,7 +841,8 @@ if __name__ == '__main__':
 				ygridnew = tupDoOut[5]
 				genesnew = tupDoOut[6]
 				subpopnew = tupDoOut[7]
-				infectionnew = tupDoOut[8]
+				infectionnew = tupDoOut[8]				
+				hindexnew = tupDoOut[9]
 				
 				# Print to log
 				stringout = 'DoOutput(): '+str(datetime.datetime.now() -start_time1) + ''
@@ -687,7 +864,7 @@ if __name__ == '__main__':
 			start_time1 = datetime.datetime.now()
 			
 			DoPostProcess(ithmcrundir,nogrids,\
-			xgridcopy,ygridcopy,gendmatans,\
+			xgridcopy,ygridcopy,\
 			loci,alleles,looptime,Population,ToTFemales,ToTMales,\
 			BreedFemales,BreedMales,Migrants,Births,\
 			Track_MDeaths,Track_FDeaths,Alleles,He,Ho,AllelesMutated,\
@@ -695,8 +872,8 @@ if __name__ == '__main__':
 			logfHndl,p1,p2,q1,q2,Infected,subpop,MateDistEDstd,\
 			FDispDistEDstd,MDispDistEDstd,MateDistCDstd,FDispDistCDstd,MDispDistCDstd,subpopmigration,\
 			FAvgMate,MAvgMate,FSDMate,MSDMate,DisperseDeaths,Open,CouldNotDisperse,\
-			Female_BreedEvents,gridformat,subpopemigration,females_nomate,subgridtotal,Track_MOffDeaths,Track_FOffDeaths,Population_age,\
-			BreedFemales_age,subpopmatemort,Opt3SelectionDeaths,MateDistances,matedist_out,Twins)
+			Female_BreedEvents,gridformat,subpopemigration,females_nomate,subgridtotal,Track_MOffDeaths,Track_FOffDeaths,Population_age,Females_age,Males_age,\
+			BreedFemales_age,subpopmatemort,Opt3SelectionDeaths,MateDistances,matedist_out,Twins,Track_EpigeneMod1,Track_EpigeneMod2,Track_EpigeneDeaths,Track_EpigeneReset1,Track_EpigeneReset2)
 			
 			# Print to log
 			stringout = 'DoPostProcess(): '+str(datetime.datetime.now() -start_time1) + ''

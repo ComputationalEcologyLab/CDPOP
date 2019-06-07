@@ -86,7 +86,7 @@ def DoOffspringSex(Bearpairs,Femalepercent,CDpairs,equalsexratio):
 	# End::DoOffspringSex()
 
 # ---------------------------------------------------------------------------------------------------	
-def DoOffspringRandom(Bearpairs,CDpairs,lmbdavals,age):
+def DoOffspringRandom(Bearpairs,CDpairs,lmbdavals,age,subpop):
 	'''
 	DoOffspringRandom()
 	This function chooses a random number of 
@@ -105,13 +105,19 @@ def DoOffspringRandom(Bearpairs,CDpairs,lmbdavals,age):
 		else:
 			
 			# Get age of female
-			Fage = int(age[Bearpairs[i][0]])
-			if Fage >= len(lmbdavals)+1:
-				Fage = len(lmbdavals)-1
-			lmbda = lmbdavals[Fage-1]
+			Fage = int(age[Bearpairs[i][0]])			
+			# Get the subpop female is from - subtract 1 to count from zero
+			# Only if more than one Agevars file is given for subpops
+			if len(lmbdavals) > 1:
+				Fpop = int(subpop[Bearpairs[i][0]])-1
+			else:
+				Fpop = 0
+			if Fage >= len(lmbdavals[Fpop])+1:
+				Fage = len(lmbdavals[Fpop])-1
+			lmbda = lmbdavals[Fpop][Fage-1]
 			
 			# Randomly choose a number between 0 and 4
-			randkidno = int(int((lmbda))*rand())
+			randkidno = int(round(lmbda)*rand())
 			
 			# Append Offspring number to end of Pairs [F,M,#offspring]
 			Bearpairs[i].append(randkidno)
@@ -123,7 +129,7 @@ def DoOffspringRandom(Bearpairs,CDpairs,lmbdavals,age):
 	# End::DoOffspringRandom()
 
 # ---------------------------------------------------------------------------------------------------	
-def DoOffspringPoisson(Bearpairs,CDpairs,lmbdavals,age):
+def DoOffspringPoisson(Bearpairs,CDpairs,lmbdavals,age,subpop):
 	'''
 	DoOffspringPoisson()
 	This function chooses a number of offspring 
@@ -142,11 +148,17 @@ def DoOffspringPoisson(Bearpairs,CDpairs,lmbdavals,age):
 		else:
 			
 			# Get age of female
-			Fage = int(age[Bearpairs[i][0]])
-			if Fage >= len(lmbdavals)+1:
-				Fage = len(lmbdavals)-1
-			lmbda = lmbdavals[Fage-1]
-			
+			Fage = int(age[Bearpairs[i][0]])			
+			# Get the subpop female is from - subtract 1 to count from zero
+			# Only if more than one Agevars file is given for subpops
+			if len(lmbdavals) > 1:
+				Fpop = int(subpop[Bearpairs[i][0]])-1
+			else:
+				Fpop = 0
+			if Fage >= len(lmbdavals[Fpop])+1:
+				Fage = len(lmbdavals[Fpop])-1
+			lmbda = lmbdavals[Fpop][Fage-1]
+						
 			# Poisson number with mean, lambda
 			poissonkidno = poisson(lmbda)
 			
@@ -160,7 +172,7 @@ def DoOffspringPoisson(Bearpairs,CDpairs,lmbdavals,age):
 	# End::DoOffspringPoisson()
 
 # ---------------------------------------------------------------------------------------------------	
-def DoOffspringConstant(Bearpairs,CDpairs,lmbdavals,age):
+def DoOffspringConstant(Bearpairs,CDpairs,lmbdavals,age,subpop):
 	'''
 	DoOffspringConstant()
 	This function chooses a constant number of 
@@ -177,16 +189,21 @@ def DoOffspringConstant(Bearpairs,CDpairs,lmbdavals,age):
 		
 		# If females did mate up, then assign lmbda constant
 		else:
-			
 			# Get age of female
 			Fage = int(age[Bearpairs[i][0]])
-			if Fage >= len(lmbdavals)+1:
-				Fage = len(lmbdavals)-1
-			lmbda = lmbdavals[Fage-1]
+			# Get the subpop female is from - subtract 1 to count from zero
+			# Only if more than one Agevars file is given for subpops
+			if len(lmbdavals) > 1:
+				Fpop = int(subpop[Bearpairs[i][0]])-1
+			else:
+				Fpop = 0
+			if Fage >= len(lmbdavals[Fpop])+1:
+				Fage = len(lmbdavals[Fpop])-1
+			lmbda = lmbdavals[Fpop][Fage-1]
 			
 			# Assign a 1 [F,M,#offspring]
-			Bearpairs[i].append(int(lmbda))
-			CDpairs[i].append(int(lmbda))
+			Bearpairs[i].append(int(round(lmbda)))
+			CDpairs[i].append(int(round(lmbda)))
 			
 	# Variables returned
 	tupDoOffConst = Bearpairs,CDpairs
@@ -194,7 +211,7 @@ def DoOffspringConstant(Bearpairs,CDpairs,lmbdavals,age):
 	# End::DoOffspringConstant()
 	
 # ---------------------------------------------------------------------------------------------------	
-def DoOffspringEqual(offspring,lmbdavals,age):
+def DoOffspringEqual(offspring,lmbdavals,age,subpop):
 	'''
 	DoOffspringEqual()
 	This function chooses lmbda number of offspring for each female.
@@ -211,20 +228,27 @@ def DoOffspringEqual(offspring,lmbdavals,age):
 		
 		# Get unique Female locations
 		uniqueSet = Set(item for item in tempFemales)
-
+		
 		# Loop through unique Set of females and create sample list
 		returnOff = []
 		for item in uniqueSet:
-		
+			
 			# Get age of unique female
 			Fage = int(age[item])
-			if Fage >= len(lmbdavals)+1:
-				Fage = len(lmbdavals)-1
-			lmbda = lmbdavals[Fage-1] 
+			# Get the subpop female is from - subtract 1 to count from zero
+			# Only if more than one Agevars file is given for subpops
+			if len(lmbdavals) > 1:
+				Fpop = int(subpop[item])-1
+			else:
+				Fpop = 0
+			if Fage >= len(lmbdavals[Fpop])+1:
+				Fage = len(lmbdavals[Fpop])-1
+			lmbda = lmbdavals[Fpop][Fage-1]
+			 
 			# Get where this female is in offspring list
 			tempFloc = np.where(tempFemales == item)[0]
 			# Then random sample lmbda of them
-			sampOffloc = random.sample(tempFloc,int(lmbda))
+			sampOffloc = random.sample(tempFloc,int(round(lmbda)))
 			for i in xrange(len(sampOffloc)):
 				returnOff.append(offspring[sampOffloc[i]])
 	else:
@@ -234,7 +258,7 @@ def DoOffspringEqual(offspring,lmbdavals,age):
 	# End::DoOffspringEqual()
 
 # ---------------------------------------------------------------------------------------------------
-def DoOffspringNormal(Bearpairs,CDpairs,lmbdavals,sigmavals,age):
+def DoOffspringNormal(Bearpairs,CDpairs,lmbdavals,sigmavals,age,subpop):
 	
 	# Loop through each mate pair
 	for i in xrange(len(Bearpairs)):
@@ -249,15 +273,28 @@ def DoOffspringNormal(Bearpairs,CDpairs,lmbdavals,sigmavals,age):
 			
 			# Get age of female
 			Fage = int(age[Bearpairs[i][0]])
-			if Fage >= len(lmbdavals)+1:
-				Fage = len(lmbdavals)-1
-			lmbda = lmbdavals[Fage-1]
-			sigma = sigmavals[Fage-1]
+			# Get the subpop female is from - subtract 1 to count from zero
+			# Only if more than one Agevars file is given for subpops
+			if len(lmbdavals) > 1:
+				Fpop = int(subpop[Bearpairs[i][0]])-1
+			else:
+				Fpop = 0
 			
-			# Poisson number with mean, lambda
-			normalkidno = int(np.random.normal(lmbda,sigma))
-			if normalkidno < 0:
-				normalkidno == 0
+			if Fage >= len(lmbdavals[Fpop])+1:
+				Fage = len(lmbdavals[Fpop])-1
+			lmbda = lmbdavals[Fpop][Fage-1]
+			sigma = sigmavals[Fpop][Fage-1]
+			
+			# Normal
+			if lmbda != 0:
+				if sigma == 0:
+					print('Normal draw needs std for offspring number.')
+					sys.exit(-1)
+				normalkidno = int(round(np.random.normal(lmbda,sigma)))
+				if normalkidno < 0:
+					normalkidno = 0
+			else:
+				normalkidno = 0
 			
 			# Append Offspring number to end of Pairs [F,M,#offspring]
 			Bearpairs[i].append(normalkidno)
@@ -322,134 +359,169 @@ def DoCDInfectAndTwinning(offspring,infection,transmissionprob,twinning,Twins):
 	# End::DoCDInfect()	
 	
 # ----------------------------------------------------------------------------------------------	 
-def DoOffMortality(offspring,Mnewmortperc,Fnewmortperc,equalsexratio,offno,age,lmbda,sex,Track_MOffDeaths,Track_FOffDeaths,twinning):
+def DoOffMortality(offspring,Mnewmortperc,Fnewmortperc,equalsexratio,offno,age,lmbda,sex,Track_MOffDeaths,Track_FOffDeaths,subpop):
 	'''
+	DoOffMortality()
 	DoOffMortality()
 	Mortality functions for age 0 class.
 	'''
+	
 	if len(offspring) != 0:
-		# s0 given - global survival for age0s
-		s0_males = 1. - Mnewmortperc
-		s0_females = 1. - Fnewmortperc
-		
+				
 		# Special case for stable age distribution - adjust survival number
 		if offno == '6':
+			
+			if equalsexratio == 'AtBirth':
+				print('Not operating currently with special case of offno=6 for equalsexratio=AtBirth.')
+				sys.exit(-1)			
+			
 			tempoffspring = [] # storage for survived offspring as loop through age classes
 			
-			if (Mnewmortperc != Fnewmortperc):
+			if (np.asarray(Mnewmortperc[0]) != np.asarray(Fnewmortperc[0])):
 				print('Warning: Age 0 mortality is different for males and females, and option 6 offno is being used. Using average survival.')
-			s0 = 1. - ((Mnewmortperc + Fnewmortperc) / 2.)
-			# Get unique ages
-			countage = Counter(np.asarray(np.asarray(age,dtype='|S10')[np.where(np.asarray(age,dtype='|S10') != 'NA')[0]],dtype=np.int8))
-			# Get female locations and age of each
-			Fsex = np.where(np.asarray(sex) == '0')[0]
-			Fsexage = np.asarray(age)[Fsex]
-			Fsexage = np.asarray(Fsexage,dtype = int)				
+			s0 = 1. - ((Mnewmortperc[0] + Fnewmortperc[0]) / 2.)
+			s0_pops = 1. - ((np.asarray(Mnewmortperc) + np.asarray(Fnewmortperc)) / 2.)
 			
-			# Loop through age classes - careful of indexing
-			for i in xrange(len(lmbda)):
-				# For indexing, get age here
-				ageindex = i+1
-				
-				# Get total individuals in each age class
-				Nt = countage[ageindex]
-				# Get total females in each age class
-				Ft = len(np.where(Fsexage == ageindex)[0])			
-				# Get number of offspring produced by each age class
-				Ft_offno = Ft * lmbda[i]
-							
-				if Ft == 0:
-					break			
-				
-				# Get corrected survival number
-				correctedS0 = s0*Nt/Ft
-				
-				# Find the location of this female age class - this is their unique ID/location
-				Fspots = Fsex[np.where(Fsexage == ageindex)[0]]
-				
-				# Get mother locations in offspring list - this is all of the mother's ID that had offspring
-				motheroff = np.asarray(offspring)[:,0]
-				
-				# For each Fspot, return offspring location index
-				offspot = [] 
-				for j in xrange(len(Fspots)):
-					offspot.append(list(np.where(motheroff == str(Fspots[j]))[0])) # Be careful of string searches
-				offspot = sum(offspot,[])
-				offspot = np.asarray(offspot) # This is the age specific females that had the offspring in the offspring list.
-				if len(offspot) == 0:
-					tempoffspot = offspot
-				else:
-					tempoffspot = np.asarray(offspring)[offspot]			
-				tempoffspot = tempoffspot.tolist()
-				
-				# Shuffle the offspring list
-				shuffle(tempoffspot)
-				
-				# Get the number of survivors/deaths
-				#offsurvivors = int(round((correctedS0)*len(offspot)))
-				offsurvivors = int(round(correctedS0))			
-							
-				if equalsexratio == 'AtBirth':
-					print('Not operating currently with special case of offno=6 for equalsexratio=AtBirth.')
-					sys.exit(-1)
-					offdeaths = int(len(offspot) - offsurvivors)
-					# Sort by sex
-					tempoffspot.sort(key=lambda x: x[4])
-					# The remove first half of offsurvive and last half
-					temp = tempoffspot[(offdeaths/2):]
-					temp = temp[0:len(temp)-(offdeaths/2)]
-					tempoffspring.append(temp)
-				else:		
-					# Grab the survived offspring location
-					tempoffspring.append(tempoffspot[0:offsurvivors])
-				
-			# Flatten tempoffspring list
-			tempoffspring = sum(tempoffspring,[])
+			# Get mothers locations
+			motherspots = np.asarray(offspring,dtype = 'int')[:,0]
+			motherpops = np.asarray(subpop)[motherspots]
 			
+			# Loop through each supop
+			for ipop in xrange(len(Mnewmortperc)):			
+				
+				# Get total in this subpop and their ages for Nt calculation
+				thispop = np.where(np.asarray(subpop,dtype='|S10') == str(ipop+1))[0]
+				thispop_countage = Counter(np.asarray(age)[thispop]) # string with NAs
+				
+				# Get the mothers in this subpop, this is their index location back to offspring array
+				mothers_inthispop_index = np.where(motherpops == str(ipop+1))[0]
+				mothers_inthispop_FID = motherspots[np.where(motherpops == str(ipop+1))[0]]
+
+				# Is there any mothers here?
+				if len(mothers_inthispop_index) == 0:
+					continue				
+				
+				# Get the ages of the mothers in this pop
+				mothers_ages = np.asarray(np.asarray(age)[mothers_inthispop_FID],dtype = 'int')
+				
+				# Loop through the age cohorts of mothers and adjust offspring survival
+				mothers_countage = Counter(np.asarray(mothers_ages,dtype=np.int8))
+				
+				# Loop through age classes being careful of indexing
+				for iage in xrange(len(lmbda[0])):
+					# Get the age here, 1+
+					ageindex = iage + 1				
+				
+					# Get total individuals in this age class
+					Nt = thispop_countage[str(ageindex)]
+					# Get total females in this age class
+					Ft = mothers_countage[ageindex]			
+					# Get number of offspring produced by each age class
+					Ft_offno = Ft * lmbda[ipop][iage]
+								
+					# Females here?
+					if Ft == 0:
+						continue
+					
+					# Get corrected survival number
+					correctedS0 = s0_pops[ipop]*Nt/Ft
+					# Get the number of offspring survivors from this cohort
+					nooffsurvivors = int(round(correctedS0))	
+					
+					# Locate the mothers of this age class, and get original index back
+					mothers_thisage = mothers_inthispop_index[np.where(mothers_ages == ageindex)[0]]
+					
+					# Case where corrected number is more than offspring here
+					if nooffsurvivors > len(mothers_thisage): 
+						nooffsurvivors = len(mothers_thisage)
+						
+					# Randomly sample the index for survivors
+					offsurvived_index = random.sample(mothers_thisage,nooffsurvivors)
+					
+					# Then store those offspring
+					for ioff in xrange(len(offsurvived_index)):
+						tempoffspring.append(offspring[offsurvived_index[ioff]])					
+					
 			# Tracking
 			Track_MOffDeaths.append((len(offspring)-len(tempoffspring))/2.)
 			Track_FOffDeaths.append((len(offspring)-len(tempoffspring))/2.)
-			
-		else:
-			# Get number of survivors for female and male
-			offsex = np.asarray(offspring)[:,4]
-			#Foffsex = np.concatenate((np.where(offsex == '0')[0],np.where(offsex == '0T')[0]),axis = 0)
-			#Moffsex = np.concatenate((np.where(offsex == '1')[0],np.where(offsex == '1T')[0]),axis = 0) 
-			Foffsex = np.where(offsex == '0')[0]
-			Moffsex = np.where(offsex == '1')[0]
-			# Index location
-			Foffsurvivors = int(round((s0_females)*len(Foffsex)))
-			Moffsurvivors = int(round((s0_males)*len(Moffsex)))
-			Foffdeaths = int(round((Fnewmortperc)*len(Foffsex)))
-			Moffdeaths = int(round((Mnewmortperc)*len(Moffsex)))			
-			
-			# Shuffle Female and male index list
-			shuffle(Foffsex)
-			shuffle(Moffsex)
-			
-			if equalsexratio == 'AtBirth':
-				if (Foffdeaths + Moffdeaths) > 0:
-					print('Warning: Equal sex ratio AtBirth is specified with different age 0 mortality values. Using total age 0 deaths.')
-				offdeaths = Foffdeaths + Moffdeaths
-				
-				# Remove equally from F and M 
-				tempFoff = Foffsex[0:len(Foffsex)-(offdeaths/2)]
-				tempMoff = Moffsex[0:len(Moffsex)-(offdeaths/2)]
-				
-			else:								
-				# Grab the survived female and male index list 
-				tempFoff = Foffsex[0:Foffsurvivors]
-				tempMoff = Moffsex[0:Moffsurvivors]
-			
-			tempoff = np.concatenate((tempFoff,tempMoff),axis=0)
-			# Grab the survived offspring location
-			tempoffspring = np.asarray(offspring)[tempoff]
-			# Back to list
-			tempoffspring = tempoffspring.tolist()
-				
-			# Tracking
-			Track_MOffDeaths.append(Moffdeaths)
-			Track_FOffDeaths.append(Foffdeaths)
+							
+		# Other cases not offno 6
+		else:# Get number of survivors for female and male
+			if equalsexratio != 'AtBirth':
+				tempoffspring = []
+				tempTrackMmort = []
+				tempTrackFmort = []
+				# Skip this loop if mortality is 0, all survive
+				if not ((sum(Fnewmortperc)) == 0 and (sum(Mnewmortperc) == 0)):
+					# Loop through each offspring
+					for ioff in xrange(len(offspring)):
+						thisoff = offspring[ioff]
+						# Get subpop from, but only if more than one AgeVars given
+						if len(Fnewmortperc) > 1:
+							offpop = int(subpop[thisoff[0]])-1 #subract 1 to count from 0
+						else:
+							offpop = 0
+						offsex = thisoff[4]
+						if offsex == 0:
+							offmort = Fnewmortperc[offpop]
+						else:
+							offmort = Mnewmortperc[offpop]
+						# See if survives
+						randno = rand()
+						if randno < offmort: # mortality occurs
+							# Tracking
+							if offsex == 0:
+								tempTrackFmort.append(1)
+							else:
+								tempTrackMmort.append(1)
+						else: # offspring survives
+							tempoffspring.append(thisoff)
+					
+					# Tracking
+					Track_MOffDeaths.append(sum(tempTrackMmort))
+					Track_FOffDeaths.append(sum(tempTrackFmort))
+				else:
+					# Tracking
+					Track_MOffDeaths.append(0)
+					Track_FOffDeaths.append(0)
+					tempoffspring = offspring
+			# For AtBrith option 
+			else:
+				if len(Mnewmortperc) > 1:
+					print('Multiple AgeVars files (e.g., subpops) not currently operating with AtBirth equal sex ratio option.')
+					sys.exit(-1)
+				else:
+					offsex = np.asarray(offspring)[:,4]
+					Foffsex = np.where(offsex == '0')[0]
+					Moffsex = np.where(offsex == '1')[0]
+					# Index location
+					Foffdeaths = int(round((Fnewmortperc[0])*len(Foffsex)))
+					Moffdeaths = int(round((Mnewmortperc[0])*len(Moffsex)))			
+					
+					# Shuffle Female and male index list
+					shuffle(Foffsex)
+					shuffle(Moffsex)
+					
+					if (Foffdeaths + Moffdeaths) > 0:
+						print('Warning: Equal sex ratio AtBirth is specified with different age 0 mortality values. Using total age 0 deaths.')
+					offdeaths = Foffdeaths + Moffdeaths
+					
+					# Remove equally from F and M 
+					tempFoff = Foffsex[0:len(Foffsex)-(offdeaths/2)]
+					tempMoff = Moffsex[0:len(Moffsex)-(offdeaths/2)]					
+					
+					# Get index death locations for F and M
+					delFoff = Foffsex[0:offdeaths/2]
+					delMoff = Moffsex[0:offdeaths/2]
+					deloff = np.concatenate((delFoff,delMoff),axis=0)
+					
+					for ioff in sorted(deloff,reverse=True):
+						del offspring[ioff]
+					tempoffspring = offspring
+					# Tracking
+					Track_MOffDeaths.append(Moffdeaths)
+					Track_FOffDeaths.append(Foffdeaths)
 	
 	# Else no offspring
 	else:
@@ -463,7 +535,7 @@ def DoOffMortality(offspring,Mnewmortperc,Fnewmortperc,equalsexratio,offno,age,l
 	
 # ---------------------------------------------------------------------------------------------------	 
 def DoOffspring(offno,lmbda,Bearpairs,CDpairs,\
-Femalepercent,Births,infection,transmissionprob,equalsexratio,Mnewmortperc,Fnewmortperc,Track_MOffDeaths,Track_FOffDeaths,sigma,age,sex,twinning,Twins):
+Femalepercent,Births,infection,transmissionprob,equalsexratio,Mnewmortperc,Fnewmortperc,Track_MOffDeaths,Track_FOffDeaths,sigma,age,sex,twinning,Twins,subpop):
 	'''
 	DoOffspring()
 	Choose numberof Offspring for each mated pair
@@ -477,7 +549,7 @@ Femalepercent,Births,infection,transmissionprob,equalsexratio,Mnewmortperc,Fnewm
 	# Function 1 is a uniform random draw between 0 and lmdba number	
 	if (offno=='1'):
 		
-		tupDoOffRand = DoOffspringRandom(Bearpairs,CDpairs,lmbda,age)
+		tupDoOffRand = DoOffspringRandom(Bearpairs,CDpairs,lmbda,age,subpop)
 		
 		Bearpairs = tupDoOffRand[0]
 		CDpairs = tupDoOffRand[1]
@@ -485,7 +557,7 @@ Femalepercent,Births,infection,transmissionprob,equalsexratio,Mnewmortperc,Fnewm
 	# Function 2 is a Poisson draw
 	elif (offno=='2'):
 	
-		tupDoOffPois = DoOffspringPoisson(Bearpairs,CDpairs,lmbda,age)
+		tupDoOffPois = DoOffspringPoisson(Bearpairs,CDpairs,lmbda,age,subpop)
 		
 		Bearpairs = tupDoOffPois[0]
 		CDpairs = tupDoOffPois[1]
@@ -494,7 +566,7 @@ Femalepercent,Births,infection,transmissionprob,equalsexratio,Mnewmortperc,Fnewm
 	elif (offno=='3' or offno=='4' or offno == '6'):
 	
 		tupDoOffConst = DoOffspringConstant(Bearpairs,CDpairs,\
-		lmbda,age)
+		lmbda,age,subpop)
 		
 		Bearpairs = tupDoOffConst[0]
 		CDpairs = tupDoOffConst[1]
@@ -502,7 +574,7 @@ Femalepercent,Births,infection,transmissionprob,equalsexratio,Mnewmortperc,Fnewm
 	# Function 5 is a normal draw
 	elif (offno=='5'):
 		
-		tupDoOff = DoOffspringNormal(Bearpairs,CDpairs,lmbda,sigma,age)
+		tupDoOff = DoOffspringNormal(Bearpairs,CDpairs,lmbda,sigma,age,subpop)
 		Bearpairs = tupDoOff[0]
 		CDpairs = tupDoOff[1]
 	
@@ -517,17 +589,17 @@ Femalepercent,Births,infection,transmissionprob,equalsexratio,Mnewmortperc,Fnewm
 	# If function 4 is choosen, then weed the offspring here
 	if (offno == '4'):
 		
-		offspring = DoOffspringEqual(offspring,lmbda,age)	
+		offspring = DoOffspringEqual(offspring,lmbda,age,subpop)	
 	
 	# Assign infection to each offspring and Apply twinning possibility here
 	offspring = DoCDInfectAndTwinning(offspring,infection,transmissionprob,twinning,Twins)
-		
+	
 	# Store number of Births
 	Births.append(len(offspring))	
 	
 	# Apply Mortality to the egg class here
-	offspring = DoOffMortality(offspring,Mnewmortperc,Fnewmortperc,equalsexratio,offno,age,lmbda,sex,Track_MOffDeaths,Track_FOffDeaths,twinning)
-		
+	offspring = DoOffMortality(offspring,Mnewmortperc,Fnewmortperc,equalsexratio,offno,age,lmbda,sex,Track_MOffDeaths,Track_FOffDeaths,subpop)
+	
 	# Return variables from this argument, offspring values are all string now.
 	tupDoOff = offspring,len(offspring)
 	return tupDoOff

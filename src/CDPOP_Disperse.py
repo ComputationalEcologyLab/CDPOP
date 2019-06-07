@@ -187,46 +187,122 @@ def GetProbArray(Fxycdmatrix,Mxycdmatrix,tempoffspring,index,freegrid,philopatry
 	# End::GetProbArray()
 
 # ---------------------------------------------------------------------------------------------------	
-def DoMLocusSelection(offspring,tempfreegrid,iteminlist,loci,cdevolveans,betas,xvars):
+def DoHindexSelection(offspring,tempfreegrid,iteminlist,cdevolveans,xvars):
+	'''
+	This function calculates offspring differential mortality, given the individuals hindex, and pars given
+	'''
+	
+	Hindex = offspring[-1] # hindex of offspring
+	
+	if Hindex != -9999:
+		# Linear
+		# ------	
+		if cdevolveans.split('_')[1] == 'Linear':
+			# Get parameters
+			pars = cdevolveans.split('_')[2].split(';')
+			slope_min = float(pars[0])
+			slope_max = float(pars[1])
+			int_min = float(pars[2])
+			int_max = float(pars[3])
+			X_min = float(pars[4])
+			X_max = float(pars[5])
+			X_val = float(xvars[tempfreegrid[iteminlist]][0])
+						
+			# Calculate slope
+			m = ((slope_min - slope_max) / (X_min - X_max)) * X_val - X_min * ((slope_min - slope_max) / (X_min - X_max)) + slope_min
+			
+			# Calculate intercept
+			b = ((int_max - int_min) / (X_min - X_max)) * X_val - X_min * ((int_max - int_min) / (X_min - X_max)) + int_max
+			
+			# Get fitness value
+			Fitness = m * Hindex + b					
+		
+		# Error
+		# -----
+		else:
+			print('Hindex cdevolve answer not given.')
+			sys.exit(-1)
+	
+	# Convert fitness to differential mortality - 1 - Finess
+	differentialmortality = 1. - Fitness
+		
+	return differentialmortality	
+	# End::DoHindexSelection
+	
+# ---------------------------------------------------------------------------------------------------	
+def DoMLocusSelection(offspring,tempfreegrid,iteminlist,loci,cdevolveans,betas,xvars,maxfit,minfit,gen):
 	'''
 	DoMLocusSelection()
 	This function calculates offsprings differential mortality, given the individuals genotype, betas, and xvariables supplied for the linear additive model. 
 	'''
-	
+	#pdb.set_trace() # Check var alleles here too?
 	# Get individuals genes under selection
 	# -----------------------------
 	offgenes = np.asarray(offspring[7]) # Genes
-	offgenes = offgenes.tolist()
-	offgenes = [offgenes[x:x+(len(offgenes)/loci)] for x in xrange(0, len(offgenes), (len(offgenes)/loci))]
-	# Assume the first N loci are under selection
-	selgenes = offgenes[0:int(cdevolveans.split('_')[2].split('L')[1])]
+	#offgenes = offgenes.tolist()
+	#offgenes = [offgenes[x:x+(len(offgenes)/loci)] for x in xrange(0, len(offgenes), (len(offgenes)/loci))]
+	# Assume the first N loci are under selection (and the first A alleles under selection)
+	indexto = int(cdevolveans.split('_')[2].split('L')[1]) * int(cdevolveans.split('_')[3].split('A')[1])
+	selgenes = offgenes[0:indexto]
 	
 	# Apply linear model
-	atspot_xvars = xvars[tempfreegrid[iteminlist]]
+	atspot_xvars = xvars[tempfreegrid[iteminlist]] # X vars at this grid spot
 	
 	linmodel = [] # [xvar][loci][allele]
-	
+	# Loop through each environment
 	for ixvar in xrange(int(cdevolveans.split('_')[1].split('X')[1])):
-		#linmodel.append([])
-		xvar = atspot_xvars[ixvar]
-		for iloci in xrange(int(cdevolveans.split('_')[2].split('L')[1])):
-			#linmodel[ixvar].append([])	
-			for iall in xrange(len(selgenes[iloci])):
-				beta = betas[ixvar][iloci][iall]
-				thisallele = selgenes[iloci][iall]
-				linmodel.append(xvar * beta * thisallele)	
-			
+		xvar = float(atspot_xvars[ixvar])
+		thesebetas = sum(betas[ixvar],[])
+		# Loop through the alleles
+		for iall in xrange(len(selgenes)):
+			thisbeta = thesebetas[iall]
+			thisallele = selgenes[iall]
+			if cdevolveans.split('_')[4] == 'ModelY': # Code 1,0
+				if thisallele == 2:
+					thisallele = 1 # Change second copy to 1
+			# allele X environment X beta effect
+			linmodel.append(xvar * thisbeta * thisallele)		
+	
+	# Add the beta not
+	linmodel.append(betas[-1])
+	
+	'''
+	# For max/min options, get global vs local options
+	if cdevolveans.split('_')[5] == 'Global':
+		#pdb.set_trace() # maxfit[-1] check this location index
+		thismaxfit = maxfit[0] 
+		thisminfit = minfit[0]
+	else:
+		thismaxfit = maxfit[gen]
+		thisminfit = minfit[gen]
+	'''		
+	# Get the max and min values for rescaling 
+	thismaxfit = maxfit[0] 
+	thisminfit = minfit[0]
+	
+	# For the case in which the population fixated and all the same genotypes
+	if thismaxfit - thisminfit == 0:
+		Fitness = 1.
+	else:
+		# Rescale GXE calculation by max/min 
+		Fitness = (sum(linmodel) - thisminfit) / (thismaxfit - thisminfit)
+	
+	# Fitness could be less than 0 because of rescaling cases sum(linmodel) < thisminfit
+	if Fitness < 0:
+		Fitness = 0.
+	# Fitness could be greater than 1 because of rescale cases sum(linmodel) > thismaxfit
+	if Fitness > 1:
+		Fitness = 1.
+	
 	# Add the linear model together and logit
-	Fitness = np.exp(sum(linmodel)) / (1. + np.exp(sum(linmodel)))
+	#Fitness = np.exp(sum(linmodel)) / (1. + np.exp(sum(linmodel)))
 	
 	# Convert fitness to differential mortality - 1 - Finess
 	differentialmortality = 1. - Fitness
-	#pdb.set_trace()
 		
 	return differentialmortality
 	
 	# End::DoMLocusSelection()
-	
 
 
 # ---------------------------------------------------------------------------------------------------	
@@ -238,7 +314,7 @@ def DoHeMortSelection(offspring,fitvals1,tempfreegrid,iteminlist,loci,cdevolvean
 	
 	# Get individuals heterozygosity - # het loci / loci
 	# -----------------------------
-	offgenes = np.asarray(offspring[7]) # Genes
+	offgenes = np.asarray(offspring[7],dtype=int) # Genes
 	#all_freq_sq = (offgenes / 2.)**2 # Allele frequency ^ 2
 	#homozygosity = sum(all_freq_sq)/loci
 	#he = (1. - homozygosity)	
@@ -307,19 +383,19 @@ def Do1LocusSelection(offspring,fitvals1,tempfreegrid,iteminlist):
 	'''
 	
 	# If L0A0|L0A0 -- loci under selection:
-	if offspring[7][0] == 2:
+	if int(offspring[7][0]) == 2:
 
 		# The grab it's fitness values
 		differentialmortality = float(fitvals1[tempfreegrid[iteminlist]][0])/100.
 																
 	# If L0A0|L0A1 -- loci under selection:
-	elif offspring[7][0] == 1 and offspring[7][1] == 1:
+	elif int(offspring[7][0]) == 1 and int(offspring[7][1]) == 1:
 
 		# The grab it's fitness values
 		differentialmortality = float(fitvals1[tempfreegrid[iteminlist]][1])/100.
 																															
 	# If L0A1|L0A1 -- loci under selection
-	elif offspring[7][1] == 2:
+	elif int(offspring[7][1]) == 2:
 		
 		# The grab it's fitness values
 		differentialmortality = float(fitvals1[tempfreegrid[iteminlist]][2])/100.
@@ -341,54 +417,54 @@ def Do2LocusSelection(offspring,fitvals2,tempfreegrid,iteminlist,alleles):
 	'''
 	
 	# If L0A0|L0A0|L1A0|L1A0 - AABB -- loci under selection:
-	if offspring[7][0] == 2 and offspring[7][alleles[0]] == 2:
+	if int(offspring[7][0]) == 2 and int(offspring[7][alleles[0]]) == 2:
 
 		# The grab it's fitness values
 		differentialmortality = float(fitvals2[tempfreegrid[iteminlist]][0])/100.
 									
 	# If L0A0|L0A1|L1A0|L1A0 - AaBB -- loci under selection:
-	elif offspring[7][0] == 1 and offspring[7][1] == 1 and offspring[7][alleles[0]] == 2:
+	elif int(offspring[7][0]) == 1 and int(offspring[7][1]) == 1 and int(offspring[7][alleles[0]]) == 2:
 
 		# The grab it's fitness values
 		differentialmortality = float(fitvals2[tempfreegrid[iteminlist]][1])/100.
 																															
 	# If L0A1|L0A1|L1A0|L1A0 - aaBB -- loci under selection
-	elif offspring[7][1] == 2 and offspring[7][alleles[0]] == 2:
+	elif int(offspring[7][1]) == 2 and int(offspring[7][alleles[0]]) == 2:
 		
 		# The grab it's fitness values
 		differentialmortality = float(fitvals2[tempfreegrid[iteminlist]][2])/100.
 									
 	# If L0A0|L0A0|L1A0|L1A1 - AABb -- loci under selection:
-	elif offspring[7][0] == 2 and offspring[7][alleles[0]] == 1 and offspring[7][alleles[0]+1] == 1:
+	elif int(offspring[7][0]) == 2 and int(offspring[7][alleles[0]]) == 1 and int(offspring[7][alleles[0]+1]) == 1:
 
 		# The grab it's fitness values
 		differentialmortality = float(fitvals2[tempfreegrid[iteminlist]][3])/100.
 									
 	# If L0A0|L0A1|L1A0|L1A1 - AaBb -- loci under selection:
-	elif offspring[7][0] == 1 and offspring[7][1] == 1 and offspring[7][alleles[0]] == 1 and offspring[7][alleles[0]+1] == 1:
+	elif int(offspring[7][0]) == 1 and int(offspring[7][1]) == 1 and int(offspring[7][alleles[0]]) == 1 and int(offspring[7][alleles[0]+1]) == 1:
 
 		# The grab it's fitness values
 		differentialmortality = float(fitvals2[tempfreegrid[iteminlist]][4])/100.
 																	
 	# If L0A1|L0A1|L1A0|L1A1 - aaBb -- loci under selection
-	elif offspring[7][1] == 2 and offspring[7][alleles[0]] == 1 and offspring[7][alleles[0]+1] == 1:
+	elif int(offspring[7][1]) == 2 and int(offspring[7][alleles[0]]) == 1 and int(offspring[7][alleles[0]+1]) == 1:
 		
 		# The grab it's fitness values
 		differentialmortality = float(fitvals2[tempfreegrid[iteminlist]][5])/100.
 	
 	# If L0A0|L0A0|L1A1|L1A1 - AAbb -- loci under selection:
-	elif offspring[7][0] == 2 and offspring[7][alleles[0]+1] == 2:
+	elif int(offspring[7][0]) == 2 and int(offspring[7][alleles[0]+1]) == 2:
 
 		# The grab it's fitness values
 		differentialmortality = float(fitvals2[tempfreegrid[iteminlist]][6])/100.
 									
 	# If L0A0|L0A1|L1A1|L1A1 - Aabb -- loci under selection:
-	elif offspring[7][0] == 1 and offspring[7][1] == 1 and offspring[7][alleles[0]+1] == 2:
+	elif int(offspring[7][0]) == 1 and int(offspring[7][1]) == 1 and int(offspring[7][alleles[0]+1]) == 2:
 
 		# The grab it's fitness values
 		differentialmortality = float(fitvals2[tempfreegrid[iteminlist]][7])/100.																													
 	# If L0A1|L0A1|L1A1|L1A1 - aabb -- loci under selection
-	elif offspring[7][1] == 2 and offspring[7][alleles[0]+1] == 2:
+	elif int(offspring[7][1]) == 2 and int(offspring[7][alleles[0]+1]) == 2:
 		
 		# The grab it's fitness values
 		differentialmortality = float(fitvals2[tempfreegrid[iteminlist]][8])/100.
@@ -406,7 +482,7 @@ def DoEmigration(offspring,freegrid,Migrants,Open,loci,alleles,\
 Fxycdmatrix,Mxycdmatrix,gen,\
 offspringno,cdevolveans,fitvals,subpop,subpopmigration,DisperseDeaths,CouldNotDisperse,\
 subpopmortperc,philopatry,females,subpopemigration,females_nomate,\
-males,males_nomate,burningen,betas,xvars_betas):
+males,males_nomate,startSelection,betas,xvars_betas,maxfit,minfit):
 	'''
 	DoEmigration()
 	This function enforces emigration when there are
@@ -435,7 +511,7 @@ males,males_nomate,burningen,betas,xvars_betas):
 		
 	# Deep copy the freegrid spots to delete from
 	tempfreegrid = copy.deepcopy(freegrid)
-	
+	#pdb.set_trace()
 	# If philopatry, order the offspring grid by F/M or M/F
 	if philopatry == 'F' or philopatry == 'f' or philopatry == 'female' or philopatry == 'Female':
 		offspring.sort(key=lambda x: x[4],reverse=False)
@@ -476,7 +552,7 @@ males,males_nomate,burningen,betas,xvars_betas):
 			if sum(probarray) != 0.0:
 				
 				# CDEVOLVE
-				if cdevolveans == '1' and gen >= burningen:
+				if cdevolveans == '1' and gen >= startSelection:
 											
 					# Select the w_choice item
 					iteminlist = w_choice_item(probarray)
@@ -495,7 +571,7 @@ males,males_nomate,burningen,betas,xvars_betas):
 						continue
 												
 				# CDEVOLVE - 2 loci
-				elif cdevolveans == '2' and gen >= burningen:
+				elif cdevolveans == '2' and gen >= startSelection:
 					
 					# Select the w_choice item
 					iteminlist = w_choice_item(probarray)
@@ -514,7 +590,7 @@ males,males_nomate,burningen,betas,xvars_betas):
 						continue
 						
 				# CDEVOLVE - Heterozygosity survival
-				elif cdevolveans == '1_HeMort_GEA' or cdevolveans == '1_HeMort_All':
+				elif (cdevolveans == '1_HeMort_GEA' or cdevolveans == '1_HeMort_All') and gen >= startSelection:
 					
 					# Select the w_choice item
 					iteminlist = w_choice_item(probarray)
@@ -533,13 +609,13 @@ males,males_nomate,burningen,betas,xvars_betas):
 						continue
 				
 				# CDEVOLVE - Multiple loci selection model
-				elif cdevolveans.split('_')[0] == 'M':
+				elif cdevolveans.split('_')[0] == 'M' and gen >= startSelection:
 					
 					# Select the w_choice item
 					iteminlist = w_choice_item(probarray)
 					
 					# Call M-locus selection model
-					differentialmortality = DoMLocusSelection(offspring[i],tempfreegrid,iteminlist,loci,cdevolveans,betas,xvars_betas)
+					differentialmortality = DoMLocusSelection(offspring[i],tempfreegrid,iteminlist,loci,cdevolveans,betas,xvars_betas,maxfit,minfit,gen)
 											
 					# Then flip the coin to see if offspring survives its location
 					randcheck = rand()
@@ -549,7 +625,27 @@ males,males_nomate,burningen,betas,xvars_betas):
 						offcount = offcount + 1
 						DisperseDeaths[gen].append(1)
 						CouldNotDisperse[gen].append(0)
-						continue				
+						continue	
+
+							
+				# CDEVOLVE - Hindex
+				elif (cdevolveans.split('_')[0] == 'Hindex') and (gen >= startSelection):
+					 
+					# Select the w_choice item
+					iteminlist = w_choice_item(probarray)
+					 
+					# Call Hindex selection model
+					differentialmortality = DoHindexSelection(offspring[i],tempfreegrid, iteminlist, cdevolveans,xvars_betas)
+					
+					# Then flip the coin to see if offspring survives its location
+					randcheck = rand()
+					
+					# If offspring did not survive: break from loop, move to next offspring
+					if randcheck < differentialmortality:
+						offcount = offcount + 1
+						DisperseDeaths[gen].append(1)
+						CouldNotDisperse[gen].append(0)
+						continue
 				
 				# If subpopulation differential mortality is on
 				elif sum(subpopmortperc) != 0.0:
@@ -577,7 +673,7 @@ males,males_nomate,burningen,betas,xvars_betas):
 							DisperseDeaths[gen].append(1)
 							CouldNotDisperse[gen].append(0)
 							continue
-						
+										
 				# If not cdevolve or if cdevolve but it is in burn in gen
 				else:
 					
@@ -778,7 +874,7 @@ xgridcopy,ygridcopy,FDispDistED,MDispDistED,FDispDistCD,MDispDistCD,
 logfHndl,cdevolveans,fitvals,FDispDistEDstd,MDispDistEDstd,\
 FDispDistCDstd,MDispDistCDstd,subpop,subpopmigration,DisperseDeaths,CouldNotDisperse,\
 subpopmortperc,philopatry,females,subpopemigration,females_nomate,males,males_nomate,\
-burningen,Fthreshold,Mthreshold,FScaleMax,FScaleMin,MScaleMax,MScaleMin,FA,FB,FC,MA,MB,MC,betas,xvars_betas):
+startSelection,Fthreshold,Mthreshold,FScaleMax,FScaleMin,MScaleMax,MScaleMin,FA,FB,FC,MA,MB,MC,betas,xvars_betas,maxfit,minfit):
 	'''
 	DoDisperse()
 	Disperse the new offspring to empty spots on grid
@@ -792,7 +888,7 @@ burningen,Fthreshold,Mthreshold,FScaleMax,FScaleMin,MScaleMax,MScaleMin,FA,FB,FC
 	cdevolveans,fitvals,subpop,subpopmigration,\
 	DisperseDeaths,CouldNotDisperse,subpopmortperc,philopatry,\
 	females,subpopemigration,females_nomate,males,males_nomate,\
-	burningen,betas,xvars_betas)
+	startSelection,betas,xvars_betas,maxfit,minfit)
 	
 	OffDisperseIN = tupDoEmi[0]
 	opengrids = tupDoEmi[1]

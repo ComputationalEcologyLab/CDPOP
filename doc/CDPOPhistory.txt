@@ -1,3 +1,137 @@
+Changes 1.3.06.20190318T09:43:00MDT (ell)
+0) Adding epistasis/interaction term to Mlocus model as in Wade 2001. + Xe*bjk*Aj*Ak is now the third term. The user has to specify only 2 loci that are interacting and possibly 1 environment. 
+-Xe is a new column outside of the total Xvars. Use needs to add this if considering epistasis.
+-bjk is one value specified by user
+-Aj and Ak are alleles part of the loci alleles under selection, but user needs to specifiy the j and k.
+-Add new column to inputvars for epistasis; 'N' not considering this term. 'bjk_Ajk_Bjk' - 3 values here if considering this term. j - loci and k points to allele number.
+***Need to add this to usermanual 
+- Add epistasis to the min/max calculation and spreadsheet. ***Paused here, not finished.
+
+1) Memory leak found with first global rescaling calculation. Update this calculation.   
+2) Added logit and global norm option to polygenic cdevolve
+3) Added deepcopy to when movement options are the same.
+
+November 13, 2018 - Archive - sent to review - beta polygenic selection module.
+
+Changes 1.3.05.20181017T08:08:00MST (ell/BF)
+0) Update MLocus module to rescale based on maxfit and minfit values; remove logit option. 2 options
+z) 'Global' and 'Local' added to cdevolveans
+a) 'Global': maxfit;minfit global values -> calculated before time loop starts on the max/min hypothetical possible genotypeXenvironment space given betas from user. 
+b) 'Local': maxfit;minfit local values -> calculated within each time loop on the max/min given genotypeXenvironment space with given betas from user.  GetMetrics() - calculate here and pass into DoDisperse()
+***Still confusion on local calculation: if calculate during GetMetrics step this is the current 'adult' population and calculation based on this population, when in DODispserse selection is applied to dispersing offspring. Max/min on incoming population genotypes? DoAdultMOrtlaity could loose those max fit values, while DOOffspring could bring in higher fit values than calculated in GeMetrics? Arguements for a global calculation. 
+1) Only allow for 'Local' option currently; 'Global' matches with theory; 'Local' code commeted out. 
+
+August 8, 2018 - Sent version to Amanda C./Lindsey
+
+Changes 1.3.04.20180818T14:15:00 (ell)
+0) Add in HIndex code from cdmetapop for DGS Project 2 work. 
+a) First add option with parameters. 'Hindex_Linear_min;max;min;max;min;max' - 6 parameters for min and max of slope, intecept, and environment. 
+b) Updated user manual description. Provide excel spreadsheet within doc folder on GitHub.
+c) add hindex variable and initialize hindex in DoOutput_CDPOP0(), then in InheritGenes() module. 
+d) added X1 vars to XY file. 
+e) Added DoHindexSelection()
+f) Checking hindex and cases throughout...
+
+Changes 1.3.03.2018052213:09:00PST (ell)
+-2) Removed gendmatans from inputfiles
+-1) Updated multi locus selection module after discussions with AE:
+a) Removed logit - rescaling options. ***In Progress - Temporary change in logit to rescaled global code. Testing WF validation with logit vs rescale. 
+
+1) Fixed some future warning errors. 
+2) Fixed intgeneans vs intgenesans error.
+3) Added option '9' for reading in a probability matrix. 
+
+May 22, 2018 - Sent version to Amanda C.
+
+Changes 1.3.02.20180406T12:57:00MDT (ell)
+0) Checking through migration barrier results for Camille. 
+a) B >= T should indicate complete barrier. Code has B > T. Changed. See v0_85 on reason this was changed. Special case for max and matrix of all zeros.
+b) Found switch issue when matrix values are less than 1 and 0 panmictic values wished too. i.e.,  int(maxbigCD) == 0 when maxbigCD < 1
+elif float(bigCD[j][k]) < threshold and threshold != 0.0 and float(bigCD[j][k]) == 0.0 or (minbigCD == maxbigCD or int(maxbigCD) == 0):
+					cdmatrix[j].append(1.0)
+added error checks for this now. 
+
+1) Add flexible allele / locus option
+a) intgenesans added option for 'file_var'.
+b) allele then has each allele per locus split by ';'
+c) added intgenesans option for 'random_var' then allele split by ';'
+d) added error checks
+e) Updated GetMetrics() to account for flexible alleles. 
+f) Updated InheritGenes()
+g) Now checking rest of code. For ease, flatten genes vector and stay consistent. Checked many combinations, sending code to beta testers. 
+
+2) Added option '9' for movement matrices. This is the prob mat directly with no function applied. 
+3) Updated subpopmortperc (to and from were switched) in mate module.
+
+Changes 1.3.01.20171217T16:56:00MST (ell) 
+-1) Updated M loci selection modules to include startSelection.
+0) Updated offno option 6 for multiple AgeVars. 
+
+Changes 1.3.00.20170909T15:00:00PST (ell)
+-2) GetMetrics() - condensing and sped up.
+-1) Made DoOutput() faster and cleaned up this module some. YAY! THat code seciton was awful ;)
+0) Updated movement option '6': within own population apply inverse square to cost distances. 
+1) Add in Models X and Y. M_X1_L1_A2_ModelX and M_X1_L1_A2_ModelY. Added in 5 argument check for cdevolveans starting with 'M'. 
+2) Add in epigenetic model ***working on this.
+-- 'epigeneans' option added. X1_L1_A2_ModelX as example. Assume one reset per locus.
+-- 'startEpigene' option added. like 'startSelection'
+-- 'betaFile_epigene' option added. like 'betaFile_selection', but does not have the extra environmental effect sizes. 
+-- Added inputvars new fields, add any error checks.
+-- Added special tracking lists for epigene module: Number of modifications that occurred, Number of deaths associated with epigene modification, Number of reset events.
+Track_EpigeneEvents = []
+Track_EpigeneDeaths = []
+Track_EpigeneResets = []
+-- As with the selection model, assume the first l loci are used in the epigenetic module. If both selection and epigenetics is turned on, then the first l loci are used in selection and then next k loci used for epigenetics. 
+-- Add X1 and v1 (environmental probability that modification occurs and reset probability) to XY file. Must have a column for number of X specified in the epigeneans. Reset columns follow the X values, must have a reset column for each loci in epigene modificaiton. 
+FIXED***Need to check this - is a reset parameter for each allele or loci? E.g., X2_L2_A2_ModelX means 2 X columns followed by 2 reset columns. For simplicity, create X column for each loci - that way it can be the same or different environment, however, still independent, so will have to add in dependence later (e.g., 1 env prob check that turns on 2 alleles at same time.) 
+-- If selection model and epigenetic model, then first columns designated for selection and rest for epigenetic - 
+-- read in beta files (now betas_selection and betas_epigene): checks added for length of beta file. Beta file for epigene is different and not dependent on environment, so length loci * alleles.
+-- Now add epigenetic modification module to CDPOP.py main code (DoEpigenetics). Right after ReadGrid() and GetMetrics(), essentially at the start of the time loop, the first main process checked. Here, loop through each individual, check probability that allele turns on (for both alleles at loci), update genes, then apply fitness consequence, individual dies or not, Track events of modification and Deaths.
+FIXED***find out about initial conditions for these epigene regions. Assuming turned off at gen = 0, can run burn-in and randomly turn on alleles if wanted for some amount of time.
+-- Back track: From Andrew Eckert: "For the methylation, could we include another conditional statement based on the idea that if one allele is epimutated in a diploid individual, the rate or probability of the other allele is influenced? In other words, another parameter that acts as a modifier of the epimutation rate conditional on the first allele being mutated?" Thus, will assume this is the mechanism for turning on the second allele. 
+FIXED: ***Still need to find out how to Mendel inherit to offspring. Add checks in inherit genes for special cases.
+FIXED***Reset for each allele? independece and epimethylmutated? If first allele resets and methylation process specified, then does that automatically turn off second allele? Keeping logic with dep and ind models, for dep model, if allele 1 resets (turns off), then allele 2 will auto turn off. If allele 1 does not reset, then still check for if methylation turns off. 
+
+-- Update XY file to have X1_Epigenetics seperated with ';' for each allele. Assume only 2 alleles. Same for reset parameter
+FIXED*** Add error check in beginning, only allow 2 alleles for epigenetic module.
+
+-- DoEpigenetics() finished. Inserted NA and OPEN locations in relavant fields.
+-- Added startEpigene
+-- Added Tracking to PostProcessing()
+
+FIXED***Waiting on input from Amy Or Eckert on inheritance of epiregion [2,0],[1,1],[1,0] options, that is do we keep 2 copies?
+FIXED***Decide on model x or y used here in fitness. Keep model x and y options to match selection options.
+
+-- Added in Model X and Model Y.
+-- Added option for independent alleles epimutated or second allele conditional on first turn on. X2_L2_A2_ModelX_Ind or X2_L2_A2_ModelX_Dep for 'Independence' or 'Dependence'.
+
+-- InheritGenes() updated to include epigene options for inheriting and reseting for both Ind and Dep options. Note, Dep follows logic of Methylation conditional on first allele.
+-- Begin checking parameters and options
+FIXED*** add checks here for selection/epigenetic loci regions.
+FIXED*** Check modules that use gen < geneswap time
+SEMIFIXED*** Check GetMetrics and caluclations with epigenes [0,0], [0,1] cases and calculations that assume 2 alleles - Make note in user manual, calculations may not be accurate if epigenetic option on and to calculate metrics on grid files. 
+FIXED***Add to cdclimate module
+
+-- Tested a number of parameter combinations, seems verified. Moving to validation steps next
+Validation Test #1: Rate of fixation of allele with reset = 0 should be the WF equation or same as selection model (fixed DNA change). Set up WF assumptions, uniform epigenetic modification surface, reset = 0 and betas as in selection validation set up. 
+
+
+***Will worry about 1 environment turning on more than 1 loci/alleles later. (e.g., 1 env prob check that turns on 2 alleles at same time.)
+***3) Add in epistasis/interactions - separate beta file needed? *** Working on this 
+
+
+Changes 1.2.38.201710:50:00PST (ell)
+-1) Updated AgeVars to be used for each subpop (only ageclass was operating with multiple subpops). Tracking Age deaths for male and female now split out by subpopulation '|' and ages ';'. Checking combinations. Removing logistic pop model option for now, ***fix later. ***User manual needs to be updated on this new information for introductions. Add age 1+ females/males for each pop tracking.
+
+Changes 1.2.37.20170604T14:15:00MST (ell)
+0) Adding functionality for introducing individuals at given time steps. Create multiple XY files that also link to allele frequency files. The first XY file is the master file defining all grid locations and defining K possible spots in each subpopulation. This only works for individuals grouped together in subpopulation that have the same XYs.
+i)'|' was used for initializing multiple subpopulations for the file answer for allefreqfilename and conflicts with '|' in the cdclimate module. This needs to be fixed and a different deliminator used for subpopulations, however, for now create intgenesans = 'file_introduce', which will tell program that these multiple allele frequency files are to be used in the cdclimate module. 
+1) Removed .csv on allele frequency files inputvars since rest of file names don't include .csv. 
+
+
+Changes 1.2.36.20170130T15:36:00.India (ell)
+0) Added in age-specific mortality to the cdclimate module.
+
 Changes 1.2.35.20160801T12:48:00MDT (ell)
 -1) Checking Stephen Rice error with philopatry...fixed.
 0) Begin coding in multiple allele selection option. (SC)
@@ -6,6 +140,20 @@ b) Read in beta file, and order [varible][loci][allele]
 c) Read in inputvars new cdevolveans and field for beta file
 d) Read in XY xvars field
 e) Add linear additive model to DoDisperse Module
+f) Add in a beta_0 in the betaFile - upper left corner spot.
+g) Add interaction terms. Make a general betaFile and the headers will tell what to multiply. ***Still working on
+20170109T09:00:00MST (ell) Continue working on selection module
+1) Checked over above steps
+2) With 16 points checked simple case of 1 locus, 2 alleles, 1 X: b111 = -10, b112 = 10; zscores for X1 = 0,-1,-1,-1,1,0,-1,-1,1,1,0,-1,1,1,1,0
+2a) Initialize all AA produces only AA and only in lower right triangle 
+2b) Initialize all aaa produces only aa and only in upper left triangle
+2c) Initialize random produces no AA in upper left and no aa in lower right. Aa can be anywhere.
+3) Test the 1-locus modelS *Close to WF assumptions, mean birth rate is bumped up else uneven population size.  
+a) Set up 1000 system with 3 checks above.
+i) initialize all AA
+ii) initialize all aa
+iii) initialize random
+iv) 1000 1-locus validation p fixation rate compare to eqn 2 in Landguth et al 2012.
 
 
 Changes 1.2.34.2016.06.24T15:57:00MDT (ell)
