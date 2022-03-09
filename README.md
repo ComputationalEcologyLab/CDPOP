@@ -65,7 +65,9 @@ Have a bug, feature request, trouble running CDPOP, or other FAQs? First please 
 1. You can't get the example CDPOP to run?
 2. Is your population crashing?
 3. You can't produce a signal/structure with your simulated data?
-
+4. What to do with output? Quick ideas:
+-> Individual files with genotypes can be read into the R package 'gstudio'.
+-> See Prunier's Toolbox development webpage: https://www.jeromeprunier.fr/Tools.html
 
 
 Happy Simulations!
