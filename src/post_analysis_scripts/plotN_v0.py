@@ -16,7 +16,7 @@ try:
 	import numpy as np 
 	from numpy.random import *
 except ImportError:
-	raise ImportError, "Numpy required."
+	raise ImportError("Numpy required.")
 
 # ---------
 # User info
@@ -40,8 +40,8 @@ RULabels = ['37-50','18','58','51','11','30A','37A','13']
 # -------------
 # Initial Setup
 # -------------
-nthfile = range(0,gen,1)
-nthfile_labels = range(1969,gen+1969,1)
+nthfile = list(range(0,gen,1))
+nthfile_labels = list(range(1969,gen+1969,1))
 
 # List folders in this directory
 def listdirs(folder):
@@ -61,7 +61,7 @@ breedM = [] #8
 # Begin batch loop
 # -------------------
 # Loop through batches
-for ibatch in xrange(batchno):
+for ibatch in range(batchno):
 
 	# Add storage spot
 	N.append([])
@@ -73,7 +73,7 @@ for ibatch in xrange(batchno):
 	breedM.append([])
 		
 	# Loop through MCs
-	for imc in xrange(mcno):
+	for imc in range(mcno):
 	
 		# Open output.csv file in folder
 		inputfile = open(dir+'batchrun'+str(ibatch)+'mcrun'+str(imc)+'/output.csv')
@@ -88,7 +88,7 @@ for ibatch in xrange(batchno):
 		values = []
 
 		# Split up each line in file and append to empty matrix for generation specified
-		for i in xrange(len(lines)):
+		for i in range(len(lines)):
 			thisline = lines[i].split(',')
 			values.append(thisline)
 
@@ -105,7 +105,7 @@ for ibatch in xrange(batchno):
 		breedM[ibatch].append([])
 				
 		# Then Loop through generations/time
-		for iout in xrange(gen):
+		for iout in range(gen):
 		
 			# Store values
 			N[ibatch][imc].append([])
@@ -117,7 +117,7 @@ for ibatch in xrange(batchno):
 			breedM[ibatch][imc].append([])
 			
 			# Subpopulation split - remove total 
-			for j in xrange(1,len(values[1+iout][1].split('|'))-1):			
+			for j in range(1,len(values[1+iout][1].split('|'))-1):			
 				N[ibatch][imc][iout].append(float(int(values[1+iout][1].split('|')[j])))
 				totF[ibatch][imc][iout].append(int(values[1+iout][4].split('|')[j]))
 				totM[ibatch][imc][iout].append(int(values[1+iout][5].split('|')[j]))
@@ -131,7 +131,7 @@ for ibatch in xrange(batchno):
 				growthrate[ibatch][imc][iout].append(float(values[1+iout][3]))
 						
 			# Age split
-			for j in xrange(len(values[1+iout][2].split('|'))-1):
+			for j in range(len(values[1+iout][2].split('|'))-1):
 				N_age[ibatch][imc][iout].append(float(values[1+iout][2].split('|')[j]))				
 										
 			
@@ -283,7 +283,7 @@ xticks(nthfile,nthfile_labels,rotation='vertical')
 # Plot all subpop Ns
 # ------------------
 figure(2)
-for ipop in xrange(len(N_m[0][0])):
+for ipop in range(len(N_m[0][0])):
 	plot(nthfile,N_m[0,:,ipop],linemarks[ipop],label=RULabels[ipop])
 xlabel('Time',fontsize=18)
 ylabel('RU Totals',fontsize=18)
@@ -345,7 +345,7 @@ for it in plottime:
 	ax.set_title(plottitle+'Age N at Year ' +str(nthfile_labels[it]),fontsize=21)
 	ax.set_xlim(-width,len(ind)+width)
 	#ax.set_ylim(0, max(np.max(N_init_age_m[0][it]),np.max(N_init_age_m[1][it]),np.max(N_init_age_m[2][it]),np.max(N_init_age_m[3][it]),np.max(N_init_age_m[4][it])))
-	xTickMarks = [str(i) for i in xrange(len(N_age_m[0][0]))]
+	xTickMarks = [str(i) for i in range(len(N_age_m[0][0]))]
 	ax.set_xticks(ind+width)
 	xtickNames = ax.set_xticklabels(xTickMarks)
 	plt.setp(xtickNames, rotation=0)

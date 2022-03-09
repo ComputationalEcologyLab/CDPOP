@@ -12,13 +12,13 @@ try:
 	import numpy as np 
 	from numpy.random import *
 except ImportError:
-	raise ImportError, "Numpy required."
+	raise ImportError("Numpy required.")
 
 # CDPOP functions
 try:
 	from CDPOP_PreProcess import *
 except ImportError:
-	raise ImportError, "CDPOP PreProcess required."
+	raise ImportError("CDPOP PreProcess required.")
 	
 # Python specific functions
 import os, random, copy, pdb, sys, math,itertools
@@ -55,7 +55,7 @@ def logMsg(outf,msg):
 	'''
 	outf.write(msg+ '\n')
 	if msgVerbose:
-		print("%s"%(msg))
+		print(("%s"%(msg)))
 		
 	# End::logMsg()
 
@@ -66,7 +66,7 @@ def w_choice_general(lst):
 	Weighted random draw from a list, probilities do not have to add to one.
 	'''
 	wtotal=sum(x[1] for x in lst)
-	n=random.uniform(0,wtotal)
+	n=np.random.uniform(0,wtotal)
 	count = 0
 	for item, weight in lst:
 		if n < weight:
@@ -117,13 +117,13 @@ genesnew,equalsexratio,sexnew,subpopnew,infectionnew,allelst,geneswap,gen,intgen
 	
 		# Loop through all grids
 		genes = []
-		for i in xrange(nogrids):
+		for i in range(nogrids):
 									
 			# And store genes information
 			genes.append([])
 						
 			# For each loci:
-			for j in xrange(len(allelst[0])):			
+			for j in range(len(allelst[0])):			
 				# Take a random draw from the w_choice function at jth locus
 				if len(allelst) > 1:
 					rand1 = w_choice_general(allelst[int(subpop[i])-1][j])[0]
@@ -139,7 +139,7 @@ genesnew,equalsexratio,sexnew,subpopnew,infectionnew,allelst,geneswap,gen,intgen
 				# 	1s = heterozygous at that locus
 				#	2s = homozygous at that locus
 				#	0s = absence of allele
-				for k in xrange(len(allelst[0][j])):
+				for k in range(len(allelst[0][j])):
 					
 					# Somebody not in this spot
 					if age[i] == 'NA':
@@ -199,16 +199,16 @@ genesnew,equalsexratio,sexnew,subpopnew,infectionnew,allelst,geneswap,gen,intgen
 		# Count up the unique number of subgrids appending to subgrids
 		subgridtotal = []
 		# Create list of lists storage spots for number of subgrids
-		for i in xrange(nosubpops):
+		for i in range(nosubpops):
 			subgridtotal.append([])
-		for i in xrange(len(subpop)):
+		for i in range(len(subpop)):
 			# Loop through unique subpops
-			for j in xrange(nosubpops):
+			for j in range(nosubpops):
 				# If subpop exits append to subgrid spot
 				if subpop[i] == unique_subpops[j]:
 					subgridtotal[int(unique_subpops[j])-1].append(1)
 		# And then sum them up
-		for i in xrange(nosubpops):
+		for i in range(nosubpops):
 			subgridtotal[i] = sum(subgridtotal[i])
 			# If the subpopulation number is not even then sys exit
 			if np.mod(subgridtotal[i],2) == 1:
@@ -216,12 +216,12 @@ genesnew,equalsexratio,sexnew,subpopnew,infectionnew,allelst,geneswap,gen,intgen
 				sys.exit(-1)
 			
 		# Then loop through each subpopulation
-		for i in xrange(nosubpops):			
+		for i in range(nosubpops):			
 			# Then create half males and females and shuffle
 			sextemp = np.append(np.zeros(subgridtotal[i]/2,"int"),np.ones(subgridtotal[i]/2,"int"))
 			np.random.shuffle(sextemp)
 			# Loop through these individuals and append to LIST sex
-			for j in xrange(len(sextemp)):			
+			for j in range(len(sextemp)):			
 				# The add them together and shuffle and append to sex
 				sex.append(str(sextemp[j]))
 		
@@ -237,7 +237,7 @@ genesnew,equalsexratio,sexnew,subpopnew,infectionnew,allelst,geneswap,gen,intgen
 
 # ---------------------------------------------------------------------------------------------------	 
 def GetMetrics(Population,nogrids,loci,alleles,genes,gen,Ho,\
-Alleles,He,subpop,p1,p2,q1,q2,Population_age,Females_age,Males_age,age,sex,Magemort,geneswap,cdevolveans,xvars_betas,betas_selection,maxfit,minfit,xEvars,epistasis):
+Alleles,He,subpop,p1,p2,q1,q2,Population_age,Females_age,Males_age,age,sex,Magemort,geneswap,cdevolveans,xvars_betas,betas_selection,maxfit,minfit):
 	'''
 	GetMetrics()
 	This function summarizes the genotypes and
@@ -260,16 +260,16 @@ Alleles,He,subpop,p1,p2,q1,q2,Population_age,Females_age,Males_age,age,sex,Magem
 	Population_age.append([]) # Add time
 	Females_age.append([]) # Add time
 	Males_age.append([]) # Add time
-	countages = Counter(np.asarray(np.asarray(age,dtype='|S10')[np.where(np.asarray(age,dtype='|S10') != 'NA')[0]],dtype=np.int8))
-	countages_F = Counter(np.asarray(np.asarray(age,dtype='|S10')[np.where(np.asarray(sex,dtype='|S10') == '0')[0]],dtype=np.int8))
-	countages_M = Counter(np.asarray(np.asarray(age,dtype='|S10')[np.where(np.asarray(sex,dtype='|S10') == '1')[0]],dtype=np.int8))	
-	for ipop in xrange(len(Magemort)): # For each subpop to track via AgeVars files, note this can be different than nosubpops
+	countages = Counter(np.asarray(np.asarray(age,dtype='|U10')[np.where(np.asarray(age,dtype='|U10') != 'NA')[0]],dtype=np.int8))
+	countages_F = Counter(np.asarray(np.asarray(age,dtype='|U10')[np.where(np.asarray(sex,dtype='|U10') == '0')[0]],dtype=np.int8))
+	countages_M = Counter(np.asarray(np.asarray(age,dtype='|U10')[np.where(np.asarray(sex,dtype='|U10') == '1')[0]],dtype=np.int8))	
+	for ipop in range(len(Magemort)): # For each subpop to track via AgeVars files, note this can be different than nosubpops
 		Population_age[gen].append([])
 		Females_age[gen].append([])
 		Males_age[gen].append([])		
 		# Get this subpop
-		ipop_indexes = np.where(np.asarray(subpop,dtype='S10')==str(ipop+1))[0]		
-		for iage in xrange(1,len(Magemort[0])+1): # For each age 1+
+		ipop_indexes = np.where(np.asarray(subpop,dtype='U10')==str(ipop+1))[0]		
+		for iage in range(1,len(Magemort[0])+1): # For each age 1+
 			Population_age[gen][ipop].append([])
 			Females_age[gen][ipop].append([])
 			Males_age[gen][ipop].append([])
@@ -279,11 +279,11 @@ Alleles,He,subpop,p1,p2,q1,q2,Population_age,Females_age,Males_age,age,sex,Magem
 				Males_age[gen][ipop][iage-1].append(countages_M[iage])
 			else: # If more than 1 AgeVars matching population
 				# Count this age in this ipop
-				countage = len(np.where(np.asarray(age,dtype='|S10')[ipop_indexes]==str(iage))[0])
+				countage = len(np.where(np.asarray(age,dtype='|U10')[ipop_indexes]==str(iage))[0])
 				Population_age[gen][ipop][iage-1].append(countage)
-				countage_F = len(np.where(np.asarray(age,dtype='|S10')[ipop_indexes[np.where(np.asarray(sex,dtype='|S10')[ipop_indexes]=='0')[0]]]==str(iage))[0])
+				countage_F = len(np.where(np.asarray(age,dtype='|U10')[ipop_indexes[np.where(np.asarray(sex,dtype='|U10')[ipop_indexes]=='0')[0]]]==str(iage))[0])
 				Females_age[gen][ipop][iage-1].append(countage_F)
-				countage_M = len(np.where(np.asarray(age,dtype='|S10')[ipop_indexes[np.where(np.asarray(sex,dtype='|S10')[ipop_indexes]=='1')[0]]]==str(iage))[0])
+				countage_M = len(np.where(np.asarray(age,dtype='|U10')[ipop_indexes[np.where(np.asarray(sex,dtype='|U10')[ipop_indexes]=='1')[0]]]==str(iage))[0])
 				Males_age[gen][ipop][iage-1].append(countage_M)
 			
 		Population_age[gen][ipop] = sum(Population_age[gen][ipop],[])
@@ -299,17 +299,17 @@ Alleles,He,subpop,p1,p2,q1,q2,Population_age,Females_age,Males_age,age,sex,Magem
 		
 		# ----------------------------------------------------------
 		# Get summary numbers to be used in calculations or tracking		
-		filledgrids = len(np.where(np.asarray(age,dtype='|S10') != 'NA')[0])# Get the number of filled grids
+		filledgrids = len(np.where(np.asarray(age,dtype='|U10') != 'NA')[0])# Get the number of filled grids
 		
-		#allele_numbers = np.asarray(range(alleles[0])*loci)# Get allele location as seqence from alleles array
+		#allele_numbers = np.asarray(range(alleles[0])*loci)# Get allele location as sequence from alleles array
 		allele_numbers = []
 		for iall in alleles:
-			allele_numbers.append(range(iall))
+			allele_numbers.append(list(range(iall)))
 		allele_numbers = np.asarray(sum(allele_numbers,[]))		
 		total_alleles = len(allele_numbers)	# The total number of alleles	
 		
 		# Get Genes array with np.nan option
-		genes_array = np.asarray(genes,dtype='|S6')
+		genes_array = np.asarray(genes,dtype='|U6')
 		genes_array[np.where(genes_array == 'NA')[0]] = np.nan
 		genes_array = np.asarray(genes_array,dtype='float')
 		
@@ -374,10 +374,10 @@ Alleles,He,subpop,p1,p2,q1,q2,Population_age,Females_age,Males_age,age,sex,Magem
 		sumsubpopsHe = []
 		alleles_sub = []
 		Population.append([]) # Tracking 
-		for ipop in xrange(nosubpops):
+		for ipop in range(nosubpops):
 			# Get location of this subpop and number in
-			subgrids.append(np.asarray(np.where(np.asarray(subpop,dtype='S10') == str(ipop+1))[0][np.where(np.asarray(age,dtype='S10')[np.where(np.asarray(subpop,dtype='S10') == str(ipop+1))[0]] != 'NA')[0]],dtype='int').tolist())
-			subgridtotal.append(len(np.where(np.asarray(age,dtype='S10')[np.where(np.asarray(subpop,dtype='S10') == str(ipop+1))[0]] != 'NA')[0]))
+			subgrids.append(np.asarray(np.where(np.asarray(subpop,dtype='U10') == str(ipop+1))[0][np.where(np.asarray(age,dtype='U10')[np.where(np.asarray(subpop,dtype='U10') == str(ipop+1))[0]] != 'NA')[0]],dtype='int').tolist())
+			subgridtotal.append(len(np.where(np.asarray(age,dtype='U10')[np.where(np.asarray(subpop,dtype='U10') == str(ipop+1))[0]] != 'NA')[0]))
 			# Add information to Population tracker
 			Population[gen].append(subgridtotal[ipop])
 			# for later add spots to these vars
@@ -459,12 +459,12 @@ Alleles,He,subpop,p1,p2,q1,q2,Population_age,Females_age,Males_age,age,sex,Magem
 				max_linmodel2 = []
 				min_linmodel2 = []
 				# For each grid spot, grab the X var values
-				for igrid in xrange(nogrids):
+				for igrid in range(nogrids):
 					grid_xvars = xvars_betas[igrid] # This grids X variables
 					max_linmodel2.append([])
 					min_linmodel2.append([])
 					# Loop through each X var and max/min each calculation
-					for ivar in xrange(len(grid_xvars)):
+					for ivar in range(len(grid_xvars)):
 						Xvar = grid_xvars[ivar]
 						betas = np.asarray(betas_selection[ivar])
 						
@@ -616,8 +616,8 @@ Alleles,He,subpop,p1,p2,q1,q2,Population_age,Females_age,Males_age,age,sex,Magem
 		unique_alleles.append([np.nan])
 		He.append([np.nan])
 		Ho.append([np.nan])
-		for ipop in xrange(nosubpops):
-			subgridtotal.append(len(np.where(np.asarray(age,dtype='S10')[np.where(np.asarray(subpop,dtype='S10') == str(ipop+1))[0]] != 'NA')[0]))
+		for ipop in range(nosubpops):
+			subgridtotal.append(len(np.where(np.asarray(age,dtype='U10')[np.where(np.asarray(subpop,dtype='U10') == str(ipop+1))[0]] != 'NA')[0]))
 			# Add information to Population tracker
 			Population[gen].append(subgridtotal[ipop])
 			unique_alleles[gen].append(np.nan)
@@ -629,7 +629,7 @@ Alleles,He,subpop,p1,p2,q1,q2,Population_age,Females_age,Males_age,age,sex,Magem
 		Ho[gen].append(np.nan)		
 		
 		# And then get the number of filled grids
-		filledgrids = len(np.where(np.asarray(age,dtype='S10') != 'NA')[0])
+		filledgrids = len(np.where(np.asarray(age,dtype='U10') != 'NA')[0])
 		# Add Population total
 		Population[gen].insert(0,filledgrids)
 			
@@ -663,10 +663,10 @@ offspring,genes,loci,muterate,mtdna,mutationans,geneswap,epireset,Track_EpigeneR
 		else:
 			selloci = 0
 			epiloci = int(epigeneans.split('_')[1].split('L')[1])
-		epiloci_index = range(selloci,selloci+epiloci)
+		epiloci_index = list(range(selloci*int(cdevolveans.split('_')[3].split('A')[1]),selloci*int(cdevolveans.split('_')[3].split('A')[1])+epiloci*int(epigeneans.split('_')[2].split('A')[1]))) # Index location for epi region, epi region only considers 2 alleles but generic form to index to here.
 	else:
 		epiloci_index = [-9999]
-	
+	#pdb.set_trace()
 	# Check for generation to start swapping genes
 	if gen >= geneswap:
 		
@@ -683,31 +683,31 @@ offspring,genes,loci,muterate,mtdna,mutationans,geneswap,epireset,Track_EpigeneR
 			isTwin = False # For checking for twins
 			twingenes = [] # Initialize twin genes
 			# Begin loop through offspring
-			for i in xrange(offspringno):				
+			for i in range(offspringno):				
 				
 				# If twins genes were copied already from previous offspring, skip this section
 				if len(twingenes) == 0: 
 					# Temp storage for i's mother's  and fathers genes
 					mothergenes=genes[int(offspring[i][0])]
 					fathergenes=genes[int(offspring[i][1])]					
-					#fathergenes = sum(fathergenes,[])
-					#mothergenes = sum(mothergenes,[])
 					fathergenes = np.asarray(fathergenes,dtype=int)
 					mothergenes = np.asarray(mothergenes,dtype=int)
 					# Temp genes storage for offspring
 					tempgenes = np.zeros(len(fathergenes),dtype =int)
 					# Allele indices
-					alleles = np.asarray(range(len(mothergenes)))
+					alleles = np.asarray(list(range(len(mothergenes))))
 					
 					# Loop through loci
-					for iloci in xrange(loci): 
+					for iloci in range(loci): 
 						# Allele indices to sample from - index into tempgenes
 						#possiblealleles = alleles[(iloci*len(mothergenes)/loci):(iloci*len(mothergenes)/loci+len(mothergenes)/loci)]
 						possiblealleles = alleles[sum(noalleles[0:iloci]):sum(noalleles[0:iloci+1])]
-							
+						#pdb.set_trace() # if statement not right with new epiloci check	
 						# If this is not the epiregion, assume diploid, randomly grab from parents alleles
 						# ----------------------------------------------------------------
-						if len(np.where(np.asarray(epiloci_index) == iloci)[0]) == 0: # Is this loci part of the epiloci region and index?
+						if len(np.where(np.asarray(epiloci_index) == iloci*2)[0]) == 0:
+						#if epiloci_index != range(iloci*2,iloci*2+epiloci*2):
+						# Is this loci part of the epiloci region and index? *2 for the new flattened epiloci index 2 alleles. 
 							# Father and mother locations							
 							F2 = np.where(fathergenes[possiblealleles] == 2)[0] # location of 2s
 							F1 = np.where(fathergenes[possiblealleles] == 1)[0]
@@ -716,8 +716,8 @@ offspring,genes,loci,muterate,mtdna,mutationans,geneswap,epireset,Track_EpigeneR
 							Falls = np.concatenate((F2,F2,F1),axis=0) # 2 copies of 2s
 							Malls = np.concatenate((M2,M2,M1),axis=0) # 2 copies of 2s		
 							# Sample allele from each parent
-							FsampleAlleles = random.sample(Falls,1)
-							MsampleAlleles = random.sample(Malls,1)
+							FsampleAlleles = np.random.choice(Falls,1).tolist()
+							MsampleAlleles = np.random.choice(Malls,1).tolist()
 							# Fill in alleles corresponding to sampled spots
 							tempgenes[possiblealleles[FsampleAlleles[0]]] = tempgenes[possiblealleles[FsampleAlleles[0]]] + 1
 							tempgenes[possiblealleles[MsampleAlleles[0]]] = tempgenes[possiblealleles[MsampleAlleles[0]]] + 1
@@ -725,16 +725,15 @@ offspring,genes,loci,muterate,mtdna,mutationans,geneswap,epireset,Track_EpigeneR
 						# Epiregion, not necessarily diploid, different checks, and also check for resets
 						# --------------------------------------------------------------
 						else:
-							print('Check flexible alleles per loci, not accounted for in epiregion yet.')
-							sys.exit(-1)
-							
+							pdb.set_trace() # Check section for flattened gene array
+														
 							# Get reset numbers for each allele
-							Reset1 = float(epireset[offspring[i][0]][np.where(np.asarray(epiloci_index)==iloci)[0][0]].split(';')[0]) # first allele reset
-							Reset2 = float(epireset[offspring[i][0]][np.where(np.asarray(epiloci_index)==iloci)[0][0]].split(';')[1]) # second allele reset
+							Reset1 = float(epireset[offspring[i][0]][np.where(np.asarray(epiloci_index)==iloci*2)[0][0]].split(';')[0]) # first allele reset
+							Reset2 = float(epireset[offspring[i][0]][np.where(np.asarray(epiloci_index)==iloci*2)[0][0]].split(';')[1]) # second allele reset
 							
 							# Randomly grab one of the alleles from each parent
-							Fsample_allindex = random.sample(possiblealleles,1) # father's index location
-							Msample_allindex = random.sample(possiblealleles,1) # mother's index location
+							Fsample_allindex = np.random.choice(possiblealleles,1).tolist() # father's index location
+							Msample_allindex = np.random.choice(possiblealleles,1).tolist() # mother's index location
 							
 							# Offspring inherits these epialleles or not from parents
 							Fsample_allval = fathergenes[Fsample_allindex[0]] # father's allele value
@@ -755,16 +754,16 @@ offspring,genes,loci,muterate,mtdna,mutationans,geneswap,epireset,Track_EpigeneR
 								# First allele
 								# ------------
 								if tempgenes[possiblealleles[0]] == 2: # two copies, two reset checks
-									rand_reset = rand()							
+									rand_reset = np.random.uniform()							
 									if rand_reset < Reset1: # This allele resets
 										tempgenes[possiblealleles[0]] = tempgenes[possiblealleles[0]] - 1
 										Track_EpigeneReset1[gen].append(1)
-									rand_reset = rand()							
+									rand_reset = np.random.uniform()							
 									if rand_reset < Reset1: # This allele resets
 										tempgenes[possiblealleles[0]] = tempgenes[possiblealleles[0]] - 1
 										Track_EpigeneReset1[gen].append(1)
 								elif tempgenes[possiblealleles[0]] == 1: # one copy, one reset check
-									rand_reset = rand()							
+									rand_reset = np.random.uniform()							
 									if rand_reset < Reset1: # This allele resets
 										tempgenes[possiblealleles[0]] = tempgenes[possiblealleles[0]] - 1
 										Track_EpigeneReset1[gen].append(1)
@@ -773,16 +772,16 @@ offspring,genes,loci,muterate,mtdna,mutationans,geneswap,epireset,Track_EpigeneR
 								# Second allele
 								# -------------
 								if tempgenes[possiblealleles[1]] == 2: # two copies, two reset checks
-									rand_reset = rand()							
+									rand_reset = np.random.uniform()							
 									if rand_reset < Reset2: # This allele resets
 										tempgenes[possiblealleles[1]] = tempgenes[possiblealleles[1]] - 1
 										Track_EpigeneReset2[gen].append(1)
-									rand_reset = rand()							
+									rand_reset = np.random.uniform()							
 									if rand_reset < Reset2: # This allele resets
 										tempgenes[possiblealleles[1]] = tempgenes[possiblealleles[1]] - 1
 										Track_EpigeneReset2[gen].append(1)
 								elif tempgenes[possiblealleles[1]] == 1: # one copy, one reset check
-									rand_reset = rand()							
+									rand_reset = np.random.uniform()							
 									if rand_reset < Reset2: # This allele resets
 										tempgenes[possiblealleles[1]] = tempgenes[possiblealleles[1]] - 1
 										Track_EpigeneReset2[gen].append(1)
@@ -795,11 +794,11 @@ offspring,genes,loci,muterate,mtdna,mutationans,geneswap,epireset,Track_EpigeneR
 								# First allele
 								# ------------
 								if tempgenes[possiblealleles[0]] == 2: # two copies, two reset checks
-									rand_reset = rand()							
+									rand_reset = np.random.uniform()							
 									if rand_reset < Reset1: # This allele resets
 										tempgenes[possiblealleles[0]] = tempgenes[possiblealleles[0]] - 1
 										Track_EpigeneReset1[gen].append(1)
-									rand_reset = rand()							
+									rand_reset = np.random.uniform()							
 									if rand_reset < Reset1: # This allele resets
 										tempgenes[possiblealleles[0]] = tempgenes[possiblealleles[0]] - 1
 										Track_EpigeneReset1[gen].append(1)
@@ -810,7 +809,7 @@ offspring,genes,loci,muterate,mtdna,mutationans,geneswap,epireset,Track_EpigeneR
 										print('Error in epigenetic locus.')
 										sys.exit(-1)
 								elif tempgenes[possiblealleles[0]] == 1: # one copy, one reset check
-									rand_reset = rand()							
+									rand_reset = np.random.uniform()							
 									if rand_reset < Reset1: # First allele resets
 										tempgenes[possiblealleles[0]] = tempgenes[possiblealleles[0]] - 1
 										Track_EpigeneReset1[gen].append(1)
@@ -835,7 +834,7 @@ offspring,genes,loci,muterate,mtdna,mutationans,geneswap,epireset,Track_EpigeneR
 											sys.exit(-1)
 										elif tempgenes[possiblealleles[1]] == 1:
 											# Possibility that methylation not inherited
-											rand_reset = rand()							
+											rand_reset = np.random.uniform()							
 											if rand_reset < Reset2: # Second allele resets
 												tempgenes[possiblealleles[1]] = 0
 												Track_EpigeneReset2[gen].append(1)
@@ -880,8 +879,8 @@ offspring,genes,loci,muterate,mtdna,mutationans,geneswap,epireset,Track_EpigeneR
 				# Then check for mutations at each allele
 				# ---------------------------------------
 				if muterate != 0.0:
-					for iloci in xrange(loci): # Loop through loci
-						mutationrandnos = rand(2) # Get a random number for checking
+					for iloci in range(loci): # Loop through loci
+						mutationrandnos = np.random.uniform(size=2) # Get a random number for checking
 						# Allele indices to sample from - index into tempgenes
 						#possiblealleles = alleles[(iloci*len(mothergenes)/loci):(iloci*len(mothergenes)/loci+len(mothergenes)/loci)]
 						possiblealleles = alleles[sum(noalleles[0:iloci]):sum(noalleles[0:iloci+1])] # This accounts for variable alleles per loci.
@@ -893,7 +892,7 @@ offspring,genes,loci,muterate,mtdna,mutationans,geneswap,epireset,Track_EpigeneR
 							thisloci = np.concatenate((thisloci,thisloci),axis=0)
 						
 						# Loop through alleles
-						for iall in xrange(2): 			
+						for iall in range(2): 			
 							
 							# Check if random number is less than muterate
 							if mutationrandnos[iall] < muterate:
@@ -904,7 +903,7 @@ offspring,genes,loci,muterate,mtdna,mutationans,geneswap,epireset,Track_EpigeneR
 								# If random kth allele model
 								if mutationans == 'random':
 									# Randomly choose another allele, but not what allele it was									
-									movealleleTO = random.sample(possiblealleles[np.where(thisloci[iall] != possiblealleles)[0]],1)[0]
+									movealleleTO = np.random.choice(possiblealleles[np.where(thisloci[iall] != possiblealleles)[0]],1).tolist()[0]
 									# Index into tempgenes and add 1
 									tempgenes[movealleleTO] = tempgenes[movealleleTO] + 1
 																	
@@ -938,7 +937,7 @@ offspring,genes,loci,muterate,mtdna,mutationans,geneswap,epireset,Track_EpigeneR
 								# If forward and backward mutation
 								elif mutationans == 'forwardbackward':
 									# Then random forward or backward step
-									randstep = rand()
+									randstep = np.random.uniform()
 									# To go left, but it can't be the first allele
 									if randstep < 0.5 and thisloci[iall] != possiblealleles[0]:
 										tempgenes[thisloci[iall]-1] = tempgenes[thisloci[iall]-1] + 1
@@ -967,7 +966,7 @@ offspring,genes,loci,muterate,mtdna,mutationans,geneswap,epireset,Track_EpigeneR
 										noallelesmutated.append(1)
 									elif iloci != 0 and iloci != 1:
 										# Randomly choose another allele								
-										movealleleTO = random.sample(possiblealleles[np.where(thisloci[iall] != possiblealleles)[0]],1)[0]
+										movealleleTO = np.random.choice(possiblealleles[np.where(thisloci[iall] != possiblealleles)[0]],1).tolist()[0]
 										# Index into tempgenes and add 1
 										tempgenes[movealleleTO] = tempgenes[movealleleTO] + 1
 																		
@@ -1057,7 +1056,7 @@ def ConstantMortality(nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track_MDeaths,Tra
 	Fdeleteoldindex = []
 	# Loop through subpops, but only if more than 1 AgeVars file is given
 	if len(Magemort) > 1:			
-		for ipop in xrange(len(Magemort)):
+		for ipop in range(len(Magemort)):
 			Fagedeaths.append([])
 			Magedeaths.append([])
 			extra_Fagedeaths.append([])
@@ -1072,48 +1071,48 @@ def ConstantMortality(nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track_MDeaths,Tra
 			if len(females_inthispop) != 0:
 				# Get unique ages
 				Fages = np.asarray(age)[females_inthispop]				
-				Funiqueages = Counter(np.asarray(np.asarray(Fages,dtype='|S10')[np.where(np.asarray(Fages,dtype='|S10') != 'NA')[0]],dtype=np.int8))
+				Funiqueages = Counter(np.asarray(np.asarray(Fages,dtype='|U10')[np.where(np.asarray(Fages,dtype='|U10') != 'NA')[0]],dtype=np.int8))
 								
 				# Loop through unique ages, counting deaths, age 1+ incorporated here
-				for iage in xrange(1,(len(Fagemort[ipop])+1)):
+				for iage in range(1,(len(Fagemort[ipop])+1)):
 					Fagedeaths[ipop].append(int(round(Fagemort[ipop][iage-1]*Funiqueages[iage])))
 					# Then take sample to delete from 
-					Fdeleteoldindex[ipop].append(random.sample(females_inthispop[np.where(np.asarray(Fages,dtype = 'str') == str(iage))[0]],Fagedeaths[ipop][iage-1]))
+					Fdeleteoldindex[ipop].append(np.random.choice(females_inthispop[np.where(np.asarray(Fages,dtype = 'str') == str(iage))[0]],Fagedeaths[ipop][iage-1],replace=False).tolist())
 								
 				# Check for individuals older than age class number
 				if max(Funiqueages) > len(Fagemort[ipop]):
 					print('Warning: Female age class exceeds specified class in Agevars.csv file. Recommend 100% mortality for last age class. Grouping these age classes.')
-					for j in xrange(len(Fagemort[ipop])+1,(max(Funiqueages)+1)):
+					for j in range(len(Fagemort[ipop])+1,(max(Funiqueages)+1)):
 						extra_Fagedeaths[ipop].append(int(round(Fagemort[ipop][-1]*Funiqueages[j])))
 					# If there are extra deaths then sample to delete from
 					if len(extra_Fagedeaths[ipop]) != 0:
 						count = len(Fagemort[ipop])+1
-						for k in xrange(len(extra_Fagedeaths[ipop])):
-							Fdeleteoldindex[ipop].append(random.sample(females_inthispop[np.where(np.asarray(Fages,dtype='|S10') == str(count))[0]],extra_Fagedeaths[ipop][k]))
+						for k in range(len(extra_Fagedeaths[ipop])):
+							Fdeleteoldindex[ipop].append(np.random.choice(females_inthispop[np.where(np.asarray(Fages,dtype='|U10') == str(count))[0]],extra_Fagedeaths[ipop][k],replace=False).tolist())
 							count = count + 1
 					
 			# Then males: If there are males in this subpop
 			if len(males_inthispop) != 0:
 				# Get unique ages
 				Mages = np.asarray(age)[males_inthispop]
-				Muniqueages = Counter(np.asarray(np.asarray(Mages,dtype='|S10')[np.where(np.asarray(Mages,dtype='|S10') != 'NA')[0]],dtype=np.int8))
+				Muniqueages = Counter(np.asarray(np.asarray(Mages,dtype='|U10')[np.where(np.asarray(Mages,dtype='|U10') != 'NA')[0]],dtype=np.int8))
 				
 				# Loop through unique ages, counting deaths, age 1+ incorporated here
-				for iage in xrange(1,(len(Magemort[ipop])+1)):
+				for iage in range(1,(len(Magemort[ipop])+1)):
 					Magedeaths[ipop].append(int(round(Magemort[ipop][iage-1]*Muniqueages[iage])))
 					# Then take sample to delete from 
-					Mdeleteoldindex[ipop].append(random.sample(males_inthispop[np.where(np.asarray(Mages,dtype = 'str') == str(iage))[0]],Magedeaths[ipop][iage-1]))
+					Mdeleteoldindex[ipop].append(np.random.choice(males_inthispop[np.where(np.asarray(Mages,dtype = 'str') == str(iage))[0]],Magedeaths[ipop][iage-1],replace=False).tolist())
 				
 				# Check for individuals older than age class number
 				if max(Muniqueages) > len(Magemort[ipop]):
 					print('Warning: Male age class exceeds specified class in Agevars.csv file. Recommend 100% mortality for last age class. Grouping these age classes.')
-					for j in xrange(len(Magemort[ipop])+1,(max(Muniqueages)+1)):
+					for j in range(len(Magemort[ipop])+1,(max(Muniqueages)+1)):
 						extra_Magedeaths[ipop].append(int(round(Magemort[ipop][-1]*Muniqueages[j])))
 					# If there are extra deaths then sample to delete from
 					if len(extra_Magedeaths[ipop]) != 0:
 						count = len(Magemort[ipop])+1
-						for k in xrange(len(extra_Magedeaths[ipop])):
-							Mdeleteoldindex[ipop].append(random.sample(males_inthispop[np.where(np.asarray(Mages,dtype='|S10') == str(count))[0]],extra_Magedeaths[ipop][k]))
+						for k in range(len(extra_Magedeaths[ipop])):
+							Mdeleteoldindex[ipop].append(np.random.choice(males_inthispop[np.where(np.asarray(Mages,dtype='|U10') == str(count))[0]],extra_Magedeaths[ipop][k],replace=False).tolist())
 							count = count + 1
 	# If there was just one AgeVars file given
 	else:
@@ -1129,46 +1128,46 @@ def ConstantMortality(nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track_MDeaths,Tra
 		if len(females) != 0:
 			# Get unique ages
 			Fages = np.asarray(age)[females]
-			Funiqueages = Counter(np.asarray(np.asarray(Fages,dtype='|S10')[np.where(np.asarray(Fages,dtype='|S10') != 'NA')[0]],dtype=np.int8))
+			Funiqueages = Counter(np.asarray(np.asarray(Fages,dtype='|U10')[np.where(np.asarray(Fages,dtype='|U10') != 'NA')[0]],dtype=np.int8))
 			# Loop through unique ages, counting deaths, age 1+ incorporated here
-			for iage in xrange(1,(len(Fagemort[ipop])+1)):
+			for iage in range(1,(len(Fagemort[ipop])+1)):
 				Fagedeaths[ipop].append(int(round(Fagemort[ipop][iage-1]*Funiqueages[iage])))
 				# Then take sample to delete from 
-				Fdeleteoldindex[ipop].append(random.sample(females[np.where(np.asarray(Fages,dtype = 'str') == str(iage))[0]],Fagedeaths[ipop][iage-1]))
+				Fdeleteoldindex[ipop].append(np.random.choice(females[np.where(np.asarray(Fages,dtype = 'str') == str(iage))[0]],Fagedeaths[ipop][iage-1],replace=False).tolist())
 						
 			# Check for individuals older than age class number
 			if max(Funiqueages) > len(Fagemort[ipop]):
 				print('Warning: Female age class exceeds specified class in Agevars.csv file. Recommend 100% mortality for last age class. Grouping these age classes.')
-				for j in xrange(len(Fagemort[ipop])+1,(max(Funiqueages)+1)):
+				for j in range(len(Fagemort[ipop])+1,(max(Funiqueages)+1)):
 					extra_Fagedeaths[ipop].append(int(round(Fagemort[ipop][-1]*Funiqueages[j])))
 				# If there are extra deaths then sample to delete from
 				if len(extra_Fagedeaths[ipop]) != 0:
 					count = len(Fagemort[ipop])+1
-					for k in xrange(len(extra_Fagedeaths[ipop])):
-						Fdeleteoldindex[ipop].append(random.sample(females[np.where(np.asarray(Fages,dtype='|S10') == str(count))[0]],extra_Fagedeaths[ipop][k]))
+					for k in range(len(extra_Fagedeaths[ipop])):
+						Fdeleteoldindex[ipop].append(np.random.choice(females[np.where(np.asarray(Fages,dtype='|U10') == str(count))[0]],extra_Fagedeaths[ipop][k],replace=False).tolist())
 						count = count + 1
 				
 		# Then males: If there are males in this subpop
 		if len(males) != 0:
 			# Get unique ages
 			Mages = np.asarray(age)[males]
-			Muniqueages = Counter(np.asarray(np.asarray(Mages,dtype='|S10')[np.where(np.asarray(Mages,dtype='|S10') != 'NA')[0]],dtype=np.int8))
+			Muniqueages = Counter(np.asarray(np.asarray(Mages,dtype='|U10')[np.where(np.asarray(Mages,dtype='|U10') != 'NA')[0]],dtype=np.int8))
 			# Loop through unique ages, counting deaths, age 1+ incorporated here
-			for iage in xrange(1,(len(Magemort[ipop])+1)):
+			for iage in range(1,(len(Magemort[ipop])+1)):
 				Magedeaths[ipop].append(int(round(Magemort[ipop][iage-1]*Muniqueages[iage])))
 				# Then take sample to delete from 
-				Mdeleteoldindex[ipop].append(random.sample(males[np.where(np.asarray(Mages,dtype = 'str') == str(iage))[0]],Magedeaths[ipop][iage-1]))
+				Mdeleteoldindex[ipop].append(np.random.choice(males[np.where(np.asarray(Mages,dtype = 'str') == str(iage))[0]],Magedeaths[ipop][iage-1],replace=False).tolist())
 			
 			# Check for individuals older than age class number
 			if max(Muniqueages) > len(Magemort[ipop]):
 				print('Warning: Male age class exceeds specified class in Agevars.csv file. Recommend 100% mortality for last age class. Grouping these age classes.')
-				for j in xrange(len(Magemort[ipop])+1,(max(Muniqueages)+1)):
+				for j in range(len(Magemort[ipop])+1,(max(Muniqueages)+1)):
 					extra_Magedeaths[ipop].append(int(round(Magemort[ipop][-1]*Muniqueages[j])))
 				# If there are extra deaths then sample to delete from
 				if len(extra_Magedeaths[ipop]) != 0:
 					count = len(Magemort[ipop])+1
-					for k in xrange(len(extra_Magedeaths[ipop])):
-						Mdeleteoldindex[ipop].append(random.sample(males[np.where(np.asarray(Mages,dtype='|S10') == str(count))[0]],extra_Magedeaths[ipop][k]))
+					for k in range(len(extra_Magedeaths[ipop])):
+						Mdeleteoldindex[ipop].append(np.random.choice(males[np.where(np.asarray(Mages,dtype='|U10') == str(count))[0]],extra_Magedeaths[ipop][k],replace=False).tolist())
 						count = count + 1
 	
 	# Flatten and turn into array and get original index locations and add indices together
@@ -1236,8 +1235,8 @@ def DDMortality(nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track_MDeaths,Track_FDe
 		sys.exit(-1)
 	
 	# Get total number of deaths for each age class, be careful of NAs and strings
-	uniqueages = Counter(np.asarray(np.asarray(age,dtype='|S10')[np.where(np.asarray(age,dtype='|S10') != 'NA')[0]],dtype=np.int8))
-	Nt = len(np.where(np.asarray(age,dtype='|S10') != 'NA')[0])
+	uniqueages = Counter(np.asarray(np.asarray(age,dtype='|U10')[np.where(np.asarray(age,dtype='|U10') != 'NA')[0]],dtype=np.int8))
+	Nt = len(np.where(np.asarray(age,dtype='|U10') != 'NA')[0])
 	agedeaths = []	
 	extra_agedeaths = []
 	
@@ -1245,7 +1244,7 @@ def DDMortality(nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track_MDeaths,Track_FDe
 		print('Warning: Logistic growth is specified and the average age specific mortality of males and females will be used.')
 	agemort = (np.asarray(Magemort[0]) + np.asarray(Fagemort[0])) / 2.
 	
-	for i in xrange(1,(len(agemort)+1)): # Only for ages 1 +		
+	for i in range(1,(len(agemort)+1)): # Only for ages 1 +		
 		# Current Ni,t
 		Ni = uniqueages[i]		
 		# If last age class, no survivors
@@ -1279,7 +1278,7 @@ def DDMortality(nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track_MDeaths,Track_FDe
 	# Switch for ages over age classes, apply last mortality to age classes
 	if max(uniqueages) > len(agemort):
 		print('Warning: age classes exceeding specified class in Agevars.csv file, apply 0 survival.')
-		for j in xrange(len(agemort)+1,(max(uniqueages)+1)):
+		for j in range(len(agemort)+1,(max(uniqueages)+1)):
 			extra_agedeaths.append(uniqueages[j])
 			
 	# Grab locations that are open
@@ -1290,17 +1289,17 @@ def DDMortality(nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track_MDeaths,Track_FDe
 	
 	# Then take a sample from the possible age class indices to delete from
 	deleteoldindex = []
-	for i in xrange(1,(len(agedeaths)+1)): # index from 1 to ...
+	for i in range(1,(len(agedeaths)+1)): # index from 1 to ...
 		# NA switch
 		if len(openindex) == 0:
-			deleteoldindex.append(random.sample(np.where(np.asarray(age) == i)[0],int(agedeaths[i-1]))) # index into age deaths - 1
+			deleteoldindex.append(np.random.choice(np.where(np.asarray(age) == i)[0],int(agedeaths[i-1]),replace=False).tolist()) # index into age deaths - 1
 		else:
-			deleteoldindex.append(random.sample(np.where(np.asarray(age) == str(i))[0],int(agedeaths[i-1])))	
+			deleteoldindex.append(np.random.choice(np.where(np.asarray(age) == str(i))[0],int(agedeaths[i-1]),replace=False).tolist())	
 	# In case there are extra age deaths
 	if len(extra_agedeaths) != 0:
 		count = len(agemort)+1
-		for j in xrange(len(extra_agedeaths)):
-			deleteoldindex.append(random.sample(np.where(np.asarray(age) == count)[0],int(extra_agedeaths[j])))
+		for j in range(len(extra_agedeaths)):
+			deleteoldindex.append(np.random.choice(np.where(np.asarray(age) == count)[0],int(extra_agedeaths[j]),replace=False).tolist())
 			count = count + 1
 	
 	# Flatten and turn into array
@@ -1367,7 +1366,7 @@ def AdultSelection(tupMort,fitvals,mature,SelectionDeaths):
 	
 	deleteallindex = []
 	# Loop through mature individuals
-	for i in xrange(len(mature)):
+	for i in range(len(mature)):
 		if mature[i] == 1:
 			# Find it's location
 			usefitvals = fitvals[FID[i]]
@@ -1382,7 +1381,7 @@ def AdultSelection(tupMort,fitvals,mature,SelectionDeaths):
 				diffmort = 0.0
 			
 			# Then flip the coin to see if  individual survives its location
-			randcheck = rand()			
+			randcheck = np.random.uniform()			
 			# If individual did not survive: keep track of delete ones
 			if randcheck < diffmort:
 				SelectionDeaths.append(1) # Record
@@ -1470,7 +1469,7 @@ def AddIndividuals(cdclimgentime,gen,idnew,agenew,genesnew,sexnew,subpopnew,infe
 	genes_add = []
 	infection_add = []
 	
-	for i in xrange(len(xy)-1):
+	for i in range(len(xy)-1):
 		subpop_add.append(xy[i+1][0])
 		id_add.append(xy[i+1][3])
 		infection_add.append(xy[i+1][6])
@@ -1501,7 +1500,7 @@ def AddIndividuals(cdclimgentime,gen,idnew,agenew,genesnew,sexnew,subpopnew,infe
 	subpopK = count_unique(subpopnew)
 	
 	# Add individuals to each subpop, checking if space
-	for isub in xrange(len(subpopK[0])):
+	for isub in range(len(subpopK[0])):
 		
 		thisPop = subpopK[0][isub] # make sure on right pop given strings
 		thisK = subpopK[1][isub] # grab K for this pop
@@ -1519,7 +1518,7 @@ def AddIndividuals(cdclimgentime,gen,idnew,agenew,genesnew,sexnew,subpopnew,infe
 		else: # Else keep going and adding individuals		
 			# Check to see if over K?
 			if thisK < count_currentN + count_addN:
-				print('Exceeded carrying capacity when adding individuals to this subpopulation '+thisPop)
+				print(('Exceeded carrying capacity when adding individuals to this subpopulation '+thisPop))
 				sys.exit(-1)
 			else:
 				
@@ -1529,7 +1528,7 @@ def AddIndividuals(cdclimgentime,gen,idnew,agenew,genesnew,sexnew,subpopnew,infe
 				openSpots = allSpots[openSpots]
 				
 				# Randomly choose addN spots
-				fillSpots = random.sample(openSpots,count_addN)
+				fillSpots = np.random.choice(openSpots,count_addN,replace=False).tolist()
 				
 				# Then update the *new variables
 				idnew[fillSpots] = id_add[addN]
@@ -1541,7 +1540,7 @@ def AddIndividuals(cdclimgentime,gen,idnew,agenew,genesnew,sexnew,subpopnew,infe
 				for iadd in fillSpots:		
 					
 					# For each loci:
-					for j in xrange(len(allelst[ThisIndex])):
+					for j in range(len(allelst[ThisIndex])):
 					
 						# Take a random draw from the w_choice function at jth locus
 						# Using the first allele file in list
@@ -1552,7 +1551,7 @@ def AddIndividuals(cdclimgentime,gen,idnew,agenew,genesnew,sexnew,subpopnew,infe
 						# 	1s = heterozygous at that locus
 						#	2s = homozygous at that locus
 						#	0s = absence of allele
-						for k in xrange(len(allelst[ThisIndex][j])):
+						for k in range(len(allelst[ThisIndex][j])):
 							
 							# Just make sure nobody is in this spot
 							#if genesnew[iadd][j][k] == 'NA':
@@ -1597,13 +1596,12 @@ def AddIndividuals(cdclimgentime,gen,idnew,agenew,genesnew,sexnew,subpopnew,infe
 	# End::AddIndividuals()
 
 # ---------------------------------------------------------------------------------------------------	 
-def DoEpigenetics(epimod,betas,sex,id,age,genes,infection,Track_EpigeneMod1,Track_EpigeneMod2,Track_EpigeneDeaths,gen,cdevolveans,epigeneans,startEpigene,geneswap):	
+def DoEpigenetics(epimod,betas,sex,id,age,genes,infection,Track_EpigeneMod1,Track_EpigeneMod2,Track_EpigeneDeaths,gen,cdevolveans,epigeneans,startEpigene,geneswap,alleles,loci):	
 	'''
 	The function modifies the genotype region specified with given probability at location individual
 	is at. First loci are fixed DNA changes with Selection module, then next loci are epigenetic regions, the rest are neutral.
-	Then, calculates individaul differential mortality, given the indivdiuals epigeneotype and betas supplied in linear additive model.
 	'''
-	pdb.set_trace() # Check genes array flattened
+	
 	# Tracking
 	Track_EpigeneMod1.append([])
 	Track_EpigeneMod2.append([])
@@ -1619,8 +1617,8 @@ def DoEpigenetics(epimod,betas,sex,id,age,genes,infection,Track_EpigeneMod1,Trac
 	else:
 		selloci = 0
 		epiloci = int(epigeneans.split('_')[1].split('L')[1])
-	epiloci_index = range(selloci,selloci+epiloci)	
-	
+	epiloci_index = list(range(selloci*int(cdevolveans.split('_')[3].split('A')[1]),selloci*int(cdevolveans.split('_')[3].split('A')[1])+epiloci*int(epigeneans.split('_')[2].split('A')[1]))) # Index location for epi region, epi region only considers 2 alleles but generic form to index to here.	
+	 
 	# If first generation, set genes epigenetic region to 0 or turned off, unless geneswap not started
 	if gen >= geneswap:
 		genes[:,epiloci_index] = 0
@@ -1631,26 +1629,31 @@ def DoEpigenetics(epimod,betas,sex,id,age,genes,infection,Track_EpigeneMod1,Trac
 		
 		# Loop through individuals - get epimutation
 		# ------------------------------------------
-		for iind in xrange(len(epimod)):	
+		for iind in range(len(epimod)):	
 			# Skip if no one at this spot
 			if sex[iind] != 'NA':
 				linmodel = [] # [loci][alleles]	for linear model
 				# Loop through each locus position
-				for ilocus in xrange(len(epiloci_index)):
+				#for ilocus in xrange(len(epiloci_index)):
+				for ilocus in range(epiloci):
+					
+					#thisregion = genes[iind][epiloci_index][(ilocus*int(epigeneans.split('_')[2].split('A')[1])):(ilocus*int(epigeneans.split('_')[2].split('A')[1])+2)]
+					
 					
 					# If alleles are [0,2] or [2,0] then skip this step
-					if int(genes[iind][epiloci_index[ilocus]][0]) == 2 or int(genes[iind][epiloci_index[ilocus]][1]) == 2:
+					if int(genes[iind][epiloci_index][ilocus*2]) == 2 or int(genes[iind][epiloci_index][ilocus*2+1]) == 2:
 						continue
 					
 					else:
 						# Check first allele
 						# -----------------------------------
-						if int(genes[iind][epiloci_index[ilocus]][0]) == 0: # Only if first allele off
+						if int(genes[iind][epiloci_index][ilocus*2]) == 0: # Only if first allele off
 							# Check for modification here
 							epimutateprob = float(epimod[iind][ilocus].split(';')[0])
-							randno = rand()
+							randno = np.random.uniform()
 							if randno < epimutateprob: # mutation occurs, turn on
-								genes[iind][epiloci_index[ilocus]][0] = 1
+								get_epialleleindex = epiloci_index[ilocus*2]
+								genes[iind][get_epialleleindex] = 1
 								Track_EpigeneMod1[gen].append(1)
 							else: # No mutation
 								Track_EpigeneMod1[gen].append(0)
@@ -1659,14 +1662,15 @@ def DoEpigenetics(epimod,betas,sex,id,age,genes,infection,Track_EpigeneMod1,Trac
 						# ----------------------------------
 						if epigeneans.split('_')[4] == 'Dep':
 							# Then if first allele is on or just got turned on
-							if int(genes[iind][epiloci_index[ilocus]][0]) != 0:
+							if int(genes[iind][epiloci_index][ilocus*2]) != 0:
 								# And if the second allele is not on
-								if int(genes[iind][epiloci_index[ilocus]][1]) == 0:	
+								if int(genes[iind][epiloci_index][ilcous*2+1]) == 0:	
 									# Check for methylation modifciation here
 									epimethylmutateprob = float(epimod[iind][ilocus].split(';')[1])
-									randno = rand()
+									randno = np.random.uniform()
 									if randno < epimethylmutateprob: # mutation occurs
-										genes[iind][epiloci_index[ilocus]][1] = 1
+										get_epialleleindex = epiloci_index[ilocus*2+1]
+										genes[iind][get_epialleleindex] = 1
 										Track_EpigeneMod2[gen].append(1)
 									else: # No mutation
 										Track_EpigeneMod2[gen].append(0)
@@ -1677,12 +1681,13 @@ def DoEpigenetics(epimod,betas,sex,id,age,genes,infection,Track_EpigeneMod1,Trac
 						# -------------------------------
 						elif epigeneans.split('_')[4] == 'Ind':
 							# For the second allele, if it is off
-							if int(genes[iind][epiloci_index[ilocus]][1]) == 0:
+							if int(genes[iind][epiloci_index][ilocus*2+1]) == 0:
 								# Check for modification here
 								epimutateprob = float(epimod[iind][ilocus].split(';')[1])
-								randno = rand()
+								randno = np.random.uniform()
 								if randno < epimutateprob: # mutation occurs, turn on
-									genes[iind][epiloci_index[ilocus]][1] = 1
+									get_epialleleindex = epiloci_index[ilocus*2+1]
+									genes[iind][get_epialleleindex] = 1
 									Track_EpigeneMod2[gen].append(1)
 								else: # No mutation
 									Track_EpigeneMod2[gen].append(0)
@@ -1691,7 +1696,7 @@ def DoEpigenetics(epimod,betas,sex,id,age,genes,infection,Track_EpigeneMod1,Trac
 						else:
 							print('Epigenetic answer needs to specify Ind or Dep, see usermanual examples.')
 							sys.exit(-1)
-					
+					'''
 					# Next Apply fitness consequence for this locus
 					# ---------------------------------------------
 					if epigeneans.split('_')[3] == 'ModelY': # Code 1,0
@@ -1708,35 +1713,37 @@ def DoEpigenetics(epimod,betas,sex,id,age,genes,infection,Track_EpigeneMod1,Trac
 						allele2 = int(genes[iind][epiloci_index[ilocus]][1])
 					
 					linmodel.append(betas[ilocus][0]*allele1 + betas[ilocus][1]*allele2)	
-							
+					'''		
+				'''
 				# Add the beta not to linear model after loci loop
 				linmodel.append(betas[-1])
 		
 				# Add the linear model together and logit
-				Fitness = np.exp(sum(linmodel)) / (1. + np.exp(sum(linmodel)))
+				#Fitness = np.exp(sum(linmodel)) / (1. + np.exp(sum(linmodel)))
 
 				# Convert fitness to differential mortality - 1 - Fitness
 				diffmort = 1. - Fitness
 				
 				# Check if this individual survives
-				randno = rand()
+				randno = np.random.uniform()
 				if randno < diffmort: # Did not survive
 					Track_EpigeneDeaths[gen].append(1)
 					# Keep sotrage spots to delete
 					deleteallindex.append(iind)
+				'''
 		
 		# Add NA to spots (sex,age,genes,infection), id gets 'OPEN'
-		deleteallindex = np.asarray(deleteallindex,dtype='int')
+		#deleteallindex = np.asarray(deleteallindex,dtype='int')
 		id = np.asarray(id)
-		id[deleteallindex] = 'OPEN'
+		#id[deleteallindex] = 'OPEN'
 		sex = np.asarray(sex,dtype='|S2')
-		sex[deleteallindex] = 'NA'
+		#sex[deleteallindex] = 'NA'
 		age = np.asarray(age,dtype='|S2')
-		age[deleteallindex] = 'NA'
+		#age[deleteallindex] = 'NA'
 		infection = np.asarray(infection,dtype='|S2')
-		infection[deleteallindex] = 'NA'
+		#infection[deleteallindex] = 'NA'
 		genes = np.asarray(genes,dtype='|S2')
-		genes[deleteallindex] = 'NA'
+		#genes[deleteallindex] = 'NA'
 			
 		# Summary Tracking numbers, cleanup
 		Track_EpigeneMod1[gen] = sum(Track_EpigeneMod1[gen])

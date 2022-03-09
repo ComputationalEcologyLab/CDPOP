@@ -15,7 +15,7 @@ try:
 	import numpy as np 
 	from numpy.random import *
 except ImportError:
-	raise ImportError, "Numpy required."
+	raise ImportError("Numpy required.")
 
 # ---------
 # User info
@@ -57,7 +57,7 @@ outdir = dir
 savedpi = 300
 qnorm = 1.959964 # For CIs, not in function 
 gen = 94 # Number of years 
-nthfile = range(0,gen,1)
+nthfile = list(range(0,gen,1))
 maxA = 900 # loci * alleles
 batchno = 1 # Number of batches
 mcno = 7 # Number of MCs
@@ -98,7 +98,7 @@ outputtitle = ['Year','Population','Population_Age','ToTFemales','ToTMales',\
 	'MalesMeanMate','FemalesSDMate','MalesSDMate','OpenLocations','CouldNotDisperse']
 '''
 # Loop through batches
-for ibatch in xrange(batchno):
+for ibatch in range(batchno):
 
 	# Add storage spot
 	N.append([])
@@ -115,7 +115,7 @@ for ibatch in xrange(batchno):
 	Ho.append([])
 	
 	# Loop through MCs
-	for imc in xrange(mcno):
+	for imc in range(mcno):
 	
 		# Open output.csv file in folder
 		inputfile = open(dir+'batchrun'+str(ibatch)+'mcrun'+str(imc)+'/output.csv')
@@ -130,7 +130,7 @@ for ibatch in xrange(batchno):
 		values = []
 
 		# Split up each line in file and append to empty matrix for generation specified
-		for i in xrange(len(lines)):
+		for i in range(len(lines)):
 			thisline = lines[i].split(',')
 			values.append(thisline)
 
@@ -152,7 +152,7 @@ for ibatch in xrange(batchno):
 		Ho[ibatch].append([])
 		
 		# Then Loop through generations/time
-		for iout in xrange(gen):
+		for iout in range(gen):
 		
 			alleles[ibatch][imc].append([])
 			He[ibatch][imc].append([])
@@ -173,12 +173,12 @@ for ibatch in xrange(batchno):
 				growthrate[ibatch][imc].append(float(values[1+iout][3]))
 						
 			# Age split
-			for j in xrange(len(values[1+iout][15].split('|'))-1):
+			for j in range(len(values[1+iout][15].split('|'))-1):
 				mort_age[ibatch][imc][iout].append(float(values[1+iout][15].split('|')[j]))
 				N_age[ibatch][imc][iout].append(float(values[1+iout][2].split('|')[j]))				
 						
 			# Grab all patch values - patch values with total
-			for j in xrange(len(values[1+iout][16].split('|'))-1):
+			for j in range(len(values[1+iout][16].split('|'))-1):
 				alleles[ibatch][imc][iout].append(float(values[1+iout][16].split('|')[j]))
 				He[ibatch][imc][iout].append(float(values[1+iout][17].split('|')[j]))
 				Ho[ibatch][imc][iout].append(float(values[1+iout][18].split('|')[j]))
@@ -391,7 +391,7 @@ leg = ['0','1','2','3','4','5']
 figure()
 plot(nthfile,births_m[0],'c-',label='eggs')
 fill_between(nthfile, births_l[0], births_r[0],color = 'c')
-for i in xrange(len(N_age_m[0][0])):
+for i in range(len(N_age_m[0][0])):
 	plot(nthfile,N_age_m[0][:,i],tick[i],label=leg[i])
 	fill_between(nthfile, N_age_l[0][:,i], N_age_r[0][:,i],color=colors[i])
 #plot(nthfile,N_l[0],'r.-', ms = 10)

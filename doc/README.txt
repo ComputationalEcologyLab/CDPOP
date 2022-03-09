@@ -11,9 +11,9 @@ Welcome to the CDPOP v1.3 release! CDPOP is a program to simulate mutation, gene
 Program Contributors: Erin Landguth, Brian Hand, Joe Glassy, Mike Jacobi, Tyler Julian, Allen Warren, Brenna Forester, Sam Cushman, Andrew Eckert, Andrew Shirk, Amy Whipple, Mitra Mennon
 Link: http://github.com/ComputationalEcologyLab/CDPOP/
 Version: 1.3.xx 
-Python: 2.7.x
-Release Date: 2018.11.13
-README Update: 2018.11.13 (ell)
+Python: 3.x
+Release Date: 2022.03.09
+README Update: 2022.03.09 (ell)
   
 --------
 Contents
@@ -29,7 +29,7 @@ data -> test example files
 Requirements and Pre-requisite Software
 ---------------------------------------
 
-Baseline Requirements. CDPOP requires the Python2.7.x interpreter, NumPy package, and SciPy package. Remember that Python modules usually require particular Python interpreters, so be sure the version ID for any external Python module or package (e.g. NumPy or others) matches the version of your Python interpreter (normally v2.7.x). 
+Baseline Requirements. CDPOP requires the Python3 interpreter, NumPy package, and SciPy package. 
 
 -----------------------
 CDPOP Installation

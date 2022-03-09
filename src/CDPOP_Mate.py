@@ -10,18 +10,18 @@ try:
 	import numpy as np 
 	from numpy.random import *
 except ImportError:
-	raise ImportError, "Numpy required."
+	raise ImportError("Numpy required.")
 	
 # Python specific functions
 import pdb, random, os, sys, copy
-from sets import Set
+#from sets import Set
 
 # --------------------------------------------------------------------------
 def countDuplicatesInList(dupedList):
 	'''
 	countDuplicatesInList() - Counts dupicates in lists
 	'''
-	uniqueSet = Set(item for item in dupedList)
+	uniqueSet = set(item for item in dupedList)
 	return [dupedList.count(item) for item in uniqueSet]
 	
 	# End::countDuplicatesInList()
@@ -41,8 +41,8 @@ def w_choice_item(lst):
 	Weighted random draw from a list, probilities do not have to add to one.
 	'''
 	wtotal=sum(lst)
-	n=random.uniform(0,wtotal)
-	for i in xrange(len(lst)):
+	n=np.random.uniform(0,wtotal)
+	for i in range(len(lst)):
 		if n < lst[i]:
 			break
 		n = n-lst[i]
@@ -96,7 +96,7 @@ males,matemovethresh,Bearpairs,subpopmatemort,subpopmortperc,subpop,gen,selfans)
 				differentialmortality = subpopmortperc[int(fromsubpop)-1]
 				
 				# Then flip the coin to see if mating occurs
-				randcheck = rand()
+				randcheck = np.random.uniform()
 				
 				# If mate did not occur: 
 				if randcheck < differentialmortality:
@@ -147,7 +147,7 @@ matemovethresh,Bearpairs,nofemales,subpopmatemort,subpopmortperc,subpop,gen,self
 	probarray = []					
 
 	# Randomly grab a female
-	intfemale = int((nofemales)*rand())
+	intfemale = int((nofemales)*np.random.uniform())
 	
 	# Make array of individuals, removing itself unless selfing on
 	if selfans == 'Y':
@@ -181,7 +181,7 @@ matemovethresh,Bearpairs,nofemales,subpopmatemort,subpopmortperc,subpop,gen,self
 				differentialmortality = subpopmortperc[int(fromsubpop)-1]
 				
 				# Then flip the coin to see if mating occurs
-				randcheck = rand()
+				randcheck = np.random.uniform()
 				
 				# If mate did not occur: 
 				if randcheck < differentialmortality:
@@ -255,7 +255,7 @@ males,matemovethresh,Bearpairs,subpopmatemort,subpopmortperc,subpop,gen):
 				differentialmortality = subpopmortperc[int(fromsubpop)-1]
 				
 				# Then flip the coin to see if mating occurs
-				randcheck = rand()
+				randcheck = np.random.uniform()
 				
 				# If mate did not occur: 
 				if randcheck < differentialmortality:
@@ -345,7 +345,7 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 		allmales = []
 		females = [] # Breeding age females
 		males = [] # Breeding age males
-		for i in xrange(nogrids):
+		for i in range(nogrids):
 			Indsex = sex[i]
 			Indage = age[i]
 			# If there are multiple subpop maturation rates given
@@ -362,7 +362,7 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 					allfemales.append(i)
 					# Carful of indexing Fmature 1 +
 					matval = Fmature[Indpop][int(Indage)-1]
-					randmat = rand()
+					randmat = np.random.uniform()
 					# Becomes mature
 					if randmat < matval: 
 						females.append(i)
@@ -373,7 +373,7 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 				elif str(Indsex) == '1':
 					allmales.append(i)
 					matval = Mmature[Indpop][int(Indage)-1]
-					randmat = rand()
+					randmat = np.random.uniform()
 					# Becomes mature
 					if randmat < matval: 
 						males.append(i)
@@ -397,7 +397,7 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 		ToTFemales[gen].append(len(allfemales))
 		BreedMales[gen].append(nomales)
 		BreedFemales[gen].append(nofemales)
-		for i in xrange(nosubpops):
+		for i in range(nosubpops):
 			# Get subpop location 
 			popall = np.where(np.asarray(subpop) == str(i+1))[0]
 			# Males in pop
@@ -414,7 +414,7 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 			BreedFemales[gen].append(sum(popfemales))
 			
 		# Get count of female age breeders
-		for i in xrange(len(agemort[0])):
+		for i in range(len(agemort[0])):
 			BreedFemales_age[gen].append([])
 				
 		# Check if females left
@@ -431,7 +431,7 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 						BreedFemales_age[gen][int(item)-1].append(countFage[1][count])
 				count = count+1
 		# Sum up population age tracker
-		for i in xrange(len(agemort[0])):
+		for i in range(len(agemort[0])):
 			BreedFemales_age[gen][i] = sum(BreedFemales_age[gen][i])
 		
 		# Choose mate for each female or individual
@@ -533,7 +533,7 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 		breedgrids = []	
 		mature = []
 		# Loop through and grab each index for each catagory for reproage
-		for i in xrange(nogrids):
+		for i in range(nogrids):
 			Indsex = sex[i]
 			Indage = age[i]
 			# If there are multiple subpop maturation rates given
@@ -550,7 +550,7 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 					allgrids.append(i)
 					# Carful of indexing Fmature 1 +
 					matval = Fmature[Indpop][int(Indage)-1]
-					randmat = rand()
+					randmat = np.random.uniform()
 					# Becomes mature
 					if randmat < matval: 
 						breedgrids.append(i)
@@ -561,7 +561,7 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 				elif str(Indsex) == '1':
 					allgrids.append(i)
 					matval = Mmature[Indpop][int(Indage)-1]
-					randmat = rand()
+					randmat = np.random.uniform()
 					# Becomes mature
 					if randmat < matval: 
 						breedgrids.append(i)
@@ -585,7 +585,7 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 		ToTFemales[gen].append(len(allgrids))
 		BreedMales[gen].append(nobreedgrids)
 		BreedFemales[gen].append(nobreedgrids)
-		for i in xrange(nosubpops):
+		for i in range(nosubpops):
 			# Get subpop location 
 			popall = np.where(np.asarray(subpop) == str(i+1))[0]
 			# Males in pop
@@ -602,7 +602,7 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 			BreedFemales[gen].append(sum(popfemales))
 		
 		# Get count of breeders
-		for i in xrange(len(agemort[0])):
+		for i in range(len(agemort[0])):
 			BreedFemales_age[gen].append([])
 		
 		# Check if breeders left
@@ -619,7 +619,7 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 						BreedFemales_age[gen][int(item)-1].append(countFage[1][count])
 				count = count+1
 		# Sum up population age tracker
-		for i in xrange(len(agemort[0])):
+		for i in range(len(agemort[0])):
 			BreedFemales_age[gen][i] = sum(BreedFemales_age[gen][i])
 				
 		# Choose mate for each female or individual
@@ -698,7 +698,7 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 	tempAvgMateCD = []
 		
 	# Loop through each CDpair
-	for ipair in xrange(len(Bearpairs)):
+	for ipair in range(len(Bearpairs)):
 		
 		# if -9999 store
 		if Bearpairs[ipair][1]==-9999:
@@ -734,7 +734,12 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 			
 			# If just rescaled
 			elif matemoveno == '8':
-				cdval = probval*(ScaleMax-ScaleMin)+ScaleMin			
+				cdval = probval*(ScaleMax-ScaleMin)+ScaleMin
+
+			# If straight prob matrix
+			elif matemoveno == '9':
+				cdval = probval
+				
 			else:
 				print('Mate move function does not exist.')
 				sys.exit(-1)

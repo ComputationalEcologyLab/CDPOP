@@ -5,8 +5,8 @@
 # ----------------------------------------------------------------------------
 # General CDPOP information
 appName = "CDPOP"
-appVers = "version 1.3.06"
-appRele = "2019.05.023-16:53:00MDT"
+appVers = "version 1.3.11"
+appRele = "2022.03.07-00:45:00MDT"
 authorNames = "Erin L Landguth et al."
 
 # ---------------
@@ -15,7 +15,7 @@ authorNames = "Erin L Landguth et al."
 # when set True, routes session log traffic to BOTH the
 # screen and to the log file. When False, log traffic just
 # sent to log file alone.
-msgVerbose = False
+msgVerbose = True
 # File absolute paths for importing functions
 SRC_PATH =  "../src/"
 
@@ -29,7 +29,7 @@ import datetime,time,pdb,os,sys,shutil
 try:
 	import numpy as np                    
 except ImportError as eMsg:
-	print("ImportError (%s) Numpy required."%(eMsg))
+	print(("ImportError (%s) Numpy required."%(eMsg)))
 	sys.exit(-1)
 
 #Import the package specific folders
@@ -42,27 +42,27 @@ if CDPOP_folder not in sys.path:
 try:
 	from CDPOP_Modules import * 
 except ImportError:
-	raise ImportError, "CDPOP_Modules required."
+	raise ImportError("CDPOP_Modules required.")
 try:
 	from CDPOP_PostProcess import *
 except ImportError:
-	raise ImportError, "CDPOP_PostProcess required."
+	raise ImportError("CDPOP_PostProcess required.")
 try:
 	from CDPOP_PreProcess import *
 except ImportError:
-	raise ImportError, "CDPOP_PreProcess required."
+	raise ImportError("CDPOP_PreProcess required.")
 try:
 	from CDPOP_Mate import *
 except ImportError:
-	raise ImportError, "CDPOP_Mate required."
+	raise ImportError("CDPOP_Mate required.")
 try:
 	from CDPOP_Offspring import *
 except ImportError:
-	raise ImportError, "CDPOP_Offspring required."
+	raise ImportError("CDPOP_Offspring required.")
 try:
 	from CDPOP_Disperse import *
 except ImportError:
-	raise ImportError, "CDPOP_Disperse required."	
+	raise ImportError("CDPOP_Disperse required.")	
 
 #------------------------------------------------------------
 # Begin main file execution
@@ -83,12 +83,12 @@ if __name__ == '__main__':
 	
 	# If user did not specify .rip file
 	else:
-		print "User must specify data directory, input file name, and output file directory (e.g., at command line type CDPOP.py ../CDPOP_data/ inputvariables16pnts.csv exampleout)."
+		print("User must specify data directory, input file name, and output file directory (e.g., at command line type CDPOP.py ../CDPOP_data/ inputvariables16pnts.csv exampleout).")
 		sys.exit(-1)	
 	
 	# If .ip file does not exist
 	if not os.path.exists(fileans):
-		print("Cannot find or open runtime inputs file(%s)"%(fileans))
+		print(("Cannot find or open runtime inputs file(%s)"%(fileans)))
 		sys.exit(-1)
 	
 	# Create output file directory - will automatically put in the data directory
@@ -116,13 +116,13 @@ if __name__ == '__main__':
 	# Print to log
 	stringout = 'DoUserInput(): '+str(datetime.datetime.now() -start_time1) + ''
 	logMsg(logfHndl,stringout)
-	print 'DoUserInput(): ',str(datetime.datetime.now() -start_time1),''
+	print('DoUserInput(): ',str(datetime.datetime.now() -start_time1),'')
 
 	# -------------------------------------	
 	# Begin Batch Looping
 	# -------------------------------------
 	# This loop is defined by the number of rows in inputvariables.csv
-	for ibatch in xrange(nSimulations):
+	for ibatch in range(nSimulations):
 	
 		# Timing events: start
 		start_timeB = datetime.datetime.now()
@@ -176,7 +176,6 @@ if __name__ == '__main__':
 		cdevolveans = batchVars['cdevolveans'][ibatch]
 		startSelection = int(batchVars['startSelection'][ibatch])
 		betaFile_selection = batchVars['betaFile_selection'][ibatch]
-		epistasis = batchVars['epistasis'][ibatch]
 		epigeneans = batchVars['epigeneans'][ibatch]
 		startEpigene = int(batchVars['startEpigene'][ibatch])
 		betaFile_epigene = batchVars['betaFile_epigene'][ibatch]
@@ -190,7 +189,7 @@ if __name__ == '__main__':
 		if not isinstance(nthfile_out, (list,tuple)):
 			nthfile_out = int(nthfile_out)
 			if nthfile_out != 0:
-				nthfile = range(0,looptime+nthfile_out,nthfile_out)
+				nthfile = list(range(0,looptime+nthfile_out,nthfile_out))
 				del(nthfile[-1]) # Delete the last value 0, looptime - 1
 			else:
 				nthfile = [0]
@@ -198,7 +197,7 @@ if __name__ == '__main__':
 		else:
 			nthfile = []
 			# Split up list, removing space values, and appending to nthfile
-			for inum in xrange(len(nthfile_out)):
+			for inum in range(len(nthfile_out)):
 				# Error check here if | at the end
 				if len(nthfile_out[inum]) != 0:
 					nthfile.append(int(nthfile_out[inum]))
@@ -210,7 +209,7 @@ if __name__ == '__main__':
 		# Split up subpopulation mortality percentage if separated by '|'
 		subpopmortperc = []
 		# Convert to float
-		for inum in xrange(len(subpopmort)):
+		for inum in range(len(subpopmort)):
 			subpopmortperc.append(float(subpopmort[inum])/100)
 		
 		# Store cdmat file information - header file (loadFile()) passes tuple or string if only 1
@@ -393,7 +392,7 @@ if __name__ == '__main__':
 		# ---------------------------------------------
 		
 		# xrange(mcruns) is typically 10 - 50...and it takes a long time.
-		for ithmcrun in xrange(mcruns):	
+		for ithmcrun in range(mcruns):	
 		
 			# Timing events: start
 			start_timeMC = datetime.datetime.now()
@@ -472,7 +471,7 @@ if __name__ == '__main__':
 			# Call function
 			tupPreProcess = DoPreProcess(outdir,ibatch,ithmcrun,\
 			xyfilename,agefilename,equalsexratio,loci,intgenesans,allefreqfilename,alleles,0,logfHndl,cdevolveans,cdinfect,Infected,\
-			subpopmigration,subpopemigration,datadir,geneswap,epigeneans,epistasis)
+			subpopmigration,subpopemigration,datadir,geneswap,epigeneans)
 						
 			ithmcrundir = tupPreProcess[0]	
 			FID = tupPreProcess[1]
@@ -505,7 +504,6 @@ if __name__ == '__main__':
 			epimod_pass = tupPreProcess[26]
 			epireset_pass = tupPreProcess[27]
 			hindex = tupPreProcess[28]
-			xEvars_pass = tupPreProcess[29]
 			
 			# ---------------------------------
 			# Error statements
@@ -518,14 +516,14 @@ if __name__ == '__main__':
 			# Print to log
 			stringout = 'DoPreProcess(): '+str(datetime.datetime.now() -start_time1) + ''
 			logMsg(logfHndl,stringout)
-			print 'DoPreProcess(): ',str(datetime.datetime.now() -start_time1),''
+			print('DoPreProcess(): ',str(datetime.datetime.now() -start_time1),'')
 			
 			# -------------------------------------------
 			# Start Generation Looping 
 			# -------------------------------------------
 			
 			# Begin generation loop
-			for gen in xrange(looptime):
+			for gen in range(looptime):
 			
 				# Timing events: start
 				start_timeGen = datetime.datetime.now()
@@ -539,7 +537,7 @@ if __name__ == '__main__':
 				
 				# Check gen time equal to cdclimgentime
 				if len(np.where(np.asarray(cdclimgentime) == str(gen))[0]) == 1:
-					tupClimate = DoCDClimate(datadir,np.where(np.asarray(cdclimgentime) == str(gen))[0][0],cdclimgentime,matecdmatfile,dispcdmatfile,matemoveno,Fdispmoveno,Mdispmoveno,matemovethresh,Fdispmovethresh,Mdispmovethresh,matemoveparA,matemoveparB,matemoveparC,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,subpop,Magemortvals,Fagemortvals,offnovals,egg_lmbdavals,egg_sigmavals,K_envvals,Mnewmortperc,Fnewmortperc,fitvals_pass,twinning_pass,Mmaturevals,Fmaturevals,betaFile_selection,xvars_betas_pass,epimod_pass,epireset_pass,betaFile_epigene,cdevolveans,epigeneans,xEvars_pass)
+					tupClimate = DoCDClimate(datadir,np.where(np.asarray(cdclimgentime) == str(gen))[0][0],cdclimgentime,matecdmatfile,dispcdmatfile,matemoveno,Fdispmoveno,Mdispmoveno,matemovethresh,Fdispmovethresh,Mdispmovethresh,matemoveparA,matemoveparB,matemoveparC,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,subpop,Magemortvals,Fagemortvals,offnovals,egg_lmbdavals,egg_sigmavals,K_envvals,Mnewmortperc,Fnewmortperc,fitvals_pass,twinning_pass,Mmaturevals,Fmaturevals,betaFile_selection,xvars_betas_pass,epimod_pass,epireset_pass,betaFile_epigene,cdevolveans,epigeneans)
 					
 					cdmatrix_mate = tupClimate[0]
 					cdmatrix_F = tupClimate[1]
@@ -573,17 +571,16 @@ if __name__ == '__main__':
 					epimod = tupClimate[29]
 					epireset = tupClimate[30]
 					betas_epigene = tupClimate[31]
-					xEvars = tupClimate[32]
 											
 					# Error check for if nofiles == nogrids system exit
 					if nogrids != len(cdmatrix_mate):
-						print 'The cost distance matrix dimensions are not the same as the number of individuals.'
+						print('The cost distance matrix dimensions are not the same as the number of individuals.')
 						sys.exit(-1)
 					
 					# Print to log
 					stringout = 'DoCDCliamte(): '+str(datetime.datetime.now() -start_time1) + ''
 					logMsg(logfHndl,stringout)
-					print 'DoCDClimate(): ',str(datetime.datetime.now() -start_time1),''	
+					print('DoCDClimate(): ',str(datetime.datetime.now() -start_time1),'')	
 					
 				# -------------------------------	
 				# Call ReadGrid()
@@ -617,7 +614,7 @@ if __name__ == '__main__':
 							# Print to log
 							stringout = 'AddIndividuals(): '+str(datetime.datetime.now() -start_time1) + ''
 							logMsg(logfHndl,stringout)
-							print('AddIndividuals()',str(datetime.datetime.now() -start_time1),'')		
+							print(('AddIndividuals()',str(datetime.datetime.now() -start_time1),''))		
 					
 					tupReadGrid = ReadGrid(FIDnew,idnew,agenew,xgridnew,\
 					ygridnew,genesnew,equalsexratio,sexnew,subpopnew,\
@@ -642,25 +639,25 @@ if __name__ == '__main__':
 					if filledgrids == 0 or filledgrids == 1:
 						stringout = 'Population went extinct, program ended.'
 						logMsg(logfHndl,stringout)
-						print('Population went extinct after generation '+str(gen-1)+'.\n')
+						print(('Population went extinct after generation '+str(gen-1)+'.\n'))
 						break
 					# Here we system exit if there are only F or M left
 					if sexans == 'Y' and len(np.where(np.asarray(sex)=='0')[0]) == 0:
 						# Print to log
 						stringout = 'No females left in population, program ended.'
 						logMsg(logfHndl,stringout)
-						print('There are no more females left in population after generation '+str(gen-1)+'.\n')
+						print(('There are no more females left in population after generation '+str(gen-1)+'.\n'))
 						break
 					if sexans == 'Y' and len(np.where(np.asarray(sex)=='1')[0]) == 0:
 						# Print to log
 						stringout = 'No males left in population, program ended.'
 						logMsg(logfHndl,stringout)
-						print('There are no more males left in population after generation '+str(gen-1)+'.\n')
+						print(('There are no more males left in population after generation '+str(gen-1)+'.\n'))
 						break				
 					# Print to log
 					stringout = 'ReadGrid(): '+str(datetime.datetime.now() -start_time1) + ''
 					logMsg(logfHndl,stringout)
-					print 'ReadGrid(): ',str(datetime.datetime.now() -start_time1),''
+					print('ReadGrid(): ',str(datetime.datetime.now() -start_time1),'')
 								
 				# ---------------------------------
 				# Call GetMetrics()
@@ -670,7 +667,7 @@ if __name__ == '__main__':
 				start_time1 = datetime.datetime.now()
 				
 				tupGetMetrics = GetMetrics(Population,nogrids,loci,alleles,genes,\
-				gen,Ho,Alleles,He,subpop,p1,p2,q1,q2,Population_age,Females_age,Males_age,age,sex,Magemort,geneswap,cdevolveans,xvars_betas,betas_selection,maxfit,minfit,xEvars,epistasis)
+				gen,Ho,Alleles,He,subpop,p1,p2,q1,q2,Population_age,Females_age,Males_age,age,sex,Magemort,geneswap,cdevolveans,xvars_betas,betas_selection,maxfit,minfit)
 				
 				filledgrids = tupGetMetrics[0]
 				subgridtotal = tupGetMetrics[1]
@@ -678,7 +675,7 @@ if __name__ == '__main__':
 				# Print to log
 				stringout = 'GetMetrics(): '+str(datetime.datetime.now() -start_time1) + ''
 				logMsg(logfHndl,stringout)
-				print 'GetMetrics(): ',str(datetime.datetime.now() -start_time1),''
+				print('GetMetrics(): ',str(datetime.datetime.now() -start_time1),'')
 				#pdb.set_trace()
 				# --------------------------------
 				# Call DoEpigenetics
@@ -688,7 +685,7 @@ if __name__ == '__main__':
 					# Timing events: start
 					start_time1 = datetime.datetime.now()
 					
-					tupEpigene = DoEpigenetics(epimod,betas_epigene,sex,id,age,genes,infection,Track_EpigeneMod1,Track_EpigeneMod2,Track_EpigeneDeaths,gen,cdevolveans,epigeneans,startEpigene,geneswap)
+					tupEpigene = DoEpigenetics(epimod,betas_epigene,sex,id,age,genes,infection,Track_EpigeneMod1,Track_EpigeneMod2,Track_EpigeneDeaths,gen,cdevolveans,epigeneans,startEpigene,geneswap,alleles,loci)
 
 					id = tupEpigene[0]
 					sex = tupEpigene[1]
@@ -699,7 +696,7 @@ if __name__ == '__main__':
 					# Print to log
 					stringout = 'DoEpigenetics(): '+str(datetime.datetime.now() -start_time1) + ''
 					logMsg(logfHndl,stringout)
-					print 'DoEpigenetics(): ',str(datetime.datetime.now() -start_time1),''
+					print('DoEpigenetics(): ',str(datetime.datetime.now() -start_time1),'')
 									
 				# ---------------------------------------
 				# Call DoMate()
@@ -728,7 +725,7 @@ if __name__ == '__main__':
 				# Print to log
 				stringout = 'DoMate(): '+str(datetime.datetime.now() -start_time1) + ''
 				logMsg(logfHndl,stringout)
-				print 'DoMate(): ',str(datetime.datetime.now() -start_time1),''
+				print('DoMate(): ',str(datetime.datetime.now() -start_time1),'')
 								
 				# ---------------------------------------
 				# Call DoOffspring()
@@ -747,7 +744,7 @@ if __name__ == '__main__':
 				# Print to log
 				stringout = 'DoOffspring(): '+str(datetime.datetime.now() -start_time1) + ''
 				logMsg(logfHndl,stringout)
-				print 'DoOffspring(): ',str(datetime.datetime.now() -start_time1),''
+				print('DoOffspring(): ',str(datetime.datetime.now() -start_time1),'')
 									
 				# ---------------------------------------
 				# Call InheritGenes()
@@ -763,7 +760,7 @@ if __name__ == '__main__':
 				# Print to log
 				stringout = 'InheritGenes(): '+str(datetime.datetime.now() -start_time1) + ''
 				logMsg(logfHndl,stringout)
-				print 'InheritGenes(): ',str(datetime.datetime.now() -start_time1),''
+				print('InheritGenes(): ',str(datetime.datetime.now() -start_time1),'')
 								
 				# ------------------------------------------
 				# Call DoAdultMortality()
@@ -791,7 +788,7 @@ if __name__ == '__main__':
 				# Print to log
 				stringout = 'DoAdultMortality(): '+str(datetime.datetime.now() -start_time1) + ''
 				logMsg(logfHndl,stringout)
-				print 'DoAdultMortality(): ',str(datetime.datetime.now() -start_time1),''
+				print('DoAdultMortality(): ',str(datetime.datetime.now() -start_time1),'')
 									
 				# ------------------------------------------
 				# Call DoDisperse()
@@ -818,7 +815,7 @@ if __name__ == '__main__':
 				# Print to log
 				stringout = 'DoDisperse(): '+str(datetime.datetime.now() -start_time1) + ''
 				logMsg(logfHndl,stringout)
-				print 'DoDisperse(): ',str(datetime.datetime.now() -start_time1),''
+				print('DoDisperse(): ',str(datetime.datetime.now() -start_time1),'')
 				
 				# ------------------------------------------
 				# Call DoOutput()
@@ -847,12 +844,12 @@ if __name__ == '__main__':
 				# Print to log
 				stringout = 'DoOutput(): '+str(datetime.datetime.now() -start_time1) + ''
 				logMsg(logfHndl,stringout)
-				print 'DoOutput(): ',str(datetime.datetime.now() -start_time1),''
+				print('DoOutput(): ',str(datetime.datetime.now() -start_time1),'')
 				
 				# Print to log
 				stringout = 'End Generation Loop'+str(gen)+': '+str(datetime.datetime.now() -start_timeGen) + '\n'
 				logMsg(logfHndl,stringout)
-				print 'End Generation Loop',str(gen),': ',str(datetime.datetime.now() -start_timeGen),'\n'
+				print('End Generation Loop',str(gen),': ',str(datetime.datetime.now() -start_timeGen),'\n')
 					
 			# End::generation loop
 						
@@ -878,19 +875,19 @@ if __name__ == '__main__':
 			# Print to log
 			stringout = 'DoPostProcess(): '+str(datetime.datetime.now() -start_time1) + ''
 			logMsg(logfHndl,stringout)
-			print 'DoPostProcess(): ',str(datetime.datetime.now() -start_time1),''
+			print('DoPostProcess(): ',str(datetime.datetime.now() -start_time1),'')
 				
 			# Print to log
 			stringout = 'End Monte Carlo Loop'+str(ithmcrun)+': '+str(datetime.datetime.now() -start_timeMC) + '\n'
 			logMsg(logfHndl,stringout)
-			print 'End Monte Carlo Loop',str(ithmcrun),': ',str(datetime.datetime.now() -start_timeMC),'\n'
+			print('End Monte Carlo Loop',str(ithmcrun),': ',str(datetime.datetime.now() -start_timeMC),'\n')
 						
 		# End::Monte Carlo Loop
 		
 		# Print to log
 		stringout = 'End Batch Loop'+str(ibatch)+': '+str(datetime.datetime.now() -start_timeB) + '\n'
 		logMsg(logfHndl,stringout)
-		print 'End Batch Loop',str(ibatch),': ',str(datetime.datetime.now() -start_timeB),'\n'
+		print('End Batch Loop',str(ibatch),': ',str(datetime.datetime.now() -start_timeB),'\n')
 		
 	#End::Batch Loop
 	
@@ -899,4 +896,4 @@ if __name__ == '__main__':
 stringout = 'Total CDPOP Simulation Time: '+str(datetime.datetime.now() -start_time) + ''
 logMsg(logfHndl,stringout)
 logfHndl.close()
-print 'Total CDPOP Simulation Time: ',str(datetime.datetime.now() -start_time),''
+print('Total CDPOP Simulation Time: ',str(datetime.datetime.now() -start_time),'')

@@ -10,7 +10,7 @@ try:
 	import numpy as np 
 	from numpy.random import *
 except ImportError:
-	raise ImportError, "Numpy required."
+	raise ImportError("Numpy required.")
 
 # Python specific functions
 import pdb, random, copy, os, sys
@@ -35,7 +35,7 @@ def logMsg(outf,msg):
 	'''
 	outf.write(msg+ '\n')
 	if msgVerbose:
-		print("%s"%(msg))
+		print(("%s"%(msg)))
 		
 	# End::logMsg()
 
@@ -46,7 +46,7 @@ def w_choice_general(lst):
 	Weighted random draw from a list, probilities do not have to add to one.
 	'''
 	wtotal=sum(x[1] for x in lst)
-	n=random.uniform(0,wtotal)
+	n=np.random.uniform(0,wtotal)
 	count = 0
 	for item, weight in lst:
 		if n < weight:
@@ -67,8 +67,8 @@ def w_choice_item(lst):
 	Weighted random draw from a list, probilities do not have to add to one.
 	'''
 	wtotal=sum(lst)
-	n=random.uniform(0,wtotal)
-	for i in xrange(len(lst)):
+	n=np.random.uniform(0,wtotal)
+	for i in range(len(lst)):
 		if n < lst[i]:
 			break
 		n = n-lst[i]
@@ -129,7 +129,7 @@ def GetProbArray(Fxycdmatrix,Mxycdmatrix,tempoffspring,index,freegrid,philopatry
 			all_left_sex = np.concatenate([females_left,males_left])
 			
 			if len(all_left_sex) != 0:
-				rand_left = random.randint(0, len(all_left_sex) - 1)
+				rand_left = np.random.randint(0, len(all_left_sex) - 1)
 				if all_left_sex[rand_left] == 0:
 					probarray = Fxycdmatrix[int(F_off[Fcount][0])][freegrid]
 					Fcount = Fcount + 1
@@ -169,7 +169,7 @@ def GetProbArray(Fxycdmatrix,Mxycdmatrix,tempoffspring,index,freegrid,philopatry
 				males_left = np.ones(males_left,dtype = int)
 			all_left_sex = np.concatenate([females_left,males_left])
 			if len(all_left_sex) != 0:	
-				rand_left = random.randint(0, len(all_left_sex) - 1)
+				rand_left = np.random.randint(0, len(all_left_sex) - 1)
 				if all_left_sex[rand_left] == 0:
 					probarray = Fxycdmatrix[int(F_off[Fcount][0])][freegrid]
 					Fcount = Fcount + 1
@@ -250,11 +250,11 @@ def DoMLocusSelection(offspring,tempfreegrid,iteminlist,loci,cdevolveans,betas,x
 	
 	linmodel = [] # [xvar][loci][allele]
 	# Loop through each environment
-	for ixvar in xrange(int(cdevolveans.split('_')[1].split('X')[1])):
+	for ixvar in range(int(cdevolveans.split('_')[1].split('X')[1])):
 		xvar = float(atspot_xvars[ixvar])
 		thesebetas = sum(betas[ixvar],[])
 		# Loop through the alleles
-		for iall in xrange(len(selgenes)):
+		for iall in range(len(selgenes)):
 			thisbeta = thesebetas[iall]
 			thisallele = selgenes[iall]
 			if cdevolveans.split('_')[4] == 'ModelY': # Code 1,0
@@ -542,7 +542,7 @@ males,males_nomate,startSelection,betas,xvars_betas,maxfit,minfit):
 	while dispcount < len(freegrid) and offcount < len(offspring):
 		
 		# Loop through offspring that are shuffled
-		for i in xrange(len(offspring)):
+		for i in range(len(offspring)):
 				
 			# Create a function here that gets indices for male and female
 			probarray,Fcount,Mcount,sexans = GetProbArray(Fxycdmatrix,Mxycdmatrix,offspring,i,\
@@ -561,7 +561,7 @@ males,males_nomate,startSelection,betas,xvars_betas,maxfit,minfit):
 					differentialmortality = Do1LocusSelection(offspring[i],fitvals,tempfreegrid,iteminlist)
 											
 					# Then flip the coin to see if offspring survives its location
-					randcheck = rand()
+					randcheck = np.random.uniform()
 					
 					# If offspring did not survive: break from loop, move to next offspring
 					if randcheck < differentialmortality:
@@ -580,7 +580,7 @@ males,males_nomate,startSelection,betas,xvars_betas,maxfit,minfit):
 					differentialmortality = Do2LocusSelection(offspring[i],fitvals,tempfreegrid,iteminlist,alleles)
 											
 					# Then flip the coin to see if offspring survives its location
-					randcheck = rand()
+					randcheck = np.random.uniform()
 					
 					# If offspring did not survive: break from loop, move to next offspring
 					if randcheck < differentialmortality:
@@ -599,7 +599,7 @@ males,males_nomate,startSelection,betas,xvars_betas,maxfit,minfit):
 					differentialmortality = DoHeMortSelection(offspring[i],fitvals,tempfreegrid,iteminlist,loci,cdevolveans)
 											
 					# Then flip the coin to see if offspring survives its location
-					randcheck = rand()
+					randcheck = np.random.uniform()
 					
 					# If offspring did not survive: break from loop, move to next offspring
 					if randcheck < differentialmortality:
@@ -618,7 +618,7 @@ males,males_nomate,startSelection,betas,xvars_betas,maxfit,minfit):
 					differentialmortality = DoMLocusSelection(offspring[i],tempfreegrid,iteminlist,loci,cdevolveans,betas,xvars_betas,maxfit,minfit,gen)
 											
 					# Then flip the coin to see if offspring survives its location
-					randcheck = rand()
+					randcheck = np.random.uniform()
 					
 					# If offspring did not survive: break from loop, move to next offspring
 					if randcheck < differentialmortality:
@@ -638,7 +638,7 @@ males,males_nomate,startSelection,betas,xvars_betas,maxfit,minfit):
 					differentialmortality = DoHindexSelection(offspring[i],tempfreegrid, iteminlist, cdevolveans,xvars_betas)
 					
 					# Then flip the coin to see if offspring survives its location
-					randcheck = rand()
+					randcheck = np.random.uniform()
 					
 					# If offspring did not survive: break from loop, move to next offspring
 					if randcheck < differentialmortality:
@@ -665,7 +665,7 @@ males,males_nomate,startSelection,betas,xvars_betas,maxfit,minfit):
 						differentialmortality = subpopmortperc[int(tosubpop)-1]
 						
 						# Then flip the coin to see if offspring survives its location
-						randcheck = rand()
+						randcheck = np.random.uniform()
 						
 						# If offspring did not survive: break from loop, move to next offspring
 						if randcheck < differentialmortality:
@@ -724,7 +724,7 @@ males,males_nomate,startSelection,betas,xvars_betas,maxfit,minfit):
 	# The store the number of disperses to separate subpops
 	subpopmigration.append([]) # This adds a spot for next generation
 	subpopemigration.append([])
-	for i in xrange(len(subpopmigration[0])):
+	for i in range(len(subpopmigration[0])):
 		subpopmigration[gen][i]=sum(subpopmigration[gen][i])
 		subpopmigration[gen+1].append([0]) # This adds spots for subpops in next generation
 		subpopemigration[gen][i]=sum(subpopemigration[gen][i])
@@ -762,7 +762,7 @@ FDispDistCDstd,MDispDistCDstd,Fthreshold,Mthreshold,FScaleMax,FScaleMin,MScaleMa
 	Mcount = 0
 	
 	# Loop through each OffDisperseIN
-	for ioffspring in xrange(len(OffDisperseIN)):
+	for ioffspring in range(len(OffDisperseIN)):
 		# Store the ED/CD distance offspring went - split up into sex
 		if int(OffDisperseIN[ioffspring][0][4]) == 0:
 			FtempAvgDispDistED.append(np.sqrt((xgridcopy[int(OffDisperseIN[ioffspring][0][2])]-xgridcopy[int(OffDisperseIN[ioffspring][1])])**2+(ygridcopy[int(OffDisperseIN[ioffspring][0][2])]-ygridcopy[int(OffDisperseIN[ioffspring][1])])**2))
@@ -793,6 +793,9 @@ FDispDistCDstd,MDispDistCDstd,Fthreshold,Mthreshold,FScaleMax,FScaleMin,MScaleMa
 			# If matrix
 			elif Fdispmoveno == '8':
 				cdval = (1. - probval)*(FScaleMax-FScaleMin)+FScaleMin
+			elif Fdispmoveno == '9':
+				cdval = probval
+			
 			# Write to temp	
 			FtempAvgDispDistCD.append(cdval)
 				
@@ -826,6 +829,8 @@ FDispDistCDstd,MDispDistCDstd,Fthreshold,Mthreshold,FScaleMax,FScaleMin,MScaleMa
 				cdval = float(MB) + np.sqrt(-2*float(MC)**2 * np.log((probval*(MScaleMax-MScaleMin)+MScaleMin)/float(MA)))
 			elif Mdispmoveno == '8':
 				cdval = (1. - probval)*(MScaleMax-MScaleMin)+MScaleMin
+			elif Mdispmoveno == '9':
+				cdval = probval
 			MtempAvgDispDistCD.append(cdval)
 			
 			# Then add to combined storage

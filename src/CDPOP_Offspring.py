@@ -10,9 +10,9 @@ try:
 	from numpy.random import *
 	import numpy as np
 except ImportError:
-	raise ImportError, "Numpy required."
+	raise ImportError("Numpy required.")
 import pdb,sys
-from sets import Set
+#from sets import Set
 import random
 from collections import Counter
 
@@ -33,16 +33,16 @@ def DoOffspringSex(Bearpairs,Femalepercent,CDpairs,equalsexratio):
 		np.random.shuffle(offsex)
 		
 	# Loop through each mate pair
-	for i in xrange(len(Bearpairs)):
+	for i in range(len(Bearpairs)):
 		
 		# If equal sex ratio is N
 		if equalsexratio == 'N':
 		
 			# And then loop through each offspring from that mate pair
-			for j in xrange(Bearpairs[i][2]):
+			for j in range(Bearpairs[i][2]):
 				
 				# Select sex of the jth offspring - select a random number
-				randsex = int(100*rand())
+				randsex = int(100*np.random.uniform())
 				
 				# If that random number is less the Femalepercent, assign it to be a female
 				if randsex < Femalepercent:
@@ -67,7 +67,7 @@ def DoOffspringSex(Bearpairs,Femalepercent,CDpairs,equalsexratio):
 			np.random.shuffle(offsex)
 			
 			# And then loop through each offspring from that mate pair
-			for j in xrange(Bearpairs[i][2]):
+			for j in range(Bearpairs[i][2]):
 			
 				# And then append all information onto a list storage variable offspring
 				offspring.append([Bearpairs[i][0],Bearpairs[i][1],CDpairs[i][0],CDpairs[i][1],offsex[j]])
@@ -75,7 +75,7 @@ def DoOffspringSex(Bearpairs,Femalepercent,CDpairs,equalsexratio):
 		# WRightFisher - assign equal males and females
 		elif equalsexratio == 'WrightFisher':
 			# And then loop through each offspring from that mate pair
-			for j in xrange(Bearpairs[i][2]):
+			for j in range(Bearpairs[i][2]):
 			
 				# And then append all information onto a list storage variable offspring
 				offspring.append([Bearpairs[i][0],Bearpairs[i][1],CDpairs[i][0],CDpairs[i][1],offsex[i]])		
@@ -94,7 +94,7 @@ def DoOffspringRandom(Bearpairs,CDpairs,lmbdavals,age,subpop):
 	'''	
 	
 	# Loop through each mate pair
-	for i in xrange(len(Bearpairs)):
+	for i in range(len(Bearpairs)):
 		
 		# If female did not mate up, then assign 0 offspring
 		if Bearpairs[i][1] == -9999:
@@ -117,7 +117,7 @@ def DoOffspringRandom(Bearpairs,CDpairs,lmbdavals,age,subpop):
 			lmbda = lmbdavals[Fpop][Fage-1]
 			
 			# Randomly choose a number between 0 and 4
-			randkidno = int(round(lmbda)*rand())
+			randkidno = int(round(lmbda)*np.random.uniform())
 			
 			# Append Offspring number to end of Pairs [F,M,#offspring]
 			Bearpairs[i].append(randkidno)
@@ -137,7 +137,7 @@ def DoOffspringPoisson(Bearpairs,CDpairs,lmbdavals,age,subpop):
 	'''		
 	
 	# Loop through each mate pair
-	for i in xrange(len(Bearpairs)):
+	for i in range(len(Bearpairs)):
 	
 		# If female did not mate up, then assign 0 offspring
 		if Bearpairs[i][1] == -9999:
@@ -180,7 +180,7 @@ def DoOffspringConstant(Bearpairs,CDpairs,lmbdavals,age,subpop):
 	'''	
 	
 	# Loop through each mate pair
-	for i in xrange(len(Bearpairs)):
+	for i in range(len(Bearpairs)):
 	
 		# If female did not mate up, then assign 0 offspring
 		if Bearpairs[i][1] == -9999:
@@ -227,7 +227,7 @@ def DoOffspringEqual(offspring,lmbdavals,age,subpop):
 		tempFemales = list(tempOff[:,0])
 		
 		# Get unique Female locations
-		uniqueSet = Set(item for item in tempFemales)
+		uniqueSet = set(item for item in tempFemales)
 		
 		# Loop through unique Set of females and create sample list
 		returnOff = []
@@ -248,8 +248,8 @@ def DoOffspringEqual(offspring,lmbdavals,age,subpop):
 			# Get where this female is in offspring list
 			tempFloc = np.where(tempFemales == item)[0]
 			# Then random sample lmbda of them
-			sampOffloc = random.sample(tempFloc,int(round(lmbda)))
-			for i in xrange(len(sampOffloc)):
+			sampOffloc = np.random.choice(tempFloc,int(round(lmbda)),replace=False).tolist()
+			for i in range(len(sampOffloc)):
 				returnOff.append(offspring[sampOffloc[i]])
 	else:
 		returnOff = offspring
@@ -261,7 +261,7 @@ def DoOffspringEqual(offspring,lmbdavals,age,subpop):
 def DoOffspringNormal(Bearpairs,CDpairs,lmbdavals,sigmavals,age,subpop):
 	
 	# Loop through each mate pair
-	for i in xrange(len(Bearpairs)):
+	for i in range(len(Bearpairs)):
 	
 		# If female did not mate up, then assign 0 offspring
 		if Bearpairs[i][1] == -9999:
@@ -317,14 +317,14 @@ def DoCDInfectAndTwinning(offspring,infection,transmissionprob,twinning,Twins):
 	
 	count_twins = 0
 	# Get infection status of offspring also looping through 'egg' to see if it splits
-	for ioff in xrange(len(offspring)):
+	for ioff in range(len(offspring)):
 	
 		# If parent has infection
 		if infection[int(offspring[ioff][0])] == 1 or\
 		infection[int(offspring[ioff][1])] == 1:
 		
 			# Get a random number
-			randinfection = rand()
+			randinfection = np.random.uniform()
 			
 			# If random flip is less than transmissionprob
 			if randinfection < transmissionprob:
@@ -343,7 +343,7 @@ def DoCDInfectAndTwinning(offspring,infection,transmissionprob,twinning,Twins):
 			offspring[ioff].append(0)
 			
 		# Twinning check here - Get a random number and check probability
-		randtwin = rand()
+		randtwin = np.random.uniform()
 		if randtwin < twinning:
 			# Twinning happens
 			offspring[ioff].append('T'+str(ioff)) # Gives unique ID to this twin
@@ -387,10 +387,10 @@ def DoOffMortality(offspring,Mnewmortperc,Fnewmortperc,equalsexratio,offno,age,l
 			motherpops = np.asarray(subpop)[motherspots]
 			
 			# Loop through each supop
-			for ipop in xrange(len(Mnewmortperc)):			
+			for ipop in range(len(Mnewmortperc)):			
 				
 				# Get total in this subpop and their ages for Nt calculation
-				thispop = np.where(np.asarray(subpop,dtype='|S10') == str(ipop+1))[0]
+				thispop = np.where(np.asarray(subpop,dtype='|U10') == str(ipop+1))[0]
 				thispop_countage = Counter(np.asarray(age)[thispop]) # string with NAs
 				
 				# Get the mothers in this subpop, this is their index location back to offspring array
@@ -408,7 +408,7 @@ def DoOffMortality(offspring,Mnewmortperc,Fnewmortperc,equalsexratio,offno,age,l
 				mothers_countage = Counter(np.asarray(mothers_ages,dtype=np.int8))
 				
 				# Loop through age classes being careful of indexing
-				for iage in xrange(len(lmbda[0])):
+				for iage in range(len(lmbda[0])):
 					# Get the age here, 1+
 					ageindex = iage + 1				
 				
@@ -436,10 +436,10 @@ def DoOffMortality(offspring,Mnewmortperc,Fnewmortperc,equalsexratio,offno,age,l
 						nooffsurvivors = len(mothers_thisage)
 						
 					# Randomly sample the index for survivors
-					offsurvived_index = random.sample(mothers_thisage,nooffsurvivors)
+					offsurvived_index = np.random.choice(mothers_thisage,nooffsurvivors,replace=False).tolist()
 					
 					# Then store those offspring
-					for ioff in xrange(len(offsurvived_index)):
+					for ioff in range(len(offsurvived_index)):
 						tempoffspring.append(offspring[offsurvived_index[ioff]])					
 					
 			# Tracking
@@ -455,7 +455,7 @@ def DoOffMortality(offspring,Mnewmortperc,Fnewmortperc,equalsexratio,offno,age,l
 				# Skip this loop if mortality is 0, all survive
 				if not ((sum(Fnewmortperc)) == 0 and (sum(Mnewmortperc) == 0)):
 					# Loop through each offspring
-					for ioff in xrange(len(offspring)):
+					for ioff in range(len(offspring)):
 						thisoff = offspring[ioff]
 						# Get subpop from, but only if more than one AgeVars given
 						if len(Fnewmortperc) > 1:
@@ -468,7 +468,7 @@ def DoOffMortality(offspring,Mnewmortperc,Fnewmortperc,equalsexratio,offno,age,l
 						else:
 							offmort = Mnewmortperc[offpop]
 						# See if survives
-						randno = rand()
+						randno = np.random.uniform()
 						if randno < offmort: # mortality occurs
 							# Tracking
 							if offsex == 0:

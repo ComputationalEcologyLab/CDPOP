@@ -9,7 +9,7 @@
 try:
 	import numpy as np 
 except ImportError:
-	raise ImportError, "Numpy required."
+	raise ImportError("Numpy required.")
 import pdb,random,os,sys,glob,itertools
 # ----------------------------------------------------------
 # Global symbols, if any :))
@@ -31,7 +31,7 @@ def logMsg(outf,msg):
 	'''
 	outf.write(msg+ '\n')
 	if msgVerbose:
-		print("%s"%(msg))
+		print(("%s"%(msg)))
 		
 	# End::logMsg()
 
@@ -39,7 +39,7 @@ def logMsg(outf,msg):
 def nest(flat,levels):
     '''Turn a flat list into a nested list, with a specified number of lists per nesting level.
     Excess elements are silently ignored.'''
-    return _nest(flat,levels).next()
+    return next(_nest(flat,levels))
 
 def _nest(flat,levels):
     if levels:
@@ -57,7 +57,7 @@ def w_choice_general(lst):
 	Weighted random draw from a list, probilities do not have to add to one.
 	'''
 	wtotal=sum(x[1] for x in lst)
-	n=random.uniform(0,wtotal)
+	n=np.random.uniform(0,wtotal)
 	count = 0
 	for item, weight in lst:
 		if n < weight:
@@ -85,17 +85,17 @@ ygridnew,idnew,sexnew,agenew,genesnew,logfHndl,infection,AllDispDistCD,hindexnew
 			
 	# Write out the loci title info
 	# Loop for loci length
-	for i in xrange(loci-1):
+	for i in range(loci-1):
 		# Loop for allele length
-		for j in xrange(alleles[i]):
+		for j in range(alleles[i]):
 			outputfile.write('L'+str(i)+'A'+str(j)+',')
 	# To get a return character on the end of the title
-	for i in xrange(alleles[loci-1]-1):
+	for i in range(alleles[loci-1]-1):
 		outputfile.write('L'+str(loci-1)+'A'+str(i)+',')
 	outputfile.write('L'+str(loci-1)+'A'+str(alleles[loci-1]-1)+'\n')
 	
 	# Loop through each grid spot and output
-	for i in xrange(nogrids):		
+	for i in range(nogrids):		
 		outputfile.write(subpopnew[i]+',')
 		outputfile.write(str(float(xgridnew[i]))+',')
 		outputfile.write(str(float(ygridnew[i]))+',')
@@ -109,7 +109,7 @@ ygridnew,idnew,sexnew,agenew,genesnew,logfHndl,infection,AllDispDistCD,hindexnew
 		else:			
 			outputfile.write('NA,')
 		# Write out gene info
-		for iall in xrange(sum(alleles)):
+		for iall in range(sum(alleles)):
 			outputfile.write(str(genesnew[i][iall])+',')
 		outputfile.write('\n')
 												
@@ -131,7 +131,7 @@ def DoGridOut_general(loci,alleles,ithmcrundir,logfHndl):
 		
 	# Create a genes vector, appending loci information with alleles to it
 	genes_genform = []
-	for iloci in xrange(loci):
+	for iloci in range(loci):
 		locitemp = np.arange(1,alleles[0]+1,1)
 		genes_genform.append(list(locitemp))
 	
@@ -142,7 +142,7 @@ def DoGridOut_general(loci,alleles,ithmcrundir,logfHndl):
 	nodatfiles = len(datfileList)
 	
 	# Loop through each grid
-	for igrid in xrange(nodatfiles):
+	for igrid in range(nodatfiles):
 
 		# Grab filename in List
 		filename = datfileList[igrid]
@@ -175,7 +175,7 @@ def DoGridOut_general(loci,alleles,ithmcrundir,logfHndl):
 		age_cdpop = []
 		infection_cdpop = []
 		subpop_cdpop = []
-		for ispot in xrange(nogrids):
+		for ispot in range(nogrids):
 			subpop_cdpop.append(x[ispot+1][0])			
 			x_cdpop.append(float(x[ispot+1][1]))
 			y_cdpop.append(float(x[ispot+1][2]))
@@ -186,9 +186,9 @@ def DoGridOut_general(loci,alleles,ithmcrundir,logfHndl):
 					
 		# Store genetic information: genes[individual][locus][allele]
 		genes_cdpop = []
-		for ispot in xrange(nogrids):
+		for ispot in range(nogrids):
 			genes_cdpop.append([])
-			for jspot in xrange(loci):
+			for jspot in range(loci):
 				genes_cdpop[ispot].append(x[ispot+1][int(9+sum(alleles[0:jspot])):int(9+sum(alleles[0:jspot+1]))])
 		
 		# Delete x variable
@@ -204,13 +204,13 @@ def DoGridOut_general(loci,alleles,ithmcrundir,logfHndl):
 			GenFormgenes.append([])
 			
 			# Loop through each locus
-			for ithloci in xrange(loci):
+			for ithloci in range(loci):
 			
 				# Add gene individual spot 
 				GenFormgenes[ithind].append([])
 				
 				# Loop through each allele spot at that locu
-				for ithallele in xrange(alleles[ithloci]):
+				for ithallele in range(alleles[ithloci]):
 				
 					# Check if allele spot is 1
 					if genes_cdpop[ithind][ithloci][ithallele] == '1':
@@ -262,7 +262,7 @@ def DoGridOut_general(loci,alleles,ithmcrundir,logfHndl):
 		outputfile.write('\n')	
 					
 		# Loop through each grid spot and output
-		for i in xrange(nogrids):
+		for i in range(nogrids):
 			
 			outputfile.write(subpop_cdpop[i]+',')
 			outputfile.write(str(float(x_cdpop[i]))+',')
@@ -273,10 +273,10 @@ def DoGridOut_general(loci,alleles,ithmcrundir,logfHndl):
 			outputfile.write(str(infection_cdpop[i])+',')
 			
 			# Loop through each locus
-			for ithloci in xrange(loci-1):
+			for ithloci in range(loci-1):
 			
 				# Loop through each allele spot at that locus
-				for ithallele in xrange(2):
+				for ithallele in range(2):
 				
 					outputfile.write(str(GenFormgenes[i][ithloci][ithallele])+',')
 				
@@ -303,7 +303,7 @@ def DoGridOut_genalex(loci,alleles,ithmcrundir,logfHndl,subgridtotal):
 	subpopno = len(subgridtotal)	
 	# Create a genes vector, appending loci information with alleles to it
 	genes_genform = []
-	for iloci in xrange(loci):
+	for iloci in range(loci):
 		locitemp = np.arange(1,alleles[0]+1,1)
 		genes_genform.append(list(locitemp))
 	
@@ -314,7 +314,7 @@ def DoGridOut_genalex(loci,alleles,ithmcrundir,logfHndl,subgridtotal):
 	nodatfiles = len(datfileList)
 	
 	# Loop through each grid
-	for igrid in xrange(nodatfiles):
+	for igrid in range(nodatfiles):
 
 		# Grab filename in List
 		filename = datfileList[igrid]
@@ -347,7 +347,7 @@ def DoGridOut_genalex(loci,alleles,ithmcrundir,logfHndl,subgridtotal):
 		age_cdpop = []
 		infection_cdpop = []
 		subpop_cdpop = []
-		for ispot in xrange(nogrids):
+		for ispot in range(nogrids):
 			subpop_cdpop.append(x[ispot+1][0])			
 			x_cdpop.append(float(x[ispot+1][1]))
 			y_cdpop.append(float(x[ispot+1][2]))
@@ -358,9 +358,9 @@ def DoGridOut_genalex(loci,alleles,ithmcrundir,logfHndl,subgridtotal):
 					
 		# Store genetic information: genes[individual][locus][allele]
 		genes_cdpop = []
-		for ispot in xrange(nogrids):
+		for ispot in range(nogrids):
 			genes_cdpop.append([])
-			for jspot in xrange(loci):
+			for jspot in range(loci):
 				genes_cdpop[ispot].append(x[ispot+1][int(9+sum(alleles[0:jspot])):int(9+sum(alleles[0:jspot+1]))])
 		
 		# Delete x variable
@@ -376,13 +376,13 @@ def DoGridOut_genalex(loci,alleles,ithmcrundir,logfHndl,subgridtotal):
 			GenFormgenes.append([])
 			
 			# Loop through each locus
-			for ithloci in xrange(loci):
+			for ithloci in range(loci):
 			
 				# Add gene individual spot 
 				GenFormgenes[ithind].append([])
 				
 				# Loop through each allele spot at that locu
-				for ithallele in xrange(alleles[ithloci]):
+				for ithallele in range(alleles[ithloci]):
 				
 					# Check if allele spot is 1
 					if genes_cdpop[ithind][ithloci][ithallele] == '1':
@@ -429,16 +429,16 @@ def DoGridOut_genalex(loci,alleles,ithmcrundir,logfHndl,subgridtotal):
 		outputfile.write(',X,Y\n')
 							
 		# Loop through each grid spot and output
-		for i in xrange(nogrids):
+		for i in range(nogrids):
 			
 			outputfile.write('indiv'+str(i)+',')
 			outputfile.write(str(subpop_cdpop[i])+',')
 			
 			# Loop through each locus
-			for ithloci in xrange(loci):
+			for ithloci in range(loci):
 			
 				# Loop through each allele spot at that locus
-				for ithallele in xrange(2):
+				for ithallele in range(2):
 				
 					outputfile.write(str(GenFormgenes[i][ithloci][ithallele])+',')
 				
@@ -466,7 +466,7 @@ def DoGridOut_structure(loci,alleles,ithmcrundir,logfHndl):
 		
 	# Create a genes vector, appending loci information with alleles to it
 	genes_genform = []
-	for iloci in xrange(loci):
+	for iloci in range(loci):
 		locitemp = np.arange(1,alleles[0]+1,1)
 		genes_genform.append(list(locitemp))
 	
@@ -477,7 +477,7 @@ def DoGridOut_structure(loci,alleles,ithmcrundir,logfHndl):
 	nodatfiles = len(datfileList)
 	
 	# Loop through each grid
-	for igrid in xrange(nodatfiles):
+	for igrid in range(nodatfiles):
 
 		# Grab filename in List
 		filename = datfileList[igrid]
@@ -510,7 +510,7 @@ def DoGridOut_structure(loci,alleles,ithmcrundir,logfHndl):
 		age_cdpop = []
 		infection_cdpop = []
 		subpop_cdpop = []
-		for ispot in xrange(nogrids):
+		for ispot in range(nogrids):
 			subpop_cdpop.append(x[ispot+1][0])			
 			x_cdpop.append(float(x[ispot+1][1]))
 			y_cdpop.append(float(x[ispot+1][2]))
@@ -521,9 +521,9 @@ def DoGridOut_structure(loci,alleles,ithmcrundir,logfHndl):
 					
 		# Store genetic information: genes[individual][locus][allele]
 		genes_cdpop = []
-		for ispot in xrange(nogrids):
+		for ispot in range(nogrids):
 			genes_cdpop.append([])
-			for jspot in xrange(loci):
+			for jspot in range(loci):
 				genes_cdpop[ispot].append(x[ispot+1][int(9+sum(alleles[0:jspot])):int(9+sum(alleles[0:jspot+1]))])
 		
 		# Delete x variable
@@ -539,13 +539,13 @@ def DoGridOut_structure(loci,alleles,ithmcrundir,logfHndl):
 			GenFormgenes.append([])
 			
 			# Loop through each locus
-			for ithloci in xrange(loci):
+			for ithloci in range(loci):
 			
 				# Add gene individual spot 
 				GenFormgenes[ithind].append([])
 				
 				# Loop through each allele spot at that locu
-				for ithallele in xrange(alleles[ithloci]):
+				for ithallele in range(alleles[ithloci]):
 				
 					# Check if allele spot is 1
 					if genes_cdpop[ithind][ithloci][ithallele] == '1':
@@ -582,16 +582,16 @@ def DoGridOut_structure(loci,alleles,ithmcrundir,logfHndl):
 		outputfile.write('\n\n')
 							
 		# Loop through each grid spot and output
-		for i in xrange(nogrids):
+		for i in range(nogrids):
 		
 			# Loop through each allele spot at that locus
-			for ithallele in xrange(2):
+			for ithallele in range(2):
 				
 				outputfile.write(str(id_cdpop[i])+' ')
 				outputfile.write(str(subpop_cdpop[i])+' ')
 								
 				# Loop through each locus
-				for ithloci in xrange(loci):
+				for ithloci in range(loci):
 					
 					outputfile.write(str(GenFormgenes[i][ithloci][ithallele])+' ')
 					
@@ -618,7 +618,7 @@ def DoGridOut_genepop(loci,alleles,ithmcrundir,logfHndl,subgridtotal,subpop):
 	
 	# Create a genes vector, appending loci information with alleles to it
 	genes_genform = []
-	for iloci in xrange(loci):
+	for iloci in range(loci):
 		locitemp = np.arange(1,alleles[0]+1,1)
 		genes_genform.append(list(locitemp))
 	
@@ -629,7 +629,7 @@ def DoGridOut_genepop(loci,alleles,ithmcrundir,logfHndl,subgridtotal,subpop):
 	nodatfiles = len(datfileList)
 	
 	# Loop through each grid
-	for igrid in xrange(nodatfiles):
+	for igrid in range(nodatfiles):
 
 		# Grab filename in List
 		filename = datfileList[igrid]
@@ -662,7 +662,7 @@ def DoGridOut_genepop(loci,alleles,ithmcrundir,logfHndl,subgridtotal,subpop):
 		age_cdpop = []
 		infection_cdpop = []
 		subpop_cdpop = []
-		for ispot in xrange(nogrids):
+		for ispot in range(nogrids):
 			subpop_cdpop.append(x[ispot+1][0])			
 			x_cdpop.append(float(x[ispot+1][1]))
 			y_cdpop.append(float(x[ispot+1][2]))
@@ -673,9 +673,9 @@ def DoGridOut_genepop(loci,alleles,ithmcrundir,logfHndl,subgridtotal,subpop):
 					
 		# Store genetic information: genes[individual][locus][allele]
 		genes_cdpop = []
-		for ispot in xrange(nogrids):
+		for ispot in range(nogrids):
 			genes_cdpop.append([])
-			for jspot in xrange(loci):
+			for jspot in range(loci):
 				genes_cdpop[ispot].append(x[ispot+1][int(9+sum(alleles[0:jspot])):int(9+sum(alleles[0:jspot+1]))])
 		
 		# Delete x variable
@@ -691,13 +691,13 @@ def DoGridOut_genepop(loci,alleles,ithmcrundir,logfHndl,subgridtotal,subpop):
 			GenFormgenes.append([])
 			
 			# Loop through each locus
-			for ithloci in xrange(loci):
+			for ithloci in range(loci):
 			
 				# Add gene individual spot 
 				GenFormgenes[ithind].append([])
 				
 				# Loop through each allele spot at that locu
-				for ithallele in xrange(alleles[ithloci]):
+				for ithallele in range(alleles[ithloci]):
 				
 					# Check if allele spot is 1
 					if genes_cdpop[ithind][ithloci][ithallele] == '1' or genes_cdpop[ithind][ithloci][ithallele] == '1\n':
@@ -721,6 +721,7 @@ def DoGridOut_genepop(loci,alleles,ithmcrundir,logfHndl,subgridtotal,subpop):
 						
 					# Error check
 					elif genes_cdpop[ithind][ithloci][ithallele] != '0' and genes_cdpop[ithind][ithloci][ithallele] != '0\n':
+						
 						print('Something wrong in gene genepop format. Email Erin.')
 						sys.exit(-1)					
 				
@@ -730,25 +731,25 @@ def DoGridOut_genepop(loci,alleles,ithmcrundir,logfHndl,subgridtotal,subpop):
 			
 		# Write out the first and second line of GENEPOP format
 		outputfile.write(outputfilename[0]+'grid'+outputfilename[1]+'\n')
-		for i in xrange(loci):
+		for i in range(loci):
 			outputfile.write('LOCUS-'+str(i+1)+'\n')
 					
 		# Write out the genes of each individual by population
-		for ipop in xrange(subpopno):
+		for ipop in range(subpopno):
 			outputfile.write('POP\n')
 			
 			# Locate the index for subpop for case that is unordered.
 			popindex = np.where(np.asarray(subpop) == str(ipop+1))[0]
 
 			# Loop through each grid spot and output
-			for i in xrange(len(popindex)):
+			for i in range(len(popindex)):
 				# Individual ID
 				outputfile.write(id_cdpop[popindex[i]]+', ')								
 				# Loop through each locus
-				for ithloci in xrange(loci-1):
+				for ithloci in range(loci-1):
 					templociname = ''
 					# Loop through each allele spot at that locus
-					for ithallele in xrange(2):
+					for ithallele in range(2):
 						if GenFormgenes[popindex[i]][ithloci][ithallele] != 'NA':
 							# Add 100
 							templociname = templociname + str(GenFormgenes[popindex[i]][ithloci][ithallele]+100)
@@ -757,7 +758,7 @@ def DoGridOut_genepop(loci,alleles,ithmcrundir,logfHndl,subgridtotal,subpop):
 					outputfile.write(templociname+' ')
 				# Loop through last loci alleles for return character
 				templociname = ''
-				for ithallele in xrange(2):	
+				for ithallele in range(2):	
 					if GenFormgenes[popindex[i]][loci-1][ithallele] != 'NA':
 						# Add 100
 						templociname = templociname + str(GenFormgenes[popindex[i]][loci-1][ithallele]+100)
@@ -813,10 +814,10 @@ logfHndl,gridformat,infection,Infected,cdinfect,opengrids,OffDispDistCD,geneswap
 		genesnew = genes	
 	
 	# Get OffDisperseIN grid locations
-	OffDisperseIN_gridlocs = np.asarray([OffDisperseIN[i][1] for i in xrange(len(OffDisperseIN))])
+	OffDisperseIN_gridlocs = np.asarray([OffDisperseIN[i][1] for i in range(len(OffDisperseIN))])
 	
 	# Loop through each grid spot to find the right output index...
-	for jgrid in xrange(nogrids):
+	for jgrid in range(nogrids):
 			
 		# Find where jgrid is - FID (existing adults), OffDisperseIN (new offspring), or opengrids
 		if len(np.where(FID == jgrid)[0]) == 1:
@@ -886,7 +887,7 @@ logfHndl,gridformat,infection,Infected,cdinfect,opengrids,OffDispDistCD,geneswap
 	# ------------------------------------------------------------
 	
 	# Check if nthfile == generation.
-	for inthfile in xrange(len(nthfile)):				
+	for inthfile in range(len(nthfile)):				
 		if gen == nthfile[inthfile]:			
 			# Call DoGridOut_cdpop()
 			DoGridOut_cdpop(ithmcrundir,gen,loci,alleles,nogrids,\
@@ -895,7 +896,7 @@ logfHndl,gridformat,infection,Infected,cdinfect,opengrids,OffDispDistCD,geneswap
 	
 	# Sum infectednew to Infected
 	temp = []
-	for i in xrange(len(infection)):
+	for i in range(len(infection)):
 		if infection[i] == 1:
 			temp.append(1)
 	Infected.append(len(temp))
@@ -974,7 +975,7 @@ subgridtotal,MOffDeaths,FOffDeaths,Population_age,Females_age,Males_age,BreedFem
 		
 	
 	# Write out the title
-	for i in xrange(len(outputtitle)-1):
+	for i in range(len(outputtitle)-1):
 		outputfile.write(outputtitle[i])
 		outputfile.write(',')
 	# To get return character on the end
@@ -982,13 +983,13 @@ subgridtotal,MOffDeaths,FOffDeaths,Population_age,Females_age,Males_age,BreedFem
 	outputfile.write('\n')
 	
 	# Write to file
-	for i in xrange(len(time)):
+	for i in range(len(time)):
 		outputfile.write(str(time[i])+',')
-		for j in xrange(nosubpops+1):
+		for j in range(nosubpops+1):
 			outputfile.write(str(Population[i][j])+'|')
 		outputfile.write(',')
-		for j in xrange(len(Population_age[i])):#Split by population
-			for iage in xrange(len(Population_age[0][0])-1):#Split by age
+		for j in range(len(Population_age[i])):#Split by population
+			for iage in range(len(Population_age[0][0])-1):#Split by age
 				outputfile.write(str(Population_age[i][j][iage])+';')				
 			outputfile.write(str(Population_age[i][j][len(Population_age[0][0])-1])+'|')
 		outputfile.write(',')		
@@ -996,29 +997,29 @@ subgridtotal,MOffDeaths,FOffDeaths,Population_age,Females_age,Males_age,BreedFem
 			outputfile.write(str(growthPop[i])+',')
 		else:
 			outputfile.write('NA,')
-		for j in xrange(nosubpops+1):
+		for j in range(nosubpops+1):
 			outputfile.write(str(ToTFemales[i][j])+'|')
 		outputfile.write(',')
-		for j in xrange(len(Females_age[i])):#Split by population
-			for iage in xrange(len(Females_age[0][0])-1):#Split by age
+		for j in range(len(Females_age[i])):#Split by population
+			for iage in range(len(Females_age[0][0])-1):#Split by age
 				outputfile.write(str(Females_age[i][j][iage])+';')				
 			outputfile.write(str(Females_age[i][j][len(Females_age[0][0])-1])+'|')
 		outputfile.write(',')
-		for j in xrange(nosubpops+1):
+		for j in range(nosubpops+1):
 			outputfile.write(str(ToTMales[i][j])+'|')
 		outputfile.write(',')
-		for j in xrange(len(Males_age[i])):#Split by population
-			for iage in xrange(len(Males_age[0][0])-1):#Split by age
+		for j in range(len(Males_age[i])):#Split by population
+			for iage in range(len(Males_age[0][0])-1):#Split by age
 				outputfile.write(str(Males_age[i][j][iage])+';')				
 			outputfile.write(str(Males_age[i][j][len(Males_age[0][0])-1])+'|')
 		outputfile.write(',')
-		for j in xrange(nosubpops+1):
+		for j in range(nosubpops+1):
 			outputfile.write(str(BreedFemales[i][j])+'|')
 		outputfile.write(',')
-		for j in xrange(len(BreedFemales_age[i])):
+		for j in range(len(BreedFemales_age[i])):
 			outputfile.write(str(BreedFemales_age[i][j])+'|')
 		outputfile.write(',')
-		for j in xrange(nosubpops+1):
+		for j in range(nosubpops+1):
 			outputfile.write(str(BreedMales[i][j])+'|')
 		outputfile.write(',')		
 		outputfile.write(str(Female_BreedEvents[i])+',')
@@ -1028,8 +1029,8 @@ subgridtotal,MOffDeaths,FOffDeaths,Population_age,Females_age,Males_age,BreedFem
 		outputfile.write(str(Births[i])+',')
 		outputfile.write(str(MOffDeaths[i])+',')
 		outputfile.write(str(FOffDeaths[i])+',')
-		for j in xrange(len(MDeaths[i])):#Split by population
-			for iage in xrange(len(Population_age[0][0])-1):#Split by age
+		for j in range(len(MDeaths[i])):#Split by population
+			for iage in range(len(Population_age[0][0])-1):#Split by age
 				if len(MDeaths[i][j]) == len(Population_age[0][0]):
 					outputfile.write(str(MDeaths[i][j][iage])+';')
 				else:
@@ -1039,8 +1040,8 @@ subgridtotal,MOffDeaths,FOffDeaths,Population_age,Females_age,Males_age,BreedFem
 			else:
 				outputfile.write('NA|')
 		outputfile.write(',')
-		for j in xrange(len(FDeaths[i])):#Split by population
-			for iage in xrange(len(Population_age[0][0])-1):#Split by age 
+		for j in range(len(FDeaths[i])):#Split by population
+			for iage in range(len(Population_age[0][0])-1):#Split by age 
 				if len(FDeaths[i][j]) == len(Population_age[0][0]):
 					outputfile.write(str(FDeaths[i][j][iage])+';')
 				else:
@@ -1050,13 +1051,13 @@ subgridtotal,MOffDeaths,FOffDeaths,Population_age,Females_age,Males_age,BreedFem
 			else:
 				outputfile.write('NA|')
 		outputfile.write(',')
-		for j in xrange(nosubpops+1):
+		for j in range(nosubpops+1):
 			outputfile.write(str(Alleles[i][j])+'|')
 		outputfile.write(',')
-		for j in xrange(nosubpops+1):
+		for j in range(nosubpops+1):
 			outputfile.write(str(He[i][j])+'|')
 		outputfile.write(',')
-		for j in xrange(nosubpops+1):
+		for j in range(nosubpops+1):
 			outputfile.write(str(Ho[i][j])+'|')
 		outputfile.write(',')
 		outputfile.write(str(AllelesMutated[i])+',')
@@ -1077,10 +1078,10 @@ subgridtotal,MOffDeaths,FOffDeaths,Population_age,Females_age,Males_age,BreedFem
 		outputfile.write(str(q1[i])+',')
 		outputfile.write(str(q2[i])+',')
 		outputfile.write(str(Infected[i])+',')
-		for j in xrange(nosubpops):
+		for j in range(nosubpops):
 			outputfile.write(str(subpopmigration[i][j])+'|')
 		outputfile.write(',')
-		for j in xrange(nosubpops):
+		for j in range(nosubpops):
 			outputfile.write(str(subpopemigration[i][j])+'|')
 		outputfile.write(',')
 		outputfile.write(str(subpopmatemort[i])+',')

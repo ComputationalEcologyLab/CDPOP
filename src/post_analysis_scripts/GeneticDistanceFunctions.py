@@ -14,7 +14,7 @@ ithmcrundir,nthfile,logfHndl):
 	nthfile.insert(0,-1)
 	
 	# Get the specified nthfile's grid to calculated matrix
-	for i in xrange(len(nthfile)):
+	for i in range(len(nthfile)):
 						
 		# Open file for reading
 		inputfile = open(ithmcrundir+'grid'+str(nthfile[i]+1)+'.csv','r')
@@ -36,12 +36,12 @@ ithmcrundir,nthfile,logfHndl):
 		# Store genetic information: genes[individual], but need them as float values
 		genes = []
 		tempgenes = []
-		for k in xrange(len(x)-1):
+		for k in range(len(x)-1):
 			# Get list from read in file
 			tempgenes.append(x[k+1][8:int(8+sum(alleles))])
 			# Create spot in genes
 			genes.append([])
-			for j in xrange(sum(alleles)):
+			for j in range(sum(alleles)):
 				# Make each list spot an integer
 				genes[k].append(float(tempgenes[k][j]))
 		
@@ -49,15 +49,15 @@ ithmcrundir,nthfile,logfHndl):
 		gendmatrix = np.zeros((nogrids,nogrids),float)
 		
 		# Loop through each individual k
-		for k in xrange(nogrids):
+		for k in range(nogrids):
 			# Compare individual k to every other inidividual j
-			for j in xrange(nogrids):
+			for j in range(nogrids):
 				# Create a tempvariable to be written over for each comparison
 				tempsqrt=[]
 				# Loop through each locus
-				for locus in xrange(loci):						
+				for locus in range(loci):						
 					# Loop through each allele value
-					for alle in xrange(alleles[locus]):
+					for alle in range(alleles[locus]):
 						# Find the allele frequencies between k and j checking the 4 conditions
 						if genes[k][alle+sum(alleles[0:locus])]==2.0:
 							if genes[j][alle+sum(alleles[0:locus])]==2.0:
@@ -82,7 +82,7 @@ ithmcrundir,nthfile,logfHndl):
 		for seqrow in gendmatrix:
 		
 			# Grab each element in each row and write element to outputfile
-			for ele in xrange(len(seqrow)):
+			for ele in range(len(seqrow)):
 				outputfile.write(str(seqrow[ele]))
 				# Add comma
 				outputfile.write(',')
@@ -114,7 +114,7 @@ ithmcrundir,nthfile,logfHndl):
 	csvfileList = glob.glob(ithmcrundir+'grid*.csv')
 		
 	# Get the specified nthfile's grid to calculated matrix
-	for i in xrange(len(csvfileList)):
+	for i in range(len(csvfileList)):
 						
 		# Open file for reading
 		inputfile = open(csvfileList[i],'r')
@@ -136,12 +136,12 @@ ithmcrundir,nthfile,logfHndl):
 		# Store genetic information: genes[individual], but need them as float values
 		genes = []
 		tempgenes = []
-		for k in xrange(len(x)-1):
+		for k in range(len(x)-1):
 			# Get list from read in file
 			tempgenes.append(x[k+1][8:int(8+sum(alleles))])
 			# Create spot in genes
 			genes.append([])
-			for j in xrange(sum(alleles)):
+			for j in range(sum(alleles)):
 				# Make each list spot an integer
 				genes[k].append(tempgenes[k][j].strip('\n'))
 		
@@ -150,7 +150,7 @@ ithmcrundir,nthfile,logfHndl):
 		
 		# Loop through each individual k
 		tempcount = 0		
-		for k in xrange(nogrids):
+		for k in range(nogrids):
 			
 			# Break if NA
 			if genes[k][0] == 'NA':
@@ -159,7 +159,7 @@ ithmcrundir,nthfile,logfHndl):
 				gendmatrix.append([])
 				tempcount = tempcount+1
 				# Compare individual k to every other inidividual j
-				for j in xrange(nogrids):
+				for j in range(nogrids):
 					
 					# Break if NA
 					if genes[j][0] == 'NA':
@@ -168,7 +168,7 @@ ithmcrundir,nthfile,logfHndl):
 						# Create a tempvariable to be written over for each comparison
 						tempmin=[]
 						# Loop through each allele value
-						for alle in xrange(sum(alleles)):
+						for alle in range(sum(alleles)):
 							# Find the shared alleles between k and j checking the 4 conditions
 							if genes[k][alle]=='2':
 								if genes[j][alle]=='2':
@@ -193,7 +193,7 @@ ithmcrundir,nthfile,logfHndl):
 		for seqrow in gendmatrix:
 		
 			# Grab each element in each row and write element to outputfile
-			for ele in xrange(len(seqrow)):
+			for ele in range(len(seqrow)):
 				outputfile.write(str(seqrow[ele]))
 				# Add comma
 				outputfile.write(',')
@@ -207,7 +207,7 @@ ithmcrundir,nthfile,logfHndl):
 		# Logging message
 		stringout = gdpathname+' has been created'
 		logMsg(logfHndl,stringout)
-		print('The genetic distance matrix '+gdpathname+' has been created.')
+		print(('The genetic distance matrix '+gdpathname+' has been created.'))
 		
 	# End::DoDpsGeneticDistance()
 		
@@ -228,7 +228,7 @@ ithmcrundir,nthfile,logfHndl):
 	nthfile.insert(0,-1)
 	
 	# Get the specified nthfile's grid to calculated matrix
-	for i in xrange(len(nthfile)):
+	for i in range(len(nthfile)):
 						
 		# Open file for reading
 		inputfile = open(ithmcrundir+'grid'+str(nthfile[i]+1)+'.csv','r')
@@ -250,12 +250,12 @@ ithmcrundir,nthfile,logfHndl):
 		# Store genetic information: genes[individual], but need them as float values
 		genes = []
 		tempgenes = []
-		for k in xrange(len(x)-1):
+		for k in range(len(x)-1):
 			# Get list from read in file
 			tempgenes.append(x[k+1][8:int(8+sum(alleles))])
 			# Create spot in genes
 			genes.append([])
-			for j in xrange(sum(alleles)):
+			for j in range(sum(alleles)):
 				# Make each list spot an integer
 				genes[k].append(float(tempgenes[k][j]))	
 		
@@ -287,7 +287,7 @@ ithmcrundir,nthfile,logfHndl):
 		for seqrow in gendmatrix:
 
 			# Grab each element in each row and write element to outputfile
-			for ele in xrange(len(seqrow)):
+			for ele in range(len(seqrow)):
 				outputfile.write(str(seqrow[ele]))
 				# Add comma
 				outputfile.write(',')
