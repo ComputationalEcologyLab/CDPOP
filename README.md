@@ -4,23 +4,17 @@
 README
 ======
 
------------------ 
-CDPOP 1.2 release
------------------
+Welcome to the CDPOP! CDPOP is a program to simulate mutation, gene flow, genetic drift, and selection in complex landscapes for a wide range of biological and evolutionary scenarios. This release includes installation instructions, version notes, some examples, and technical documentation. 
   
-Welcome to the CDPOP v1.2 release! CDPOP is a program to simulate mutation, gene flow, genetic drift, and selection in complex landscapes for a wide range of biological and evolutionary scenarios. This release includes installation instructions, version notes, some examples, and technical documentation. 
-  
-Program Contributors: Erin Landguth, Brian Hand, Joe Glassy, Mike Jacobi, Tyler Julian, Allen Warren
+Program Contributors: Erin Landguth, Brian Hand, Joe Glassy, Mike Jacobi, Tyler Julian, Allen Warren, Sam Cushman, Sam Banks, Andrew Shirk, Andrew Eckert, Amy Whipple, Mitra Menon, Brenna Forester, Casey Day.
 
-Link: http://cel.dbs.umt.edu/software/CDPOP/
+Version: 1.3.x
 
-Version: 1.2.32
+Python: 3.x
 
-Python: 2.7.2
+Release Date: 2022.03.09
 
-Release Date: 2014.02.05
-
-README Update: 2016.01.03 (ell)
+README Update: 2022.03.09 (ell)
   
 --------
 Contents
@@ -38,15 +32,13 @@ data -> test example files
 Requirements and Pre-requisite Software
 ---------------------------------------
 
-1. Baseline Requirements. CDPOP requires the Python2.7.x interpreter, NumPy package, and SciPy package. Remember that Python modules usually require particular Python interpreters, so be sure the version ID for any external Python module or package (e.g. NumPy or others) matches the version of your Python interpreter (normally v2.7.x). 
+1. Baseline Requirements. CDPOP requires the Python 3.x interpreter, NumPy package, and SciPy package. 
 
 ------------------
 CDPOP Installation
 ------------------ 
 
 1. Linux or Windows: Unpack the CDPOP Archive. Navigate to the directory on your PC where you wish to install CDPOP, and unpack the supplied zip archive file using a free archive tool like 7Zip (7z.exe), Pkunzip, Unzip, or an equivalent. Seven-Zip (7Z.exe) is highly recommended since it can handle all common formats on Windows, MAC OS X and Linux. On Windows, it is best to setup a project specific modeling subdirectory to perform your modeling outside of any folder that has spaces in its name (like "My Documents").
-
-2. Windows (optional): Install CDPOP with cdpop_setup.exe. Double click on the executable file and follow instructions. This is a separate download on web and only available for certain versions.
 
 -----------------
 Example CDPOP Run
@@ -72,7 +64,7 @@ Bugs, Feature Request, Troubleshooting, and FAQs
 Have a bug, feature request, trouble running CDPOP, or other FAQs? First please read the user manual to see if your issue can be addressed there. FAQ questions include:
 1. You can't get the example CDPOP to run?
 2. Is your population crashing?
-3. You can't produce a signal with your simulated data?
+3. You can't produce a signal/structure with your simulated data?
 
 
 
