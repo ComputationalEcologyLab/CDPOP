@@ -658,21 +658,21 @@ males,males_nomate,startSelection,betas,xvars_betas,maxfit,minfit):
 					# Where is subpopulation proposing to go
 					tosubpop = subpop[tempfreegrid[iteminlist]]
 					
-					# If it is dispersing to another subpopulation
-					if fromsubpop != tosubpop:
+					# If it is dispersing to another subpopulation - commented this out for version 1.3.12
+					#if fromsubpop != tosubpop:
 						
-						# Grab its mortality percentage
-						differentialmortality = subpopmortperc[int(tosubpop)-1]
-						
-						# Then flip the coin to see if offspring survives its location
-						randcheck = np.random.uniform()
-						
-						# If offspring did not survive: break from loop, move to next offspring
-						if randcheck < differentialmortality:
-							offcount = offcount + 1
-							DisperseDeaths[gen].append(1)
-							CouldNotDisperse[gen].append(0)
-							continue
+					# Grab its mortality percentage
+					differentialmortality = subpopmortperc[int(tosubpop)-1]
+					
+					# Then flip the coin to see if offspring survives its location
+					randcheck = np.random.uniform()
+					
+					# If offspring did not survive: break from loop, move to next offspring
+					if randcheck < differentialmortality:
+						offcount = offcount + 1
+						DisperseDeaths[gen].append(1)
+						CouldNotDisperse[gen].append(0)
+						continue
 										
 				# If not cdevolve or if cdevolve but it is in burn in gen
 				else:

@@ -1,3 +1,7 @@
+Changes v1.3.12.2022.03.10T15:17:00 (ell)
+0) For subpopmortperc option remove from mating module
+1) For subpopmortperc: remove option that required only mortality if moving to another subpop, now mortality considered at every location. 
+
 Changes v1.3.11.2022.03072022T00:45:00 (ccd)
 0) Conversion to Python 3 - ran python 2to3 function
 a) Changes to Set - removed import Set and change Set() to set()

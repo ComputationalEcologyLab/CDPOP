@@ -5,8 +5,8 @@
 # ----------------------------------------------------------------------------
 # General CDPOP information
 appName = "CDPOP"
-appVers = "version 1.3.11"
-appRele = "2022.03.07-00:45:00MDT"
+appVers = "version 1.3.12"
+appRele = "2022.03.11-08:33:00MDT"
 authorNames = "Erin L Landguth et al."
 
 # ---------------

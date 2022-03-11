@@ -79,6 +79,7 @@ males,matemovethresh,Bearpairs,subpopmatemort,subpopmortperc,subpop,gen,selfans)
 	# If statement to check if there were individuals in probarray:
 	if sum(probarray[0]) != 0.0:
 	
+		'''
 		# If subpopulation differential mortality is on
 		if sum(subpopmortperc) != 0.0:
 		
@@ -115,13 +116,15 @@ males,matemovethresh,Bearpairs,subpopmatemort,subpopmortperc,subpop,gen,selfans)
 			else:
 				Bearpairs.append([females[count],males[itemselect]])
 
+		
 		# If no subpopmortperc
-		else:		
-			# Select the w_choice item
-			itemselect = w_choice_item(probarray[0])
+		else:
+		'''
+		# Select the w_choice item
+		itemselect = w_choice_item(probarray[0])
 	
-			# And store the mated pair information.						
-			Bearpairs.append([females[count],indspots[itemselect]])
+		# And store the mated pair information.						
+		Bearpairs.append([females[count],indspots[itemselect]])
 							
 	# If statement to check if there were not males < matemovethresh:
 	elif sum(probarray[0]) == 0.0:
@@ -163,7 +166,7 @@ matemovethresh,Bearpairs,nofemales,subpopmatemort,subpopmortperc,subpop,gen,self
 		
 	# If statement to check if there were individuals in probarray:
 	if sum(probarray[0]) != 0.0:
-
+		'''
 		# If subpopulation differential mortality is on
 		if sum(subpopmortperc) != 0.0:
 		
@@ -202,11 +205,12 @@ matemovethresh,Bearpairs,nofemales,subpopmatemort,subpopmortperc,subpop,gen,self
 		
 		# If no subpopmortperc
 		else:
-			# Select the w_choice item
-			itemselect = w_choice_item(probarray[0])
+		'''
+		# Select the w_choice item
+		itemselect = w_choice_item(probarray[0])
 			
-			# And store the mated pair information.						
-			Bearpairs.append([females[intfemale],indspots[itemselect]])
+		# And store the mated pair information.						
+		Bearpairs.append([females[intfemale],indspots[itemselect]])
 						
 	# If statement to check if there were not males < matemovethresh:
 	elif sum(probarray[0]) == 0.0:
@@ -237,7 +241,7 @@ males,matemovethresh,Bearpairs,subpopmatemort,subpopmortperc,subpop,gen):
 				
 	# If statement to check if there were individuals in probarray:
 	if sum(probarray[0]) != 0.0:
-
+		'''
 		# If subpopulation differential mortality is on
 		if sum(subpopmortperc) != 0.0:
 		
@@ -280,14 +284,15 @@ males,matemovethresh,Bearpairs,subpopmatemort,subpopmortperc,subpop,gen):
 		
 		# If no subpopmortperc
 		else:
-			# Select the w_choice item
-			itemselect = w_choice_item(probarray[0])
+		'''
+		# Select the w_choice item
+		itemselect = w_choice_item(probarray[0])
+	
+		# And store the mated pair information.						
+		Bearpairs.append([females[count],males[itemselect]])
 		
-			# And store the mated pair information.						
-			Bearpairs.append([females[count],males[itemselect]])
-			
-			# Then delete that male from the male list
-			males = np.delete(males,itemselect)
+		# Then delete that male from the male list
+		males = np.delete(males,itemselect)
 							
 	# If statement to check if there were not males < matemovethresh:
 	elif sum(probarray[0]) == 0.0:
