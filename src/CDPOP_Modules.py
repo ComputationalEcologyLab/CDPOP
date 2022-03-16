@@ -1736,13 +1736,13 @@ def DoEpigenetics(epimod,betas,sex,id,age,genes,infection,Track_EpigeneMod1,Trac
 		#deleteallindex = np.asarray(deleteallindex,dtype='int')
 		id = np.asarray(id)
 		#id[deleteallindex] = 'OPEN'
-		sex = np.asarray(sex,dtype='|S2')
+		sex = np.asarray(sex,dtype='|U2')
 		#sex[deleteallindex] = 'NA'
-		age = np.asarray(age,dtype='|S2')
+		age = np.asarray(age,dtype='|U2')
 		#age[deleteallindex] = 'NA'
-		infection = np.asarray(infection,dtype='|S2')
+		infection = np.asarray(infection,dtype='|U2')
 		#infection[deleteallindex] = 'NA'
-		genes = np.asarray(genes,dtype='|S2')
+		genes = np.asarray(genes,dtype='|U2')
 		#genes[deleteallindex] = 'NA'
 			
 		# Summary Tracking numbers, cleanup
