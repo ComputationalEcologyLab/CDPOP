@@ -5,8 +5,8 @@
 # ----------------------------------------------------------------------------
 # General CDPOP information
 appName = "CDPOP"
-appVers = "version 1.3.12"
-appRele = "2022.03.11-08:33:00MDT"
+appVers = "version 1.3.13"
+appRele = "2022.03.16-08:33:00MDT"
 authorNames = "Erin L Landguth et al."
 
 # ---------------
@@ -789,7 +789,7 @@ if __name__ == '__main__':
 				stringout = 'DoAdultMortality(): '+str(datetime.datetime.now() -start_time1) + ''
 				logMsg(logfHndl,stringout)
 				print('DoAdultMortality(): ',str(datetime.datetime.now() -start_time1),'')
-									
+				#pdb.set_trace()					
 				# ------------------------------------------
 				# Call DoDisperse()
 				# ------------------------------------------			

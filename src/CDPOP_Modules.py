@@ -1042,8 +1042,8 @@ def ConstantMortality(nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track_MDeaths,Tra
 	openindex = np.where(np.asarray(sex) == 'NA')[0]
 	
 	# Split up for sex
-	females = np.where(np.asarray(sex,dtype='|S4')=='0')[0]
-	males = np.where(np.asarray(sex,dtype='|S4')=='1')[0]
+	females = np.where(np.asarray(sex,dtype='|U4')=='0')[0]
+	males = np.where(np.asarray(sex,dtype='|U4')=='1')[0]
 	# Split for subpops
 	Fpops = np.asarray(subpop)[females]
 	Mpops = np.asarray(subpop)[males]

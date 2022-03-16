@@ -543,7 +543,7 @@ males,males_nomate,startSelection,betas,xvars_betas,maxfit,minfit):
 		
 		# Loop through offspring that are shuffled
 		for i in range(len(offspring)):
-				
+			#pdb.set_trace()	
 			# Create a function here that gets indices for male and female
 			probarray,Fcount,Mcount,sexans = GetProbArray(Fxycdmatrix,Mxycdmatrix,offspring,i,\
 			tempfreegrid,philopatry,F_freegrid,M_freegrid,F_off,M_off,Fcount,Mcount)
@@ -551,135 +551,76 @@ males,males_nomate,startSelection,betas,xvars_betas,maxfit,minfit):
 			# If statement to check if there are spots for offpsring to disperse to
 			if sum(probarray) != 0.0:
 				
-				# CDEVOLVE
+				# Select the w_choice item
+				iteminlist = w_choice_item(probarray)
+				
+				# Then Check and Calculated Differential Mortality Options:
+				# ---------------------------------------------------------
+				
+				# CDEVOLVE - 1 loci
 				if cdevolveans == '1' and gen >= startSelection:
-											
-					# Select the w_choice item
-					iteminlist = w_choice_item(probarray)
 					
 					# Call 1-locus selection model
-					differentialmortality = Do1LocusSelection(offspring[i],fitvals,tempfreegrid,iteminlist)
-											
-					# Then flip the coin to see if offspring survives its location
-					randcheck = np.random.uniform()
-					
-					# If offspring did not survive: break from loop, move to next offspring
-					if randcheck < differentialmortality:
-						offcount = offcount + 1
-						DisperseDeaths[gen].append(1)
-						CouldNotDisperse[gen].append(0)
-						continue
-												
+					differentialmortality = Do1LocusSelection(offspring[i],fitvals,tempfreegrid,iteminlist)																		
 				# CDEVOLVE - 2 loci
 				elif cdevolveans == '2' and gen >= startSelection:
 					
-					# Select the w_choice item
-					iteminlist = w_choice_item(probarray)
-
 					# Call 2-locus selection model
-					differentialmortality = Do2LocusSelection(offspring[i],fitvals,tempfreegrid,iteminlist,alleles)
-											
-					# Then flip the coin to see if offspring survives its location
-					randcheck = np.random.uniform()
-					
-					# If offspring did not survive: break from loop, move to next offspring
-					if randcheck < differentialmortality:
-						offcount = offcount + 1
-						DisperseDeaths[gen].append(1)
-						CouldNotDisperse[gen].append(0)
-						continue
+					differentialmortality = Do2LocusSelection(offspring[i],fitvals,tempfreegrid,iteminlist,alleles)			
 						
 				# CDEVOLVE - Heterozygosity survival
 				elif (cdevolveans == '1_HeMort_GEA' or cdevolveans == '1_HeMort_All') and gen >= startSelection:
 					
-					# Select the w_choice item
-					iteminlist = w_choice_item(probarray)
-					
 					# Call 1-locus selection model
 					differentialmortality = DoHeMortSelection(offspring[i],fitvals,tempfreegrid,iteminlist,loci,cdevolveans)
-											
-					# Then flip the coin to see if offspring survives its location
-					randcheck = np.random.uniform()
-					
-					# If offspring did not survive: break from loop, move to next offspring
-					if randcheck < differentialmortality:
-						offcount = offcount + 1
-						DisperseDeaths[gen].append(1)
-						CouldNotDisperse[gen].append(0)
-						continue
 				
 				# CDEVOLVE - Multiple loci selection model
 				elif cdevolveans.split('_')[0] == 'M' and gen >= startSelection:
 					
-					# Select the w_choice item
-					iteminlist = w_choice_item(probarray)
-					
 					# Call M-locus selection model
-					differentialmortality = DoMLocusSelection(offspring[i],tempfreegrid,iteminlist,loci,cdevolveans,betas,xvars_betas,maxfit,minfit,gen)
-											
-					# Then flip the coin to see if offspring survives its location
-					randcheck = np.random.uniform()
-					
-					# If offspring did not survive: break from loop, move to next offspring
-					if randcheck < differentialmortality:
-						offcount = offcount + 1
-						DisperseDeaths[gen].append(1)
-						CouldNotDisperse[gen].append(0)
-						continue	
+					differentialmortality = DoMLocusSelection(offspring[i],tempfreegrid,iteminlist,loci,cdevolveans,betas,xvars_betas,maxfit,minfit,gen)	
 
-							
 				# CDEVOLVE - Hindex
 				elif (cdevolveans.split('_')[0] == 'Hindex') and (gen >= startSelection):
-					 
-					# Select the w_choice item
-					iteminlist = w_choice_item(probarray)
 					 
 					# Call Hindex selection model
 					differentialmortality = DoHindexSelection(offspring[i],tempfreegrid, iteminlist, cdevolveans,xvars_betas)
 					
-					# Then flip the coin to see if offspring survives its location
-					randcheck = np.random.uniform()
+				# CDEVOLVE - not on
+				else:
 					
-					# If offspring did not survive: break from loop, move to next offspring
-					if randcheck < differentialmortality:
-						offcount = offcount + 1
-						DisperseDeaths[gen].append(1)
-						CouldNotDisperse[gen].append(0)
-						continue
+					differentialmortality = 0.0
 				
-				# If subpopulation differential mortality is on
-				elif sum(subpopmortperc) != 0.0:
-											
-					# Select the w_choice item
-					iteminlist = w_choice_item(probarray)
+				# The Check for spatial mortality - subpopulation mortality
+				if sum(subpopmortperc) != 0.0:
 											
 					# What subpopulation is offspring coming from
 					fromsubpop = subpop[int(offspring[i][0])]
 					# Where is subpopulation proposing to go
 					tosubpop = subpop[tempfreegrid[iteminlist]]
 					
-					# If it is dispersing to another subpopulation - commented this out for version 1.3.12
-					#if fromsubpop != tosubpop:
-						
 					# Grab its mortality percentage
-					differentialmortality = subpopmortperc[int(tosubpop)-1]
-					
-					# Then flip the coin to see if offspring survives its location
-					randcheck = np.random.uniform()
-					
-					# If offspring did not survive: break from loop, move to next offspring
-					if randcheck < differentialmortality:
-						offcount = offcount + 1
-						DisperseDeaths[gen].append(1)
-						CouldNotDisperse[gen].append(0)
-						continue
-										
-				# If not cdevolve or if cdevolve but it is in burn in gen
-				else:
-					
-					# Select the w_choice item
-					iteminlist = w_choice_item(probarray)				
+					differentialmortality_SpatialSubPopMort = subpopmortperc[int(tosubpop)-1]
 				
+				# No subpopulation mortality
+				else:					
+					
+					differentialmortality_SpatialSubPopMort = 0.0
+				
+				# Calculated and Check Differential Mortality
+				# -------------------------------------------
+				differentialmortality_Total = 1. - ((1. - differentialmortality) * (1. - differentialmortality_SpatialSubPopMort))
+				
+				# Then flip the coin to see if offspring survives its location
+				randcheck = np.random.uniform()
+				
+				# If offspring did not survive: break from loop, move to next offspring
+				if randcheck < differentialmortality_Total:
+					offcount = offcount + 1
+					DisperseDeaths[gen].append(1)
+					CouldNotDisperse[gen].append(0)
+					continue
+								
 				# Append information to variable [offspring, grid it dispersed to, and name]
 				recd = [offspring[i],tempfreegrid[iteminlist],'T'+str(gen)+\
 				'M'+str(offspring[i][0])+'F'+str(offspring[i][1])+\
