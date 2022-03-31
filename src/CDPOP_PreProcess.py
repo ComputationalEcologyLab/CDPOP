@@ -1081,7 +1081,7 @@ def InitializeInfect(cdinfect,Infected,nogrids,sex):
 
 # ---------------------------------------------------------------------------- 
 def DoGridOut_cdpop0(ithmcrundir,gen,loci,alleles,nogrids,subpop,xgrid,ygrid,\
-id,sex,age,agelst,genes,intgenesans,infection,allelst,subpopmigration,subpopemigration,geneswap):
+id,sex,age,agelst,genes,intgenesans,infection,allelst,subpopmigration,subpopemigration,geneswap,unicor_out):
 	'''
 	DoGridOut_cdpop0()
 	Output grid0.csv in cdpop format
@@ -1090,10 +1090,12 @@ id,sex,age,agelst,genes,intgenesans,infection,allelst,subpopmigration,subpopemig
 	
 	# Create file to write matrix to
 	outputfile = open(ithmcrundir+'grid'+str(0)+'.csv','w')
+	outputfile_uni = open(ithmcrundir+'XY'+str(0)+'.csv','w')
 		
 	# Write out the titles 
 	title = ['Subpopulation,XCOORD,YCOORD,ID,sex,age,infection,DisperseCDist,hindex,']
 	outputfile.write(title[0])
+	outputfile_uni.write('XCOORD,YCOORD\n')
 	
 	# Write out the genes title informations
 	# Loop through loci
@@ -1114,7 +1116,7 @@ id,sex,age,agelst,genes,intgenesans,infection,allelst,subpopmigration,subpopemig
 	for i in range(nogrids):
 		outputfile.write(subpop[i]+',')
 		outputfile.write(str(float(xgrid[i]))+',')
-		outputfile.write(str(float(ygrid[i]))+',')
+		outputfile.write(str(float(ygrid[i]))+',')		
 		if sex[i] == 'NA':
 			outputfile.write('OPEN,') #id
 			outputfile.write('NA,') # sex
@@ -1125,6 +1127,8 @@ id,sex,age,agelst,genes,intgenesans,infection,allelst,subpopmigration,subpopemig
 			outputfile.write('NA,') # infection
 			outputfile.write('NA,') # dispersalDist
 		else:
+			outputfile_uni.write(str(float(xgrid[i]))+',')
+			outputfile_uni.write(str(float(ygrid[i]))+'\n')
 			outputfile.write(id[i]+',')
 			outputfile.write(str(sex[i])+',')
 			if intgenesans == 'known' or intgenesans == 'file_introduce' or intgenesans == 'file_introduce_var':
@@ -1353,6 +1357,7 @@ id,sex,age,agelst,genes,intgenesans,infection,allelst,subpopmigration,subpopemig
 			# To get return character on the end
 			outputfile.write(str(indall[len(indall)-1])+'\n')
 		
+	
 	# Here add unique number of subpop spot in list (make list of lists)
 	nosubpops = len(np.unique(subpop))
 	unique_subpops = np.unique(subpop)
@@ -1364,6 +1369,7 @@ id,sex,age,agelst,genes,intgenesans,infection,allelst,subpopmigration,subpopemig
 		subpopemigration[0].append([0])
 	
 	# Close file
+	outputfile_uni.close()
 	outputfile.close()
 	
 	# Return variables
@@ -1376,7 +1382,7 @@ def DoPreProcess(outdir,ibatch,ithmcrun,\
 xyfilename,agefilename,equalsexratio,\
 loci,intgenesans,allefreqfilename,alleles,gen,logfHndl,\
 cdevolveans,cdinfect,Infected,
-subpopmigration,subpopemigration,datadir,geneswap,epigeneans):
+subpopmigration,subpopemigration,datadir,geneswap,epigeneans,unicor_out):
 	'''
 	DoPreProcess()
 	This function does all the pre-processing work before
@@ -1669,7 +1675,7 @@ subpopmigration,subpopemigration,datadir,geneswap,epigeneans):
 	# -------------------------------------------------------------------- 
 	genes,subpopmigration,subpopemigration, hindex = DoGridOut_cdpop0(ithmcrundir,0,loci,alleles,\
 	nogrids,subpop,xgrid,ygrid,id,sex,age,agelst,genes,intgenesans,\
-	infection,allelst,subpopmigration,subpopemigration,geneswap)
+	infection,allelst,subpopmigration,subpopemigration,geneswap,unicor_out)
 			
 	# Return this functions variables
 	tupPreProcess = ithmcrundir,FID,id,sex,age,xgrid,ygrid,genes,\

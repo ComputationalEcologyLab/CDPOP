@@ -70,7 +70,7 @@ def w_choice_general(lst):
 
 # ---------------------------------------------------------------------------------------------------	 
 def DoGridOut_cdpop(ithmcrundir,gen,loci,alleles,nogrids,subpopnew,xgridnew,\
-ygridnew,idnew,sexnew,agenew,genesnew,logfHndl,infection,AllDispDistCD,hindexnew,geneswap):
+ygridnew,idnew,sexnew,agenew,genesnew,logfHndl,infection,AllDispDistCD,hindexnew,geneswap,unicor_out):
 	'''
 	DoGridOut_cdpop()
 	Output grid.csv in cdpopformat	
@@ -78,10 +78,12 @@ ygridnew,idnew,sexnew,agenew,genesnew,logfHndl,infection,AllDispDistCD,hindexnew
 	
 	# Create file to write info to
 	outputfile = open(ithmcrundir+'grid'+str(gen+1)+'.csv','w')
+	outputfile_uni = open(ithmcrundir+'XY'+str(gen+1)+'.csv','w')
 	
 	# Write out the titles 
 	title = ['Subpopulation,XCOORD,YCOORD,ID,sex,age,infection,DisperseCDist,hindex,']
 	outputfile.write(title[0])
+	outputfile_uni.write('XCOORD,YCOORD\n')
 			
 	# Write out the loci title info
 	# Loop for loci length
@@ -112,6 +114,9 @@ ygridnew,idnew,sexnew,agenew,genesnew,logfHndl,infection,AllDispDistCD,hindexnew
 		for iall in range(sum(alleles)):
 			outputfile.write(str(genesnew[i][iall])+',')
 		outputfile.write('\n')
+		if sexnew[i] == 'NA':
+			outputfile_uni.write(str(float(xgridnew[i]))+',')
+			outputfile_uni.write(str(float(ygridnew[i]))+'\n')
 												
 	# Logging message
 	stringout = 'The file grid'+str(gen+1)+'.csv has been created'
@@ -119,6 +124,7 @@ ygridnew,idnew,sexnew,agenew,genesnew,logfHndl,infection,AllDispDistCD,hindexnew
 	
 	# Close file
 	outputfile.close()
+	outputfile_uni.close()
 	
 	# End::DoGridOut_cdpop()
 	
@@ -778,7 +784,7 @@ def DoGridOut_genepop(loci,alleles,ithmcrundir,logfHndl,subgridtotal,subpop):
 # ---------------------------------------------------------------------------------------------------	 
 def DoOutput(nogrids,FID,OffDisperseIN,xgridcopy,ygridcopy,gen,\
 id,sex,age,xgrid,ygrid,genes,nthfile,ithmcrundir,loci,alleles,subpop,\
-logfHndl,gridformat,infection,Infected,cdinfect,opengrids,OffDispDistCD,geneswap,hindex):
+logfHndl,gridformat,infection,Infected,cdinfect,opengrids,OffDispDistCD,geneswap,hindex,unicor_out):
 	'''
 	DoOutput()
 	Generate .txt file of old+new+Immigration generations
@@ -892,7 +898,7 @@ logfHndl,gridformat,infection,Infected,cdinfect,opengrids,OffDispDistCD,geneswap
 			# Call DoGridOut_cdpop()
 			DoGridOut_cdpop(ithmcrundir,gen,loci,alleles,nogrids,\
 			subpopnew,xgridnew,ygridnew,idnew,sexnew,agenew,genesnew,\
-			logfHndl,infectionnew,AllDispDistCD,hindexnew,geneswap)
+			logfHndl,infectionnew,AllDispDistCD,hindexnew,geneswap,unicor_out)
 	
 	# Sum infectednew to Infected
 	temp = []

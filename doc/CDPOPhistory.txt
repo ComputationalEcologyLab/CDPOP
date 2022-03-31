@@ -1,3 +1,7 @@
+Changes v1.3.14.2022.03.30T09:40:00 (ell)
+0) Begin to add UNICOR output option
+a) 'output_unicor' in inputvars.csv and output XY{year}.csv that matches output_years
+
 Changes v1.3.13.2022.03.15T15:00:00 (ell)
 0) Add option for cdevolveans and subpopmortality selection. 
 a) Rearranged this section so selects iteminlist, checks diffmort for cdevovlve, then diffmort for subpopmort, then applies differentialmortality_Total = 1. - ((1. - differentialmortality) * (1. - differentialmortality_SpatialSubPopMort))

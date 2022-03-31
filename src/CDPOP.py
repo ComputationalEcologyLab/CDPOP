@@ -5,8 +5,8 @@
 # ----------------------------------------------------------------------------
 # General CDPOP information
 appName = "CDPOP"
-appVers = "version 1.3.13"
-appRele = "2022.03.16-08:33:00MDT"
+appVers = "version 1.3.14"
+appRele = "2022.03.30-08:33:00MDT"
 authorNames = "Erin L Landguth et al."
 
 # ---------------
@@ -136,7 +136,8 @@ if __name__ == '__main__':
 		mcruns = int(batchVars['mcruns'][ibatch])
 		looptime = int(batchVars['looptime'][ibatch])
 		nthfile_out = batchVars['output_years'][ibatch]
-		cdclimgentimelist = batchVars['cdclimgentime'][ibatch]	
+		cdclimgentimelist = batchVars['cdclimgentime'][ibatch]
+		unicor_out = batchVars['output_unicor'][ibatch]		
 		matemoveno = batchVars['matemoveno'][ibatch]
 		matemoveparA = batchVars['matemoveparA'][ibatch]
 		matemoveparB = batchVars['matemoveparB'][ibatch]
@@ -471,7 +472,7 @@ if __name__ == '__main__':
 			# Call function
 			tupPreProcess = DoPreProcess(outdir,ibatch,ithmcrun,\
 			xyfilename,agefilename,equalsexratio,loci,intgenesans,allefreqfilename,alleles,0,logfHndl,cdevolveans,cdinfect,Infected,\
-			subpopmigration,subpopemigration,datadir,geneswap,epigeneans)
+			subpopmigration,subpopemigration,datadir,geneswap,epigeneans,unicor_out)
 						
 			ithmcrundir = tupPreProcess[0]	
 			FID = tupPreProcess[1]
@@ -828,7 +829,7 @@ if __name__ == '__main__':
 				xgridcopy,ygridcopy,gen,id,sex,age,xgrid,\
 				ygrid,genes,nthfile,ithmcrundir,loci,alleles,subpop,\
 				logfHndl,gridformat,infection,Infected,cdinfect,\
-				opengrids,DispDistCD,geneswap,hindex)
+				opengrids,DispDistCD,geneswap,hindex,unicor_out)
 				
 				FIDnew = tupDoOut[0]
 				idnew = tupDoOut[1]
