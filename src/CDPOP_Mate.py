@@ -52,7 +52,7 @@ def w_choice_item(lst):
 
 # ---------------------------------------------------------------------------------------------------	
 def DoSexualNY(nomales,xycdmatrix,females,count,\
-males,matemovethresh,Bearpairs,subpopmatemort,subpopmortperc,subpop,gen,selfans):
+males,matemovethresh,Bearpairs,subpop,gen,selfans):
 	'''
 	DoSexualNY()
 	This function is the mating function for:
@@ -79,47 +79,6 @@ males,matemovethresh,Bearpairs,subpopmatemort,subpopmortperc,subpop,gen,selfans)
 	# If statement to check if there were individuals in probarray:
 	if sum(probarray[0]) != 0.0:
 	
-		'''
-		# If subpopulation differential mortality is on
-		if sum(subpopmortperc) != 0.0:
-		
-			# Select the w_choice item
-			itemselect = w_choice_item(probarray[0])
-			
-			# What subpopulation are each mate pair
-			fromsubpop = subpop[females[count]] # female
-			tosubpop = subpop[indspots[itemselect]] # male
-			
-			# If there is a mate selection to another subpopulation
-			if fromsubpop != tosubpop:
-			
-				# Grab its mortality percentage
-				differentialmortality = subpopmortperc[int(fromsubpop)-1]
-				
-				# Then flip the coin to see if mating occurs
-				randcheck = np.random.uniform()
-				
-				# If mate did not occur: 
-				if randcheck < differentialmortality:
-					# Track this 'mortality'
-					subpopmatemort[gen].append(1)
-					# Store the female that did not mate with -9999 designation
-					Bearpairs.append([females[count],-9999])
-					# Then delete that male from the male list
-					males = np.delete(males,itemselect)
-					
-				# If mate did occur, record
-				else:
-					Bearpairs.append([females[count],males[itemselect]])
-					
-			# If they are in the same population: mate occured
-			else:
-				Bearpairs.append([females[count],males[itemselect]])
-
-		
-		# If no subpopmortperc
-		else:
-		'''
 		# Select the w_choice item
 		itemselect = w_choice_item(probarray[0])
 	
@@ -138,7 +97,7 @@ males,matemovethresh,Bearpairs,subpopmatemort,subpopmortperc,subpop,gen,selfans)
 	
 # ---------------------------------------------------------------------------------------------------	
 def DoSexualYY(nomales,xycdmatrix,females,males,\
-matemovethresh,Bearpairs,nofemales,subpopmatemort,subpopmortperc,subpop,gen,selfans):
+matemovethresh,Bearpairs,nofemales,subpop,gen,selfans):
 	'''
 	DoSexualYY()
 	This function is the mating function for: 
@@ -166,46 +125,7 @@ matemovethresh,Bearpairs,nofemales,subpopmatemort,subpopmortperc,subpop,gen,self
 		
 	# If statement to check if there were individuals in probarray:
 	if sum(probarray[0]) != 0.0:
-		'''
-		# If subpopulation differential mortality is on
-		if sum(subpopmortperc) != 0.0:
 		
-			# Select the w_choice item
-			itemselect = w_choice_item(probarray[0])
-			
-			# What subpopulation are each mate pair
-			fromsubpop = subpop[females[intfemale]] # female
-			tosubpop = subpop[males[itemselect]] # male
-			
-			# If there is a mate selection to another subpopulation
-			if fromsubpop != tosubpop:
-			
-				# Grab its mortality percentage
-				differentialmortality = subpopmortperc[int(fromsubpop)-1]
-				
-				# Then flip the coin to see if mating occurs
-				randcheck = np.random.uniform()
-				
-				# If mate did not occur: 
-				if randcheck < differentialmortality:
-					# Track this 'mortality'
-					subpopmatemort[gen].append(1)
-					# Store the female that did not mate with -9999 designation
-					Bearpairs.append([females[intfemale],-9999])
-					# Then delete that male from the male list
-					males = np.delete(males,itemselect)
-					
-				# If mate did occur, record
-				else:
-					Bearpairs.append([females[intfemale],males[itemselect]])
-					
-			# If they are in the same population: mate occured
-			else:
-				Bearpairs.append([females[intfemale],males[itemselect]])
-		
-		# If no subpopmortperc
-		else:
-		'''
 		# Select the w_choice item
 		itemselect = w_choice_item(probarray[0])
 			
@@ -225,7 +145,7 @@ matemovethresh,Bearpairs,nofemales,subpopmatemort,subpopmortperc,subpop,gen,self
 
 # ---------------------------------------------------------------------------------------------------	
 def DoSexualNN(nomales,xycdmatrix,females,count,\
-males,matemovethresh,Bearpairs,subpopmatemort,subpopmortperc,subpop,gen):
+males,matemovethresh,Bearpairs,subpop,gen):
 	'''
 	DoSexualNN()
 	This function is the mating function for
@@ -241,50 +161,7 @@ males,matemovethresh,Bearpairs,subpopmatemort,subpopmortperc,subpop,gen):
 				
 	# If statement to check if there were individuals in probarray:
 	if sum(probarray[0]) != 0.0:
-		'''
-		# If subpopulation differential mortality is on
-		if sum(subpopmortperc) != 0.0:
 		
-			# Select the w_choice item
-			itemselect = w_choice_item(probarray[0])
-			
-			# What subpopulation are each mate pair
-			fromsubpop = subpop[females[count]] # female
-			tosubpop = subpop[males[itemselect]] # male
-			
-			# If there is a mate selection to another subpopulation
-			if fromsubpop != tosubpop:
-			
-				# Grab its mortality percentage
-				differentialmortality = subpopmortperc[int(fromsubpop)-1]
-				
-				# Then flip the coin to see if mating occurs
-				randcheck = np.random.uniform()
-				
-				# If mate did not occur: 
-				if randcheck < differentialmortality:
-					# Track this 'mortality'
-					subpopmatemort[gen].append(1)
-					# Store the female that did not mate with -9999 designation
-					Bearpairs.append([females[count],-9999])
-					# Then delete that male from the male list
-					males = np.delete(males,itemselect)
-					
-				# If mate did occur, record
-				else:
-					Bearpairs.append([females[count],males[itemselect]])
-					# Then delete that male from the male list
-					males = np.delete(males,itemselect)
-					
-			# If they are in the same population: mate occured
-			else:
-				Bearpairs.append([females[count],males[itemselect]])
-				# Then delete that male from the male list
-				males = np.delete(males,itemselect)
-		
-		# If no subpopmortperc
-		else:
-		'''
 		# Select the w_choice item
 		itemselect = w_choice_item(probarray[0])
 	
@@ -313,7 +190,7 @@ ToTFemales,BreedMales,BreedFemales,\
 sexans,selfans,\
 MateDistEDstd,MateDistCDstd,FAvgMate,MAvgMate,\
 FSDMate,MSDMate,filledgrids,Female_BreedEvents,\
-gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmature,ScaleMax,ScaleMin,A,B,C,MateDistances):
+gen,subpop,BreedFemales_age,agemort,Mmature,Fmature,ScaleMax,ScaleMin,A,B,C,MateDistances):
 
 	'''
 	DoMate()
@@ -392,7 +269,6 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 		nofemales = len(females)
 		
 		# And then sum them up - and store numbers
-		subpopmatemort.append([]) # For generation
 		ToTMales.append([])
 		ToTFemales.append([])
 		BreedMales.append([])
@@ -463,7 +339,7 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 								
 					# Get probability function of user defined input number
 					Bearpairs,tempmales = DoSexualNY(nomales,xycdmatrix,females,count,\
-					tempmales,matemovethresh,Bearpairs,subpopmatemort,subpopmortperc,subpop,gen,selfans)
+					tempmales,matemovethresh,Bearpairs,subpop,gen,selfans)
 						
 					# Update count
 					count = count + 1
@@ -479,7 +355,7 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 						
 					# Get probability function of user defined input number
 					Bearpairs,tempmales = DoSexualYY(nomales,xycdmatrix,females,\
-					tempmales,matemovethresh,Bearpairs,nofemales,subpopmatemort,subpopmortperc,subpop,gen,selfans)
+					tempmales,matemovethresh,Bearpairs,nofemales,subpop,gen,selfans)
 														
 					# Update count
 					count = count + 1
@@ -501,7 +377,7 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 				while count < nofemales:
 								
 					# Get probability function of user defined input number
-					Bearpairs,tempmales = DoSexualNN(nomales,xycdmatrix,females,count,tempmales,matemovethresh,Bearpairs,subpopmatemort,subpopmortperc,subpop,gen)
+					Bearpairs,tempmales = DoSexualNN(nomales,xycdmatrix,females,count,tempmales,matemovethresh,Bearpairs,subpop,gen)
 											
 					# Update count
 					count = count + 1
@@ -523,10 +399,6 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 		This function is the mating function for 
 		asexual reproduction.
 		'''
-		# If subpopulation differential mortality is on
-		if sum(subpopmortperc) != 0.0:
-			print('Subpopulation mortlaity specified and not currently implemented with sexans==N.')
-			sys.exit(-1)
 			
 		# ---------------------------------------------------
 		# Select individuals for mating
@@ -580,7 +452,6 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 		nobreedgrids = len(breedgrids)
 		
 		# And then sum them up - and store numbers
-		subpopmatemort.append([]) # For generation
 		ToTMales.append([])
 		ToTFemales.append([])
 		BreedMales.append([])
@@ -651,7 +522,7 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 													
 					# Get probability function of user defined input number
 					Bearpairs,tempmales = DoSexualNY(nobreedgrids,xycdmatrix,breedgrids,count,\
-					tempmales,matemovethresh,Bearpairs,subpopmatemort,subpopmortperc,subpop,gen,selfans)
+					tempmales,matemovethresh,Bearpairs,subpop,gen,selfans)
 																			
 					# Update count
 					count = count + 1
@@ -667,7 +538,7 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 				
 					# Get probability function of user defined input number
 					Bearpairs,tempmales = DoSexualYY(nobreedgrids,xycdmatrix,breedgrids,\
-					tempmales,matemovethresh,Bearpairs,nobreedgrids,subpopmatemort,subpopmortperc,subpop,gen,selfans)
+					tempmales,matemovethresh,Bearpairs,nobreedgrids,subpop,gen,selfans)
 										
 					# Update count
 					count = count + 1					
@@ -795,8 +666,6 @@ gen,subpop,BreedFemales_age,agemort,subpopmatemort,subpopmortperc,Mmature,Fmatur
 	MAvgMate.append(np.mean(countDuplicatesInList(malesmated)))
 	FSDMate.append(np.std(countDuplicatesInList(femalesmated)))
 	MSDMate.append(np.std(countDuplicatesInList(malesmated)))
-	# No mate due to subpopmortperc
-	subpopmatemort[gen] = sum(subpopmatemort[gen])	
 	
 	# Return variables from this function
 	tupMate = Bearpairs, females, females_nomate, males, males_nomate,mature

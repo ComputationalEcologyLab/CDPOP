@@ -212,7 +212,7 @@ def CreateAlleleList(loci,alleles,xgenes):
 def InitializeGenes(intgenesans,allefreqfilename,loci,alleles,datadir):	
 	
 	allelst = []
-		
+	
 	# If genetic structure intialized by a file...
 	if intgenesans == 'file' or intgenesans == 'file_introduce' or intgenesans == 'file_var' or intgenesans == 'file_introduce_var':
 		
@@ -223,7 +223,7 @@ def InitializeGenes(intgenesans,allefreqfilename,loci,alleles,datadir):
 			
 			# If genetic structure intialized by a file...
 			if fileans != 'random':
-		
+				
 				# Check statements
 				if os.path.exists(datadir+fileans+'.csv'):
 					# Open file for reading
@@ -712,7 +712,7 @@ def ReadCDMatrix(cdmatrixfilename,function,threshold,A,B,C,subpop):
 	# End::ReadMateCDMatrix
 
 # ---------------------------------------------------------------------------------------------------	 
-def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemoveno,Fdispmoveno,Mdispmoveno,matemovethresh,Fdispmovethresh,Mdispmovethresh,matemoveparA,matemoveparB,matemoveparC,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,subpop,Magemort,Fagemort,offno,lmbda,sigma,K_envvals,Mnewmortperc,Fnewmortperc,fitvals,twinning,Mmature,Fmature,betaFile_selection,xvars_betas_pass,epimod_pass,epireset_pass,betaFile_epigene,cdevolveans,epigeneans):
+def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemoveno,Fdispmoveno,Mdispmoveno,matemovethresh,Fdispmovethresh,Mdispmovethresh,matemoveparA,matemoveparB,matemoveparC,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,subpop,Magemort,Fagemort,offno,lmbda,sigma,K_envvals,Mnewmortperc,Fnewmortperc,fitvals,twinning,Mmature,Fmature,betaFile_selection,xvars_betas_pass,epimod_pass,epireset_pass,betaFile_epigene,cdevolveans,epigeneans,gridmort_pass):
 	'''
 	DoCDClimate()
 	Reads in cost distance matrices and converts to probabilities.
@@ -795,6 +795,7 @@ def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemo
 	tempxvars_betas = []
 	tempepimod = []
 	tempepireset = []
+	tempgridmort = []
 	for isub in range(len(subpop)):
 		if len(fitvals) > 0:
 			tempfitvals.append([])
@@ -831,6 +832,10 @@ def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemo
 					tempepireset[isub].append(epireset_pass[isub][i].split('|')[icdtime])
 				else:
 					tempepireset[isub].append(epireset_pass[isub][i])
+		if len(gridmort_pass[isub].split('|')) > 1:
+			tempgridmort.append(gridmort_pass[isub].split('|')[icdtime])
+		else:
+			tempgridmort.append(gridmort_pass[isub])
 	
 	# ----------------------
 	# Variables in PopVars
@@ -1024,7 +1029,7 @@ def DoCDClimate(datadir,icdtime,cdclimgentime,matecdmatfile,dispcdmatfile,matemo
 	
 	# Return this functions variables
 	tupClimate = matecdmatrix,Fdispcdmatrix,Mdispcdmatrix,matemovethresh,\
-	Fdispmovethresh,Mdispmovethresh,Fdisp_ScaleMin,Fdisp_ScaleMax,Mdisp_ScaleMin,Mdisp_ScaleMax,mate_ScaleMin,mate_ScaleMax,tempMmort,tempFmort,tempoffno,templmbda,tempsigma,tempK_env,tempMnewmort,tempFnewmort,tempfitvals,matemoveno,Fdispmoveno,Mdispmoveno,twinning,tempMmat,tempFmat,tempbetas_selection,tempxvars_betas,tempepimod,tempepireset,tempbetas_epigene	
+	Fdispmovethresh,Mdispmovethresh,Fdisp_ScaleMin,Fdisp_ScaleMax,Mdisp_ScaleMin,Mdisp_ScaleMax,mate_ScaleMin,mate_ScaleMax,tempMmort,tempFmort,tempoffno,templmbda,tempsigma,tempK_env,tempMnewmort,tempFnewmort,tempfitvals,matemoveno,Fdispmoveno,Mdispmoveno,twinning,tempMmat,tempFmat,tempbetas_selection,tempxvars_betas,tempepimod,tempepireset,tempbetas_epigene,tempgridmort	
 	return tupClimate
 	
 	#End::DoCDClimate()
@@ -1090,12 +1095,14 @@ id,sex,age,agelst,genes,intgenesans,infection,allelst,subpopmigration,subpopemig
 	
 	# Create file to write matrix to
 	outputfile = open(ithmcrundir+'grid'+str(0)+'.csv','w')
-	outputfile_uni = open(ithmcrundir+'XY'+str(0)+'.csv','w')
+	if unicor_out == 'Y' or unicor_out == True:
+		outputfile_uni = open(ithmcrundir+'XY'+str(0)+'.csv','w')
+		outputfile_uni.write('XCOORD,YCOORD\n')
 		
 	# Write out the titles 
 	title = ['Subpopulation,XCOORD,YCOORD,ID,sex,age,infection,DisperseCDist,hindex,']
 	outputfile.write(title[0])
-	outputfile_uni.write('XCOORD,YCOORD\n')
+	
 	
 	# Write out the genes title informations
 	# Loop through loci
@@ -1127,8 +1134,9 @@ id,sex,age,agelst,genes,intgenesans,infection,allelst,subpopmigration,subpopemig
 			outputfile.write('NA,') # infection
 			outputfile.write('NA,') # dispersalDist
 		else:
-			outputfile_uni.write(str(float(xgrid[i]))+',')
-			outputfile_uni.write(str(float(ygrid[i]))+'\n')
+			if unicor_out == 'Y' or unicor_out == True:
+				outputfile_uni.write(str(float(xgrid[i]))+',')
+				outputfile_uni.write(str(float(ygrid[i]))+'\n')
 			outputfile.write(id[i]+',')
 			outputfile.write(str(sex[i])+',')
 			if intgenesans == 'known' or intgenesans == 'file_introduce' or intgenesans == 'file_introduce_var':
@@ -1369,7 +1377,8 @@ id,sex,age,agelst,genes,intgenesans,infection,allelst,subpopmigration,subpopemig
 		subpopemigration[0].append([0])
 	
 	# Close file
-	outputfile_uni.close()
+	if unicor_out == 'Y' or unicor_out == True:
+		outputfile_uni.close()
 	outputfile.close()
 	
 	# Return variables
@@ -1401,19 +1410,19 @@ subpopmigration,subpopemigration,datadir,geneswap,epigeneans,unicor_out):
 	xy = ReadXY(datadir+xyfilename[0]) # For PreProcessing, use the first xyfile
 	
 	# Error statement for 5 column data - check special cases
-	# File and random use 17, file_introduce has 19, known has 20 plus genotypes, M adds more to each
+	# File and random use 18, file_introduce has 20, known has 21 plus genotypes, M adds more to each
 	if intgenesans == 'file_introduce' or intgenesans == 'file_introduce_var':
-		if len(xy[1]) != 19:
-			print('File_introduce option uses 19 columns in XY file, see example input files.')
+		if len(xy[1]) != 20:
+			print('File_introduce option uses 20 columns in XY file, see example input files.')
 			sys.exit(-1)
 	elif intgenesans =='file' or intgenesans == 'random' or intgenesans == 'random_var' or intgenesans == 'file_var':
 		if cdevolveans.split('_')[0] == 'M':	# Mloci selection On		
 			if epigeneans == 'N': # No epigenetics
-				if (len(xy[1]) - int(cdevolveans.split('_')[1].split('X')[1])) != 17:
-					print('XY input file must be 17 columns plus the specified number of variables operating in the multiple loci selection model; see example input files.')
+				if (len(xy[1]) - int(cdevolveans.split('_')[1].split('X')[1])) != 18:
+					print('XY input file must be 18 columns plus the specified number of variables operating in the multiple loci selection model; see example input files.')
 					sys.exit(-1)
 			else: # epigenetics on
-				if len(xy[1]) - int(cdevolveans.split('_')[1].split('X')[1]) - 2*int(epigeneans.split('_')[1].split('L')[1]) != 17:
+				if len(xy[1]) - int(cdevolveans.split('_')[1].split('X')[1]) - 2*int(epigeneans.split('_')[1].split('L')[1]) != 18:
 					print('XY input file must be 17 columns plus the variables and reset parameters needed for epigenetic model, see example input files.')
 					sys.exit(-1)
 		elif cdevolveans.split('_')[0] == 'Hindex': #Hindex option
@@ -1421,22 +1430,19 @@ subpopmigration,subpopemigration,datadir,geneswap,epigeneans,unicor_out):
 				print('Epigenetics and Hindex options currently not implemented together.')
 				sys.exit(-1)
 			else:
-				if len(xy[1]) != 18:
-					print('Hindex option given for cdevolveans and XY input file must be 18 columns; see example input files.')
+				if len(xy[1]) != 19: # check the length on these
+					print('Hindex option given for cdevolveans and XY input file must be 19 columns; see example input files.')
 					sys.exit(-1)
 				
 		else: # anything else
 			if 	epigeneans == 'N': # No epigenetics
-				if len(xy[1]) != 17:
-					print('File and random options use 17 columns in XY file, see example input files.')
+				if len(xy[1]) != 18:
+					print('File and random options use 18 columns in XY file, see example input files.')
 					sys.exit(-1)
 			else: # epigenetics
-				if len(xy[1]) - 2*int(epigeneans.split('_')[1].split('L')[1]) != 17:
-					print('XY input file must be 17 columns plus the variables and reset parameters needed for epigenetic model; see example input files.')
+				if len(xy[1]) - 2*int(epigeneans.split('_')[1].split('L')[1]) != 18:
+					print('XY input file must be 18 columns plus the variables and reset parameters needed for epigenetic model; see example input files.')
 					sys.exit(-1)
-					
-	#else:
-	#	print('Warning: Known option given and XY file uses 21 columns plus genotype columns. See example input files.')
 	
 	# Store all information in lists by variable name
 	FID = []
@@ -1453,6 +1459,7 @@ subpopmigration,subpopemigration,datadir,geneswap,epigeneans,unicor_out):
 	epimod_vals = [] # epigenetic modification
 	epireset_vals = [] # epigenetic reset values
 	hindex = [] # Hindex value
+	gridmort = [] # Added mortality for each grid location
 	
 	for i in range(len(xy)-1):
 		FID.append(i)
@@ -1466,23 +1473,43 @@ subpopmigration,subpopemigration,datadir,geneswap,epigeneans,unicor_out):
 			sys.exit(-1)
 		xgrid.append(float(xy[i+1][1]))
 		ygrid.append(float(xy[i+1][2]))
-		id.append(xy[i+1][3])
+		gridmort.append(xy[i+1][3])
+		id.append(xy[i+1][4])
 		
-		# Get fitvals and xvars
-		# ---------------------
+		# Only grab sex information from the file if equal sex ratio is N
+		# -------------------------
+		if equalsexratio == 'N' or equalsexratio == 'AtBirth':
+			if xy[i+1][3] == 'NA' and xy[i+1][5] != 'NA':
+				print('Must specify NA for the sex value of all empty starting locations.')
+				sys.exit(-1)
+			sex.append(xy[i+1][5])
+				
+			# Change id to 'OPEN'
+			if sex[i] == 'NA':
+				id[i] = 'OPEN'
+			
+			# If sex was F or M...change to 0 and 1
+			if sex[i] == 'F':
+				sex[i] = '0'
+			elif sex[i] == 'M':
+				sex[i] = '1'
+		# ---------------------------
+		
+		# Get fitvals and xvars - indexspot is the start of fitvals
+		# ---------------------------------------------------------
 		# For file or random case - get index spots for fitness values (1-2 locus model)
 		if intgenesans == 'file' or intgenesans == 'random' or intgenesans == 'file_var' or intgenesans == 'random_var': # 17 columns 
-			indexspot = 5
+			indexspot = 6
 		# for known case
 		elif intgenesans == 'known':
-			indexspot = 8
+			indexspot = 9
 		# for file_introduce
 		elif intgenesans == 'file_introduce' or intgenesans == 'file_introduce_var':
-			indexspot = 6
+			indexspot = 8
 		else:
 			print('intgenesans does not exist, see user manual for options.')
 			sys.exit(-1)
-		xvars_indexspot = indexspot + 12 # for getting the xvars for M and Hindex options
+		xvars_indexspot = indexspot + 12 # for getting the xvars for M and Hindex options - fitness spots are length 12 always.
 		
 		# Get fitvals and xvars here
 		if cdevolveans == '1' or cdevolveans == '3' or cdevolveans == '1_HeMort_GEA' or cdevolveans == '1_HeMort_All':
@@ -1519,30 +1546,12 @@ subpopmigration,subpopemigration,datadir,geneswap,epigeneans,unicor_out):
 				for ireset in xrange(int(epigeneans.split('_')[1].split('L')[1])):
 					epireset_vals[i].append(xy[i+1][xvars_indexspot+1+int(epigeneans.split('_')[0].split('X')[1])+ireset+int(cdevolveans.split('_')[1].split('X')[1])])
 			'''
-		# -----------------------------------------------------------------------------------------
-		
-		# Only grab sex information from the file if equal sex ratio is N
-		# -------------------------
-		if equalsexratio == 'N' or equalsexratio == 'AtBirth':
-			if xy[i+1][3] == 'NA' and xy[i+1][4] != 'NA':
-				print('Must specify NA for the sex value of all empty starting locations.')
-				sys.exit(-1)
-			sex.append(xy[i+1][4])
-				
-			# Change id to 'OPEN'
-			if sex[i] == 'NA':
-				id[i] = 'OPEN'
-			
-			# If sex was F or M...change to 0 and 1
-			if sex[i] == 'F':
-				sex[i] = '0'
-			elif sex[i] == 'M':
-				sex[i] = '1'
-		# ---------------------------
+		# -----------------------------------------------------------------------------------------		
 		
 		# Grab age and genes for special cases
 		# ----------------------------------------------------------
-		if intgenesans == 'known': 			
+		if intgenesans == 'known':
+			knownindexspot = 22 # index spot for start of genes
 			if geneswap != 0:# switch to random genes			
 				print('Warning: Known gene file can not be used with gene start time > 0 Will continue but with random gene assignment.')
 				intgenesans = 'random'
@@ -1553,12 +1562,12 @@ subpopmigration,subpopemigration,datadir,geneswap,epigeneans,unicor_out):
 				if cdevolveans.split('_')[0] == 'M':
 					addindex = addindex + int(cdevolveans.split('_')[1].split('X')[1])
 				
-				if len(xy[1]) != 21+addindex+sum(alleles):
+				if len(xy[1]) != knownindexspot+addindex+sum(alleles):
 					print('Specified known genetic initializtion file. Not correct format. See example files for number of fields needed.')
 					sys.exit(-1)
 				else:					
 					# Age storage here for known file
-					age.append(xy[i+1][5])
+					age.append(xy[i+1][6])
 					# Error check for age in known file must be 1 or greater
 					if age[i] != 'NA':
 						if int(age[i]) < 1:
@@ -1567,10 +1576,10 @@ subpopmigration,subpopemigration,datadir,geneswap,epigeneans,unicor_out):
 					# genes[individual]
 					#genes.append([])			
 					# Error check here to make sure gene file matches specified loci and alleles
-					if sum(alleles) != len(xy[i+1][int(21+addindex):len(xy[i+1])]):
+					if sum(alleles) != len(xy[i+1][int(knownindexspot+addindex):len(xy[i+1])]):
 						print('Known genes file does not match loci and alleles given.')
 						sys.exit(-1)							
-					genes.append(xy[i+1][21+addindex:])
+					genes.append(xy[i+1][knownindexspot+addindex:])
 			
 		# For other cases when geneswap is great than 0
 		if intgenesans != 'known' and geneswap != 0:
@@ -1580,13 +1589,13 @@ subpopmigration,subpopemigration,datadir,geneswap,epigeneans,unicor_out):
 		# Grab age and infection for 'file_introduce' special case
 		if intgenesans == 'file_introduce' or intgenesans == 'file_introduce_var':
 			# Age storage here for known file
-			age.append(xy[i+1][5])
+			age.append(xy[i+1][6])
 			# Error check for age in known file must be 1 or greater
 			if age[i] != 'NA':
 				if int(age[i]) < 1:
 					print('Known file must initize with age 1+.')
 					sys.exit(-1)
-			infection.append(xy[i+1][6])
+			infection.append(xy[i+1][7])
 	
 	# Tally infection
 	if intgenesans == 'file_introduce' or intgenesans == 'file_introduce_var':		
@@ -1679,7 +1688,7 @@ subpopmigration,subpopemigration,datadir,geneswap,epigeneans,unicor_out):
 			
 	# Return this functions variables
 	tupPreProcess = ithmcrundir,FID,id,sex,age,xgrid,ygrid,genes,\
-	nogrids,subpop,fitvals,infection,Infected,subpopmigration,subpopemigration,Magemort,Fagemort,egg_lmbdavals,egg_sigmavals,allelst,Mnewmortperc,Fnewmortperc,Mmature,Fmature,intgenesans,xvars,epimod_vals,epireset_vals,hindex
+	nogrids,subpop,fitvals,infection,Infected,subpopmigration,subpopemigration,Magemort,Fagemort,egg_lmbdavals,egg_sigmavals,allelst,Mnewmortperc,Fnewmortperc,Mmature,Fmature,intgenesans,xvars,epimod_vals,epireset_vals,hindex, gridmort
 	return tupPreProcess
 	
 	#End::DoPreProcess()

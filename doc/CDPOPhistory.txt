@@ -1,6 +1,24 @@
+Changes v1.3.16.2022.11.8T10:39:00MDT (ell)
+0) Unicor option still outputing XY with option == False. *Fixed
+1) Move subpopmortpercent to XY file. 
+a) Remove subpopmortperc field in popvars.
+b) Add Subpopmortperc to xy files; careful to check all cases - add after XY, spot 4 index 3
+c) Created gridmort var, read in from xy file
+d) can not be NA - divide by 100 here 
+e) Not outputing gridmort to grid.csv file
+f) Replace subpopmortperc var with gridmort in Mate() DoDisperse()
+g) Checking Mate()....removing any mention here and remove subpopmatemort,subpopmortperc; used to implement this here, but only use for disperse. Done.
+h) Checking Disperse()....Done.
+i) add a | cdclimate option....Done.
+j) Add to usermanual....done.
+
+Changes v1.3.15.2022.04.26T09:54:00 (ell)
+0) index error when genes answer is file introduce. (6 to 7)
+
 Changes v1.3.14.2022.03.30T09:40:00 (ell)
 0) Begin to add UNICOR output option
 a) 'output_unicor' in inputvars.csv and output XY{year}.csv that matches output_years
+b) updated usermanual.
 
 Changes v1.3.13.2022.03.15T15:00:00 (ell)
 0) Add option for cdevolveans and subpopmortality selection. 

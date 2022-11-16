@@ -5,8 +5,8 @@
 # ----------------------------------------------------------------------------
 # General CDPOP information
 appName = "CDPOP"
-appVers = "version 1.3.14"
-appRele = "2022.03.30-08:33:00MDT"
+appVers = "version 1.3.16"
+appRele = "2022.11.8-09:55:00MDT"
 authorNames = "Erin L Landguth et al."
 
 # ---------------
@@ -165,7 +165,7 @@ if __name__ == '__main__':
 		twinning_pass = batchVars['TwinningPercent'][ibatch]
 		popmodel = batchVars['popModel'][ibatch]
 		K_envvals = batchVars['K_env'][ibatch]
-		subpopmort = batchVars['subpopmortperc'][ibatch]
+		#subpopmort = batchVars['subpopmortperc'][ibatch]
 		gridformat = batchVars['gridformat'][ibatch]
 		muterate = float(batchVars['muterate'][ibatch])
 		mutationans = batchVars['mutationtype'][ibatch]
@@ -206,12 +206,6 @@ if __name__ == '__main__':
 		if max(nthfile) >= looptime:
 			print('nthfile selection maximum value must be less than to looptime.')
 			sys.exit(-1)
-		
-		# Split up subpopulation mortality percentage if separated by '|'
-		subpopmortperc = []
-		# Convert to float
-		for inum in range(len(subpopmort)):
-			subpopmortperc.append(float(subpopmort[inum])/100)
 		
 		# Store cdmat file information - header file (loadFile()) passes tuple or string if only 1
 		if not isinstance(cdclimgentimelist, (list,tuple)):
@@ -447,7 +441,6 @@ if __name__ == '__main__':
 			q2 = []
 			subpopmigration = []
 			subpopemigration = []
-			subpopmatemort = []
 			FAvgMate = []
 			MAvgMate = []
 			FSDMate = []
@@ -505,15 +498,8 @@ if __name__ == '__main__':
 			epimod_pass = tupPreProcess[26]
 			epireset_pass = tupPreProcess[27]
 			hindex = tupPreProcess[28]
-			
-			# ---------------------------------
-			# Error statements
-			# ---------------------------------
-			# If subpopulation given is not equal to the subpopulation mortality percentage
-			if len(np.unique(subpop)) != len(subpopmortperc):
-				print('Subpopulation number does not equal the subpopulation mortality percentages given.')
-				sys.exit(-1)
-							
+			gridmort_pass = tupPreProcess[29]
+						
 			# Print to log
 			stringout = 'DoPreProcess(): '+str(datetime.datetime.now() -start_time1) + ''
 			logMsg(logfHndl,stringout)
@@ -538,7 +524,7 @@ if __name__ == '__main__':
 				
 				# Check gen time equal to cdclimgentime
 				if len(np.where(np.asarray(cdclimgentime) == str(gen))[0]) == 1:
-					tupClimate = DoCDClimate(datadir,np.where(np.asarray(cdclimgentime) == str(gen))[0][0],cdclimgentime,matecdmatfile,dispcdmatfile,matemoveno,Fdispmoveno,Mdispmoveno,matemovethresh,Fdispmovethresh,Mdispmovethresh,matemoveparA,matemoveparB,matemoveparC,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,subpop,Magemortvals,Fagemortvals,offnovals,egg_lmbdavals,egg_sigmavals,K_envvals,Mnewmortperc,Fnewmortperc,fitvals_pass,twinning_pass,Mmaturevals,Fmaturevals,betaFile_selection,xvars_betas_pass,epimod_pass,epireset_pass,betaFile_epigene,cdevolveans,epigeneans)
+					tupClimate = DoCDClimate(datadir,np.where(np.asarray(cdclimgentime) == str(gen))[0][0],cdclimgentime,matecdmatfile,dispcdmatfile,matemoveno,Fdispmoveno,Mdispmoveno,matemovethresh,Fdispmovethresh,Mdispmovethresh,matemoveparA,matemoveparB,matemoveparC,FdispmoveparA,FdispmoveparB,FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,subpop,Magemortvals,Fagemortvals,offnovals,egg_lmbdavals,egg_sigmavals,K_envvals,Mnewmortperc,Fnewmortperc,fitvals_pass,twinning_pass,Mmaturevals,Fmaturevals,betaFile_selection,xvars_betas_pass,epimod_pass,epireset_pass,betaFile_epigene,cdevolveans,epigeneans,gridmort_pass)
 					
 					cdmatrix_mate = tupClimate[0]
 					cdmatrix_F = tupClimate[1]
@@ -572,7 +558,8 @@ if __name__ == '__main__':
 					epimod = tupClimate[29]
 					epireset = tupClimate[30]
 					betas_epigene = tupClimate[31]
-											
+					gridmort = tupClimate[32]
+										
 					# Error check for if nofiles == nogrids system exit
 					if nogrids != len(cdmatrix_mate):
 						print('The cost distance matrix dimensions are not the same as the number of individuals.')
@@ -712,7 +699,7 @@ if __name__ == '__main__':
 				ygridcopy,ToTMales,ToTFemales,BreedMales,BreedFemales,\
 				sexans,selfans,\
 				MateDistEDstd, MateDistCDstd,FAvgMate,MAvgMate,\
-				FSDMate,MSDMate,filledgrids,Female_BreedEvents,gen,subpop,BreedFemales_age,Magemort,subpopmatemort,subpopmortperc,Mmature,Fmature,mate_ScaleMax,mate_ScaleMin,matemoveparA,matemoveparB,matemoveparC,MateDistances)
+				FSDMate,MSDMate,filledgrids,Female_BreedEvents,gen,subpop,BreedFemales_age,Magemort,Mmature,Fmature,mate_ScaleMax,mate_ScaleMin,matemoveparA,matemoveparB,matemoveparC,MateDistances)
 				Bearpairs = tupMate[0]
 				females = tupMate[1]
 				females_nomate.append(tupMate[2])
@@ -804,7 +791,7 @@ if __name__ == '__main__':
 				xgridcopy,ygridcopy,FDispDistED,MDispDistED,FDispDistCD,MDispDistCD,\
 				logfHndl,cdevolveans,fitvals,FDispDistEDstd,MDispDistEDstd,\
 				FDispDistCDstd,MDispDistCDstd,subpop,subpopmigration,DisperseDeaths,CouldNotDisperse,\
-				subpopmortperc,philopatry,females,subpopemigration,females_nomate[gen],\
+				gridmort,philopatry,females,subpopemigration,females_nomate[gen],\
                 males,males_nomate[gen],startSelection,thresh_F,thresh_M,Fdisp_ScaleMax,\
                 Fdisp_ScaleMin,Mdisp_ScaleMax,Mdisp_ScaleMin,FdispmoveparA,FdispmoveparB,\
                 FdispmoveparC,MdispmoveparA,MdispmoveparB,MdispmoveparC,betas_selection,xvars_betas,maxfit,minfit)
@@ -871,7 +858,7 @@ if __name__ == '__main__':
 			FDispDistEDstd,MDispDistEDstd,MateDistCDstd,FDispDistCDstd,MDispDistCDstd,subpopmigration,\
 			FAvgMate,MAvgMate,FSDMate,MSDMate,DisperseDeaths,Open,CouldNotDisperse,\
 			Female_BreedEvents,gridformat,subpopemigration,females_nomate,subgridtotal,Track_MOffDeaths,Track_FOffDeaths,Population_age,Females_age,Males_age,\
-			BreedFemales_age,subpopmatemort,Opt3SelectionDeaths,MateDistances,matedist_out,Twins,Track_EpigeneMod1,Track_EpigeneMod2,Track_EpigeneDeaths,Track_EpigeneReset1,Track_EpigeneReset2)
+			BreedFemales_age,Opt3SelectionDeaths,MateDistances,matedist_out,Twins,Track_EpigeneMod1,Track_EpigeneMod2,Track_EpigeneDeaths,Track_EpigeneReset1,Track_EpigeneReset2)
 			
 			# Print to log
 			stringout = 'DoPostProcess(): '+str(datetime.datetime.now() -start_time1) + ''

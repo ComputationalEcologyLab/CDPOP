@@ -1520,6 +1520,7 @@ def AddIndividuals(cdclimgentime,gen,idnew,agenew,genesnew,sexnew,subpopnew,infe
 			if thisK < count_currentN + count_addN:
 				print(('Exceeded carrying capacity when adding individuals to this subpopulation '+thisPop))
 				sys.exit(-1)
+				#pdb.set_trace()
 			else:
 				
 				# Get spots where individuals can be added to

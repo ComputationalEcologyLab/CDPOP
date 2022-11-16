@@ -481,7 +481,7 @@ def Do2LocusSelection(offspring,fitvals2,tempfreegrid,iteminlist,alleles):
 def DoEmigration(offspring,freegrid,Migrants,Open,loci,alleles,\
 Fxycdmatrix,Mxycdmatrix,gen,\
 offspringno,cdevolveans,fitvals,subpop,subpopmigration,DisperseDeaths,CouldNotDisperse,\
-subpopmortperc,philopatry,females,subpopemigration,females_nomate,\
+gridmort,philopatry,females,subpopemigration,females_nomate,\
 males,males_nomate,startSelection,betas,xvars_betas,maxfit,minfit):
 	'''
 	DoEmigration()
@@ -591,21 +591,12 @@ males,males_nomate,startSelection,betas,xvars_betas,maxfit,minfit):
 					
 					differentialmortality = 0.0
 				
-				# The Check for spatial mortality - subpopulation mortality
-				if sum(subpopmortperc) != 0.0:
-											
-					# What subpopulation is offspring coming from
-					fromsubpop = subpop[int(offspring[i][0])]
-					# Where is subpopulation proposing to go
-					tosubpop = subpop[tempfreegrid[iteminlist]]
-					
-					# Grab its mortality percentage
-					differentialmortality_SpatialSubPopMort = subpopmortperc[int(tosubpop)-1]
+				# The Check for spatial mortality - subpopulation mortality				
+				#fromsubpop = subpop[int(offspring[i][0])] # What subpopulation is offspring coming from
+				tosubpop = subpop[tempfreegrid[iteminlist]] # Where is subpopulation proposing to go
 				
-				# No subpopulation mortality
-				else:					
-					
-					differentialmortality_SpatialSubPopMort = 0.0
+				# Grab its mortality percentage
+				differentialmortality_SpatialSubPopMort = float(gridmort[int(tosubpop)-1][0])/100.
 				
 				# Calculated and Check Differential Mortality
 				# -------------------------------------------
@@ -819,7 +810,7 @@ Fxycdmatrix,Mxycdmatrix,gen,Migrants,Open,loci,alleles,\
 xgridcopy,ygridcopy,FDispDistED,MDispDistED,FDispDistCD,MDispDistCD,
 logfHndl,cdevolveans,fitvals,FDispDistEDstd,MDispDistEDstd,\
 FDispDistCDstd,MDispDistCDstd,subpop,subpopmigration,DisperseDeaths,CouldNotDisperse,\
-subpopmortperc,philopatry,females,subpopemigration,females_nomate,males,males_nomate,\
+gridmort,philopatry,females,subpopemigration,females_nomate,males,males_nomate,\
 startSelection,Fthreshold,Mthreshold,FScaleMax,FScaleMin,MScaleMax,MScaleMin,FA,FB,FC,MA,MB,MC,betas,xvars_betas,maxfit,minfit):
 	'''
 	DoDisperse()
@@ -832,7 +823,7 @@ startSelection,Fthreshold,Mthreshold,FScaleMax,FScaleMin,MScaleMax,MScaleMin,FA,
 	tupDoEmi = DoEmigration(offspring,freegrid,Migrants,Open,\
 	loci,alleles,Fxycdmatrix,Mxycdmatrix,gen,offspringno,\
 	cdevolveans,fitvals,subpop,subpopmigration,\
-	DisperseDeaths,CouldNotDisperse,subpopmortperc,philopatry,\
+	DisperseDeaths,CouldNotDisperse,gridmort,philopatry,\
 	females,subpopemigration,females_nomate,males,males_nomate,\
 	startSelection,betas,xvars_betas,maxfit,minfit)
 	

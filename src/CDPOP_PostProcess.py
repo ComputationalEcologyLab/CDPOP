@@ -78,12 +78,13 @@ ygridnew,idnew,sexnew,agenew,genesnew,logfHndl,infection,AllDispDistCD,hindexnew
 	
 	# Create file to write info to
 	outputfile = open(ithmcrundir+'grid'+str(gen+1)+'.csv','w')
-	outputfile_uni = open(ithmcrundir+'XY'+str(gen+1)+'.csv','w')
+	if unicor_out == 'Y' or unicor_out == True:
+		outputfile_uni = open(ithmcrundir+'XY'+str(gen+1)+'.csv','w')
+		outputfile_uni.write('XCOORD,YCOORD\n')
 	
 	# Write out the titles 
 	title = ['Subpopulation,XCOORD,YCOORD,ID,sex,age,infection,DisperseCDist,hindex,']
-	outputfile.write(title[0])
-	outputfile_uni.write('XCOORD,YCOORD\n')
+	outputfile.write(title[0])	
 			
 	# Write out the loci title info
 	# Loop for loci length
@@ -115,8 +116,9 @@ ygridnew,idnew,sexnew,agenew,genesnew,logfHndl,infection,AllDispDistCD,hindexnew
 			outputfile.write(str(genesnew[i][iall])+',')
 		outputfile.write('\n')
 		if sexnew[i] == 'NA':
-			outputfile_uni.write(str(float(xgridnew[i]))+',')
-			outputfile_uni.write(str(float(ygridnew[i]))+'\n')
+			if unicor_out == 'Y' or unicor_out == True:
+				outputfile_uni.write(str(float(xgridnew[i]))+',')
+				outputfile_uni.write(str(float(ygridnew[i]))+'\n')
 												
 	# Logging message
 	stringout = 'The file grid'+str(gen+1)+'.csv has been created'
@@ -124,7 +126,8 @@ ygridnew,idnew,sexnew,agenew,genesnew,logfHndl,infection,AllDispDistCD,hindexnew
 	
 	# Close file
 	outputfile.close()
-	outputfile_uni.close()
+	if unicor_out == 'Y' or unicor_out == True:
+		outputfile_uni.close()
 	
 	# End::DoGridOut_cdpop()
 	
@@ -927,7 +930,7 @@ MateDistEDstd,FDispDistEDstd,MDispDistEDstd,MateDistCDstd,\
 FDispDistCDstd,MDispDistCDstd,subpopmigration,FAvgMate,MAvgMate,\
 FSDMate,MSDMate,DisperseDeaths,Open,CouldNotDisperse,\
 Female_BreedEvents,gridformat,subpopemigration,females_nomate,\
-subgridtotal,MOffDeaths,FOffDeaths,Population_age,Females_age,Males_age,BreedFemales_age,subpopmatemort,SelectionDeaths,MateDistances,matedist_out,Twins,Track_EpigeneMod1,Track_EpigeneMod2,Track_EpigeneDeaths,Track_EpigeneReset1,Track_EpigeneReset2):
+subgridtotal,MOffDeaths,FOffDeaths,Population_age,Females_age,Males_age,BreedFemales_age,SelectionDeaths,MateDistances,matedist_out,Twins,Track_EpigeneMod1,Track_EpigeneMod2,Track_EpigeneDeaths,Track_EpigeneReset1,Track_EpigeneReset2):
 	'''
 	DoPostProcess()
 	Create Distance Matrices - Geographic, Genetic, and Cost
@@ -1090,7 +1093,6 @@ subgridtotal,MOffDeaths,FOffDeaths,Population_age,Females_age,Males_age,BreedFem
 		for j in range(nosubpops):
 			outputfile.write(str(subpopemigration[i][j])+'|')
 		outputfile.write(',')
-		outputfile.write(str(subpopmatemort[i])+',')
 		outputfile.write(str(FAvgMate[i])+',')
 		outputfile.write(str(MAvgMate[i])+',')
 		outputfile.write(str(FSDMate[i])+',')
