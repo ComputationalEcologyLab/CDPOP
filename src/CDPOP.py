@@ -5,7 +5,7 @@
 # ----------------------------------------------------------------------------
 # General CDPOP information
 appName = "CDPOP"
-appVers = "version 1.3.16"
+appVers = "version 1.3.17"
 appRele = "2022.11.8-09:55:00MDT"
 authorNames = "Erin L Landguth et al."
 
@@ -714,7 +714,7 @@ if __name__ == '__main__':
 				stringout = 'DoMate(): '+str(datetime.datetime.now() -start_time1) + ''
 				logMsg(logfHndl,stringout)
 				print('DoMate(): ',str(datetime.datetime.now() -start_time1),'')
-								
+						
 				# ---------------------------------------
 				# Call DoOffspring()
 				# ---------------------------------------
@@ -777,7 +777,7 @@ if __name__ == '__main__':
 				stringout = 'DoAdultMortality(): '+str(datetime.datetime.now() -start_time1) + ''
 				logMsg(logfHndl,stringout)
 				print('DoAdultMortality(): ',str(datetime.datetime.now() -start_time1),'')
-				#pdb.set_trace()					
+									
 				# ------------------------------------------
 				# Call DoDisperse()
 				# ------------------------------------------			

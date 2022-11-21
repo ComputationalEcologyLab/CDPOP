@@ -596,7 +596,8 @@ males,males_nomate,startSelection,betas,xvars_betas,maxfit,minfit):
 				tosubpop = subpop[tempfreegrid[iteminlist]] # Where is subpopulation proposing to go
 				
 				# Grab its mortality percentage
-				differentialmortality_SpatialSubPopMort = float(gridmort[int(tosubpop)-1][0])/100.
+				#differentialmortality_SpatialSubPopMort = float(gridmort[int(tosubpop)-1][0])/100.
+				differentialmortality_SpatialSubPopMort = float(gridmort[tempfreegrid[iteminlist]])/100.
 				
 				# Calculated and Check Differential Mortality
 				# -------------------------------------------
