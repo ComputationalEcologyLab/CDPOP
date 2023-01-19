@@ -52,7 +52,7 @@ def w_choice_item(lst):
 
 # ---------------------------------------------------------------------------------------------------	
 def DoSexualNY(nomales,xycdmatrix,females,count,\
-males,matemovethresh,Bearpairs,subpop,gen,selfans):
+males,matemovethresh,Bearpairs,subpop,gen,selfans,matefreq):
 	'''
 	DoSexualNY()
 	This function is the mating function for:
@@ -63,33 +63,44 @@ males,matemovethresh,Bearpairs,subpop,gen,selfans):
 	
 	# Create an empty probability array to be appended to
 	probarray = []
+	
+	# Check if this female will mate
+	randmate = np.random.uniform()
+	
+	#Mating occurs or potential to occur
+	if randmate < matefreq:
 						
-	# Make array of individuals, removing itself unless selfing on
-	if selfans == 'Y':
-		indspots = np.asarray(copy.deepcopy(males))
-	else:
-		indspots = np.asarray(copy.deepcopy(males))
-		delspot = np.where(indspots==females[count])[0]
-		indspots = np.delete(indspots,delspot)
-	shuffle(indspots)
-	
-	# Extract each male grid probability
-	probarray.append(xycdmatrix[females[count]][indspots])
-			
-	# If statement to check if there were individuals in probarray:
-	if sum(probarray[0]) != 0.0:
-	
-		# Select the w_choice item
-		itemselect = w_choice_item(probarray[0])
-	
-		# And store the mated pair information.						
-		Bearpairs.append([females[count],indspots[itemselect]])
-							
-	# If statement to check if there were not males < matemovethresh:
-	elif sum(probarray[0]) == 0.0:
+		# Make array of individuals, removing itself unless selfing on
+		if selfans == 'Y':
+			indspots = np.asarray(copy.deepcopy(males))
+		else:
+			indspots = np.asarray(copy.deepcopy(males))
+			delspot = np.where(indspots==females[count])[0]
+			indspots = np.delete(indspots,delspot)
+		shuffle(indspots)
 		
+		# Extract each male grid probability
+		probarray.append(xycdmatrix[females[count]][indspots])
+				
+		# If statement to check if there were individuals in probarray:
+		if sum(probarray[0]) != 0.0:
+		
+			# Select the w_choice item
+			itemselect = w_choice_item(probarray[0])
+		
+			# And store the mated pair information.						
+			Bearpairs.append([females[count],indspots[itemselect]])
+								
+		# If statement to check if there were not males < matemovethresh:
+		elif sum(probarray[0]) == 0.0:
+			
+			# Store the female that did not mate with -9999 designation
+			Bearpairs.append([females[count],-9999])
+
+	# Mating does not happen this year
+	else:		
 		# Store the female that did not mate with -9999 designation
-		Bearpairs.append([females[count],-9999])	
+		Bearpairs.append([females[count],-9999])
 	
 	return Bearpairs,males
 	
@@ -97,7 +108,7 @@ males,matemovethresh,Bearpairs,subpop,gen,selfans):
 	
 # ---------------------------------------------------------------------------------------------------	
 def DoSexualYY(nomales,xycdmatrix,females,males,\
-matemovethresh,Bearpairs,nofemales,subpop,gen,selfans):
+matemovethresh,Bearpairs,nofemales,subpop,gen,selfans,matefreq):
 	'''
 	DoSexualYY()
 	This function is the mating function for: 
@@ -111,32 +122,43 @@ matemovethresh,Bearpairs,nofemales,subpop,gen,selfans):
 	# Randomly grab a female
 	intfemale = int((nofemales)*np.random.uniform())
 	
-	# Make array of individuals, removing itself unless selfing on
-	if selfans == 'Y':
-		indspots = np.asarray(copy.deepcopy(males))
-	else:
-		indspots = np.asarray(copy.deepcopy(males))
-		delspot = np.where(indspots==females[intfemale])[0]
-		indspots = np.delete(indspots,delspot)
-	shuffle(indspots)
+	# Check if this female will mate
+	randmate = np.random.uniform()
 	
-	# Extract each male grid probability
-	probarray.append(xycdmatrix[females[intfemale]][indspots])
+	#Mating occurs or potential to occur
+	if randmate < matefreq:
+	
+		# Make array of individuals, removing itself unless selfing on
+		if selfans == 'Y':
+			indspots = np.asarray(copy.deepcopy(males))
+		else:
+			indspots = np.asarray(copy.deepcopy(males))
+			delspot = np.where(indspots==females[intfemale])[0]
+			indspots = np.delete(indspots,delspot)
+		shuffle(indspots)
 		
-	# If statement to check if there were individuals in probarray:
-	if sum(probarray[0]) != 0.0:
+		# Extract each male grid probability
+		probarray.append(xycdmatrix[females[intfemale]][indspots])
 		
-		# Select the w_choice item
-		itemselect = w_choice_item(probarray[0])
+		# If statement to check if there were individuals in probarray:
+		if sum(probarray[0]) != 0.0:
 			
-		# And store the mated pair information.						
-		Bearpairs.append([females[intfemale],indspots[itemselect]])
-						
-	# If statement to check if there were not males < matemovethresh:
-	elif sum(probarray[0]) == 0.0:
+			# Select the w_choice item
+			itemselect = w_choice_item(probarray[0])
+				
+			# And store the mated pair information.						
+			Bearpairs.append([females[intfemale],indspots[itemselect]])
+							
+		# If statement to check if there were not males < matemovethresh:
+		elif sum(probarray[0]) == 0.0:
+		
+			# Store the female that did not mate with -9999 designation
+			Bearpairs.append([females[intfemale],-9999])				
 	
+	# Mating does not happen this year
+	else:		
 		# Store the female that did not mate with -9999 designation
-		Bearpairs.append([females[intfemale],-9999])				
+		Bearpairs.append([females[intfemale],-9999])
 	
 	# Return Variables from this function
 	return Bearpairs,males
@@ -145,7 +167,7 @@ matemovethresh,Bearpairs,nofemales,subpop,gen,selfans):
 
 # ---------------------------------------------------------------------------------------------------	
 def DoSexualNN(nomales,xycdmatrix,females,count,\
-males,matemovethresh,Bearpairs,subpop,gen):
+males,matemovethresh,Bearpairs,subpop,gen,matefreq):
 	'''
 	DoSexualNN()
 	This function is the mating function for
@@ -156,26 +178,37 @@ males,matemovethresh,Bearpairs,subpop,gen):
 	# Create an empty probability array to be appended to
 	probarray = []
 					
-	# Extract each male grid probability
-	probarray.append(xycdmatrix[females[count]][males])
-				
-	# If statement to check if there were individuals in probarray:
-	if sum(probarray[0]) != 0.0:
-		
-		# Select the w_choice item
-		itemselect = w_choice_item(probarray[0])
+	# Check if this female will mate
+	randmate = np.random.uniform()
 	
-		# And store the mated pair information.						
-		Bearpairs.append([females[count],males[itemselect]])
-		
-		# Then delete that male from the male list
-		males = np.delete(males,itemselect)
-							
-	# If statement to check if there were not males < matemovethresh:
-	elif sum(probarray[0]) == 0.0:
+	#Mating occurs or potential to occur
+	if randmate < matefreq:
 	
+		# Extract each male grid probability
+		probarray.append(xycdmatrix[females[count]][males])
+					
+		# If statement to check if there were individuals in probarray:
+		if sum(probarray[0]) != 0.0:
+			
+			# Select the w_choice item
+			itemselect = w_choice_item(probarray[0])
+		
+			# And store the mated pair information.						
+			Bearpairs.append([females[count],males[itemselect]])
+			
+			# Then delete that male from the male list
+			males = np.delete(males,itemselect)
+								
+		# If statement to check if there were not males < matemovethresh:
+		elif sum(probarray[0]) == 0.0:
+		
+			# Store the female that did not mate with -9999 designation
+			Bearpairs.append([females[count],-9999])	
+			
+	# Mating does not happen this year
+	else:		
 		# Store the female that did not mate with -9999 designation
-		Bearpairs.append([females[count],-9999])	
+		Bearpairs.append([females[count],-9999])
 	
 	return Bearpairs,males
 	
@@ -190,7 +223,7 @@ ToTFemales,BreedMales,BreedFemales,\
 sexans,selfans,\
 MateDistEDstd,MateDistCDstd,FAvgMate,MAvgMate,\
 FSDMate,MSDMate,filledgrids,Female_BreedEvents,\
-gen,subpop,BreedFemales_age,agemort,Mmature,Fmature,ScaleMax,ScaleMin,A,B,C,MateDistances):
+gen,subpop,BreedFemales_age,agemort,Mmature,Fmature,ScaleMax,ScaleMin,A,B,C,MateDistances,matefreq):
 
 	'''
 	DoMate()
@@ -339,7 +372,7 @@ gen,subpop,BreedFemales_age,agemort,Mmature,Fmature,ScaleMax,ScaleMin,A,B,C,Mate
 								
 					# Get probability function of user defined input number
 					Bearpairs,tempmales = DoSexualNY(nomales,xycdmatrix,females,count,\
-					tempmales,matemovethresh,Bearpairs,subpop,gen,selfans)
+					tempmales,matemovethresh,Bearpairs,subpop,gen,selfans,matefreq)
 						
 					# Update count
 					count = count + 1
@@ -355,7 +388,7 @@ gen,subpop,BreedFemales_age,agemort,Mmature,Fmature,ScaleMax,ScaleMin,A,B,C,Mate
 						
 					# Get probability function of user defined input number
 					Bearpairs,tempmales = DoSexualYY(nomales,xycdmatrix,females,\
-					tempmales,matemovethresh,Bearpairs,nofemales,subpop,gen,selfans)
+					tempmales,matemovethresh,Bearpairs,nofemales,subpop,gen,selfans,matefreq)
 														
 					# Update count
 					count = count + 1
@@ -364,7 +397,6 @@ gen,subpop,BreedFemales_age,agemort,Mmature,Fmature,ScaleMax,ScaleMin,A,B,C,Mate
 			elif freplace == 'Y' and mreplace == 'N':
 			
 				print('Female with replacement and Male without replacement not coded yet.')
-				print('Email Erin.')
 				sys.exit(-1)
 				
 			# For the case of Female without replacement and male without replacement
@@ -377,7 +409,7 @@ gen,subpop,BreedFemales_age,agemort,Mmature,Fmature,ScaleMax,ScaleMin,A,B,C,Mate
 				while count < nofemales:
 								
 					# Get probability function of user defined input number
-					Bearpairs,tempmales = DoSexualNN(nomales,xycdmatrix,females,count,tempmales,matemovethresh,Bearpairs,subpop,gen)
+					Bearpairs,tempmales = DoSexualNN(nomales,xycdmatrix,females,count,tempmales,matemovethresh,Bearpairs,subpop,gen,matefreq)
 											
 					# Update count
 					count = count + 1
@@ -522,7 +554,7 @@ gen,subpop,BreedFemales_age,agemort,Mmature,Fmature,ScaleMax,ScaleMin,A,B,C,Mate
 													
 					# Get probability function of user defined input number
 					Bearpairs,tempmales = DoSexualNY(nobreedgrids,xycdmatrix,breedgrids,count,\
-					tempmales,matemovethresh,Bearpairs,subpop,gen,selfans)
+					tempmales,matemovethresh,Bearpairs,subpop,gen,selfans,matefreq)
 																			
 					# Update count
 					count = count + 1
@@ -538,7 +570,7 @@ gen,subpop,BreedFemales_age,agemort,Mmature,Fmature,ScaleMax,ScaleMin,A,B,C,Mate
 				
 					# Get probability function of user defined input number
 					Bearpairs,tempmales = DoSexualYY(nobreedgrids,xycdmatrix,breedgrids,\
-					tempmales,matemovethresh,Bearpairs,nobreedgrids,subpop,gen,selfans)
+					tempmales,matemovethresh,Bearpairs,nobreedgrids,subpop,gen,selfans,matefreq)
 										
 					# Update count
 					count = count + 1					

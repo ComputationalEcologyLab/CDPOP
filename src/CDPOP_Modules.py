@@ -1444,7 +1444,7 @@ def DoMortality(nogrids,sex,id,age,xgrid,ygrid,gen,genes,Track_MDeaths,Track_FDe
 	# End::DoAdultMortality()
 	
 # ---------------------------------------------------------------------------------------------------	 
-def AddIndividuals(cdclimgentime,gen,idnew,agenew,genesnew,sexnew,subpopnew,infectionnew,allelst,xyfilename,datadir,alleles,hindexnew):
+def AddIndividuals(cdclimgentime,gen,id_here,age_here,genes_here,sex_here,FID_here,infection_here,allelst,xyfilename,datadir,alleles,hindex_here,subpop,freegrid):
 	'''
 	AddIndividuals()
 	This function reads in the multiple xy files given at specified cdclimate year and adds individuals to each subpopulation. Checks for more individuals than K are given. 
@@ -1457,60 +1457,61 @@ def AddIndividuals(cdclimgentime,gen,idnew,agenew,genesnew,sexnew,subpopnew,infe
 	xy = ReadXY(datadir+xyfilename[ThisIndex])
 	
 	# Just a quick check, should be 19 long
-	if len(xy[0]) != 19:
-		print('XY files should be 18 long.')
+	if len(xy[0]) != 20:
+		print('XY files should be 20 long.')
 		sys.exit(-1)
 	
 	# Store information (some not needed, e.g., xgrid, ygrid). 
-	subpop_add = []
+	FID_add = [] # store index of each added individual
+	subpop_add = [] # store subpop id of each added individual
 	id_add = []
 	sex_add = []	
 	age_add = []	
-	genes_add = []
+	genes_add = [] # For known genes, need to update below
 	infection_add = []
+	# gridmort is read in through cdclimate in case changing there; first file will then give values through time; update this?
 	
+	# Read in new added individuals information here
 	for i in range(len(xy)-1):
+		FID_add.append(str(i))
 		subpop_add.append(xy[i+1][0])
-		id_add.append(xy[i+1][3])
-		infection_add.append(xy[i+1][6])
-		sex_add.append(xy[i+1][4])
-		age_add.append(xy[i+1][5])
+		id_add.append(xy[i+1][4])
+		sex_add.append(xy[i+1][5])
+		age_add.append(xy[i+1][6])
+		infection_add.append(xy[i+1][7])		
 		# Error check for age in known file must be 1 or greater
 		if age_add[i] != 'NA':
 			if int(age_add[i]) < 1:
 				print('Known file must initize with age 1+.')
 				sys.exit(-1)
-		# Change id, subpop to 'NA'
+		# Change id, subpop to 'NA', FID to 'NA'
 		if sex_add[i] == 'NA':
 			subpop_add[i] = 'NA'
+			FID_add[i] = 'NA'
 		
 	# turn new and add into arrays
-	subpopnew = np.asarray(subpopnew)
-	subpop_add = np.asarray(subpop_add)
-	agenew = np.asarray(agenew)
-	age_add = np.asarray(age_add)
-	sexnew = np.asarray(sexnew)
-	sex_add = np.asarray(sex_add)
-	idnew = np.asarray(idnew)
-	id_add = np.asarray(id_add)
-	infectionnew = np.asarray(infectionnew)
-	infection_add = np.asarray(infection_add)
+	subpop_here = np.asarray(subpop)[FID_here] # Since subpop doesn't change, then extract IDs for each location here
+	freegrid = np.asarray(freegrid)
 	
-	# Get subpop_K
-	subpopK = count_unique(subpopnew)
+	# Get K for each pop or location (1)
+	subpopK = count_unique(np.asarray(subpop))	
 	
-	# Add individuals to each subpop, checking if space
+	# Add the new individuals to each pop (or location/grid spot), check if space
 	for isub in range(len(subpopK[0])):
 		
 		thisPop = subpopK[0][isub] # make sure on right pop given strings
-		thisK = subpopK[1][isub] # grab K for this pop
+		thisK = subpopK[1][isub] # grab K for this pop / or location/grid
 		
-		# How many individuals are currently in this subpop
-		count_currentN = len(np.where(sexnew[np.where(subpopnew == thisPop)[0]] != 'NA')[0])
+		# How many individuals are currently in this subpop or lcoation/grid
+		#count_currentN = len(np.where(sex_here[np.where(subpop_here == thisPop)[0]] != 'NA')[0])
+		#count_currentN = len(np.where(sex_here[np.where(FID_here == int(thisPop)-1)[0]] != 'NA')[0]) # Not sure works with pops now
 		
-		# How many individuals are going to be added to this subpop
-		addN = np.where(subpop_add == thisPop)[0]
-		count_addN = len(np.where(subpop_add == thisPop)[0])
+		# Count how many individuals in this spot
+		count_currentN = len(np.where(subpop_here == thisPop)[0])
+		
+		# How many individuals are going to be added to this pop or spot
+		addN = np.where(np.asarray(subpop_add) == thisPop)[0] # could be > 1, index / FID location of added individuals
+		count_addN = len(addN)
 		
 		# If there are no individuals to add, then continue
 		if count_addN == 0:
@@ -1518,52 +1519,44 @@ def AddIndividuals(cdclimgentime,gen,idnew,agenew,genesnew,sexnew,subpopnew,infe
 		else: # Else keep going and adding individuals		
 			# Check to see if over K?
 			if thisK < count_currentN + count_addN:
-				print(('Exceeded carrying capacity when adding individuals to this subpopulation '+thisPop))
-				sys.exit(-1)
-				#pdb.set_trace()
+				print(('Warning: Exceeded carrying capacity when adding individuals to this subpopulation '+thisPop+ ' and no individual added here for this gen '+str(gen))) 
 			else:
-				
-				# Get spots where individuals can be added to
-				allSpots = np.where(subpopnew == thisPop)[0]
-				openSpots = np.where(sexnew[np.where(subpopnew == thisPop)[0]] == 'NA')[0]
-				openSpots = allSpots[openSpots]
-				
-				# Randomly choose addN spots
-				fillSpots = np.random.choice(openSpots,count_addN,replace=False).tolist()
-				
-				# Then update the *new variables
-				idnew[fillSpots] = id_add[addN]
-				sexnew[fillSpots] = sex_add[addN]
-				agenew[fillSpots] = age_add[addN]
-				infectionnew[fillSpots] = infection_add[addN]
-					
-				# Then update the genesnew spots
-				for iadd in fillSpots:		
-					
-					# For each loci:
-					for j in range(len(allelst[ThisIndex])):
-					
-						# Take a random draw from the w_choice function at jth locus
-						# Using the first allele file in list
-						rand1 = w_choice_general(allelst[ThisIndex][j])[0]
-						rand2 = w_choice_general(allelst[ThisIndex][j])[0]
-						
-						# Append assinment onto indall array - run through each condition for assignment of 1s or 2s or 0s
-						# 	1s = heterozygous at that locus
-						#	2s = homozygous at that locus
-						#	0s = absence of allele
-						for k in range(len(allelst[ThisIndex][j])):
+				# Loop through each ind to add; could be > 1
+				for iadd in range(count_addN):
+					thisAddInd = addN[iadd] # index/FID of added individual
+					# Make sure there is not an individual already here
+					checkAddInd = np.where(thisAddInd == np.asarray(FID_here))[0]
+					if len(checkAddInd) > 0: # There is ind here, move onto next add individual in this pop, else move to next subpop
+						#pdb.set_trace()
+						continue
+					else: # No one here, continue to adding andupdate the *_here variables
+						id_here.append(id_add[thisAddInd])
+						sex_here.append(sex_add[thisAddInd])
+						age_here.append(age_add[thisAddInd])
+						infection_here.append(infection_add[thisAddInd])
+						FID_here.append(int(FID_add[thisAddInd]))
+						freegrid = np.delete(freegrid,np.where(thisAddInd==freegrid)[0])	# Delete from freegrid					
+													
+						# Then update the genes_here spots with allele freq file							
+						genes_here.append([])	
+						# For each loci:
+						for j in range(len(allelst[ThisIndex])):							
+							# Take a random draw from the w_choice function at jth locus
+							# Using the first allele file in list
+							rand1 = w_choice_general(allelst[ThisIndex][j])[0]
+							rand2 = w_choice_general(allelst[ThisIndex][j])[0]
 							
-							# Just make sure nobody is in this spot
-							#if genesnew[iadd][j][k] == 'NA':
-							if genesnew[iadd][sum(alleles[0:j])+k] == 'NA':
+							# Append assinment onto indall array - run through each condition for assignment of 1s or 2s or 0s
+							# 	1s = heterozygous at that locus
+							#	2s = homozygous at that locus
+							#	0s = absence of allele
+							for k in range(len(allelst[ThisIndex][j])):									
 								# Assignment of 2, the rest 0
 								if rand1 == rand2: 
 									if k < rand1 or k > rand1:
 										tempindall = 0
 									elif k == rand1:
-										tempindall = 2
-										
+										tempindall = 2												
 								# Assignment of 1s, the rest 0
 								if rand1 != rand2:
 									if k < min(rand1,rand2) or k > max(rand1,rand2):
@@ -1571,28 +1564,23 @@ def AddIndividuals(cdclimgentime,gen,idnew,agenew,genesnew,sexnew,subpopnew,infe
 									elif k == rand1 or k == rand2:
 										tempindall = 1
 									else:
-										tempindall = 0
-										
-								genesnew[iadd][sum(alleles[0:j])+k] = tempindall
+										tempindall = 0												
+								genes_here[-1].append(str(tempindall))	
 								
-							else: # IF there was someone in this spot
-								print('In AddIndividuals; error.')
-								sys.exit(-1)
-					
-					# ---------------------------------------------
-					# Update Hindex
-					# ---------------------------------------------
-					if genesnew[iadd][0] == 2:
-						hindexnew[iadd] = 1.0
-					elif genesnew[iadd][1] == 2:
-						hindexnew[iadd] = 0.0
-					elif genesnew[iadd][0] == 1 and genesnew[iadd][1] == 1:
-						hindexnew[iadd] = 0.5
-					else:
-						hindexnew[iadd] = -9999
-	
+						# ---------------------------------------------
+						# Update Hindex
+						# ---------------------------------------------
+						if genes_here[-1][0] == str(2):
+							hindex_here.append(str(1.0))
+						elif genes_here[-1][1] == str(2):
+							hindex_here.append(str(0.0))
+						elif genes_here[-1][0] == 1 and genes_here[-1][1] == 1:
+							hindex_here.append(str(0.5))
+						else:
+							hindex_here.append(str(-9999))	
+				
 	# Turn back into lists?	
-	return idnew.tolist(),sexnew.tolist(),agenew.tolist(),genesnew,infectionnew.tolist(),hindexnew
+	return id_here,sex_here,age_here,genes_here,infection_here,hindex_here,FID_here,freegrid.tolist()
 	
 	# End::AddIndividuals()
 

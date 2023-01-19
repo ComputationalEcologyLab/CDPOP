@@ -817,6 +817,7 @@ logfHndl,gridformat,infection,Infected,cdinfect,opengrids,OffDispDistCD,geneswap
 	infectionnew = []
 	AllDispDistCD = []	
 	hindexnew = []
+	FID = np.asarray(FID)
 	
 	# Keep genes in within burn in period
 	if gen < geneswap:
@@ -888,6 +889,7 @@ logfHndl,gridformat,infection,Infected,cdinfect,opengrids,OffDispDistCD,geneswap
 			AllDispDistCD.append('NA')
 									
 		else:
+			pdb.set_trace()
 			print('Grid location missing. DoOutput()')
 			sys.exit(-1)
 			

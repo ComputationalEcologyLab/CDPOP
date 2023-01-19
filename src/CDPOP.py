@@ -5,8 +5,8 @@
 # ----------------------------------------------------------------------------
 # General CDPOP information
 appName = "CDPOP"
-appVers = "version 1.3.17"
-appRele = "2022.11.8-09:55:00MDT"
+appVers = "version 1.3.19"
+appRele = "2023.01.19-09:55:00MDT"
 authorNames = "Erin L Landguth et al."
 
 # ---------------
@@ -147,6 +147,7 @@ if __name__ == '__main__':
 		mreplace = batchVars['Mreplace'][ibatch]
 		mpaternity = batchVars['multiple_paternity'][ibatch]
 		selfans = batchVars['selfans'][ibatch]
+		matefreq = float(batchVars['mateFrequency'][ibatch])
 		sexans = batchVars['sexans'][ibatch]
 		Fdispmoveno = batchVars['Fdispmoveno'][ibatch]
 		FdispmoveparA = batchVars['FdispmoveparA'][ibatch]
@@ -579,7 +580,7 @@ if __name__ == '__main__':
 					
 					# Timing events: start
 					start_time1 = datetime.datetime.now()
-					
+					'''move to before disperse
 					# ---------------------------------
 					# Add individuals if specified
 					# ---------------------------------					
@@ -603,6 +604,7 @@ if __name__ == '__main__':
 							stringout = 'AddIndividuals(): '+str(datetime.datetime.now() -start_time1) + ''
 							logMsg(logfHndl,stringout)
 							print(('AddIndividuals()',str(datetime.datetime.now() -start_time1),''))		
+					'''
 					
 					tupReadGrid = ReadGrid(FIDnew,idnew,agenew,xgridnew,\
 					ygridnew,genesnew,equalsexratio,sexnew,subpopnew,\
@@ -699,7 +701,7 @@ if __name__ == '__main__':
 				ygridcopy,ToTMales,ToTFemales,BreedMales,BreedFemales,\
 				sexans,selfans,\
 				MateDistEDstd, MateDistCDstd,FAvgMate,MAvgMate,\
-				FSDMate,MSDMate,filledgrids,Female_BreedEvents,gen,subpop,BreedFemales_age,Magemort,Mmature,Fmature,mate_ScaleMax,mate_ScaleMin,matemoveparA,matemoveparB,matemoveparC,MateDistances)
+				FSDMate,MSDMate,filledgrids,Female_BreedEvents,gen,subpop,BreedFemales_age,Magemort,Mmature,Fmature,mate_ScaleMax,mate_ScaleMin,matemoveparA,matemoveparB,matemoveparC,MateDistances,matefreq)
 				Bearpairs = tupMate[0]
 				females = tupMate[1]
 				females_nomate.append(tupMate[2])
@@ -753,7 +755,7 @@ if __name__ == '__main__':
 				# ------------------------------------------
 				# Call DoAdultMortality()
 				# ------------------------------------------
-				
+				#pdb.set_trace()	
 				# Timing events: start
 				start_time1 = datetime.datetime.now()
 				
@@ -769,7 +771,7 @@ if __name__ == '__main__':
 				ygrid = tupAMort[5]
 				genes = tupAMort[6]	
 				FID = tupAMort[7]
-				infection = tupAMort[8]
+				infection = tupAMort[8] # coming out str, change to int
 				# Mature skipped, not used from here on out
 				hindex = tupAMort[10]
 							
@@ -777,7 +779,34 @@ if __name__ == '__main__':
 				stringout = 'DoAdultMortality(): '+str(datetime.datetime.now() -start_time1) + ''
 				logMsg(logfHndl,stringout)
 				print('DoAdultMortality(): ',str(datetime.datetime.now() -start_time1),'')
-									
+				#pdb.set_trace()					
+				# ----------------------------------------------
+				# Add individuals if specified, starting gen = 1
+				# ----------------------------------------------					
+				if len(xyfilename) > 1 and gen != 0:
+					# Check gen time equal to cdclimgentime
+					if len(np.where(np.asarray(cdclimgentime) == str(gen))[0]) == 1:
+						
+						# Timing events: start
+						start_time1 = datetime.datetime.now()
+						
+						#tupAddInds = AddIndividuals(cdclimgentime,gen,id,age,genes,sexnew,subpop,infection,allelst,xyfilename,datadir,alleles,hindex)
+						tupAddInds = AddIndividuals(cdclimgentime,gen,id.tolist(),age.tolist(),genes,sex.tolist(),FID.tolist(),infection.tolist(),allelst,xyfilename,datadir,alleles,hindex.tolist(),subpop,freegrid)
+													
+						id = tupAddInds[0]
+						sex = tupAddInds[1]
+						age = tupAddInds[2]
+						genes = tupAddInds[3]
+						infection = tupAddInds[4]
+						hindex = tupAddInds[5]
+						FID = tupAddInds[6]
+						freegrid = tupAddInds[7]
+						
+						# Print to log
+						stringout = 'AddIndividuals(): '+str(datetime.datetime.now() -start_time1) + ''
+						logMsg(logfHndl,stringout)
+						print(('AddIndividuals()',str(datetime.datetime.now() -start_time1),''))
+				#pdb.set_trace()			
 				# ------------------------------------------
 				# Call DoDisperse()
 				# ------------------------------------------			
@@ -808,7 +837,7 @@ if __name__ == '__main__':
 				# ------------------------------------------
 				# Call DoOutput()
 				# ------------------------------------------	
-				
+				#pdb.set_trace()
 				# Timing events: start
 				start_time1 = datetime.datetime.now()
 							
@@ -826,7 +855,7 @@ if __name__ == '__main__':
 				ygridnew = tupDoOut[5]
 				genesnew = tupDoOut[6]
 				subpopnew = tupDoOut[7]
-				infectionnew = tupDoOut[8]				
+				infectionnew = tupDoOut[8]	# mix of string/ints, fix			
 				hindexnew = tupDoOut[9]
 				
 				# Print to log

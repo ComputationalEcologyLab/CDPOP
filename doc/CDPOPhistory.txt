@@ -1,3 +1,22 @@
+Changes v1.3.19.2023.01.19T08:40:00 (ell)
+0) Work through test files from EAsh and issues with introductions, mating interval, and mortality options.
+a) Hitting 1531 PDB in AddIndividuals, deleted pdb.set_trace()
+
+Changes v1.3.18.2022.12.6T10:18:00 (ell)
+0)Begin addressing priority list of modifications from SCushman, EAsh, Luciano
+a)Introductions: revisit for greater control. E.g., Control where Individuals are introduced, if individual there, then skip. Previous code population checks/based....checking.
+-> Looking into moving AddIndividuals before Dispersal happens, so they will take over a spot of parent; will work for nonoverlapping.
+-> Updating AddIndividuals() to accomodate new column in XY for grid mort. Note that gridmort uses bars for cdclimate and read from first file
+-> Remove sys-exit in exceed K (EAsh) when thisK < count_currentN + count_addN, then program will skip this add individual
+-> Working for subpopulations 1111222233334444, etc. 
+
+-> *** If known file for genes, then need to update, currently initializes genes with allele freq file
+-> ***Need to update usermanual for gridmort (Subpopmort_perc) moved to XY, CDCLIMATE works for bars in this file. If add individuals on, then subpopmort_perc is ignored; gridmort will always use the first files values. 
+
+1) Add variable in inputvars for skipped mating/spawning
+a) Added 'mateFrequency' field to inputvars
+b) In mate functions for replacement, flip coin to see if that individuals mates using matefreq
+
 Changes v1.3.17.2022.11.21T8:50:00 (ell)
 0) Spatial mortality indexing incorrect to subpop, not iteminlist (grid spot)
 
