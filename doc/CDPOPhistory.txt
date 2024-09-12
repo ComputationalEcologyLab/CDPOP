@@ -1,3 +1,6 @@
+Changes v1.3.20.2024.09.12 (ell)
+0) 'rU' to 'r'
+
 Changes v1.3.19.2023.01.19T08:40:00 (ell)
 0) Work through test files from EAsh and issues with introductions, mating interval, and mortality options.
 a) Hitting 1531 PDB in AddIndividuals, deleted pdb.set_trace()

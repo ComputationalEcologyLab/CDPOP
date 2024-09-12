@@ -227,7 +227,7 @@ def InitializeGenes(intgenesans,allefreqfilename,loci,alleles,datadir):
 				# Check statements
 				if os.path.exists(datadir+fileans+'.csv'):
 					# Open file for reading
-					inputfile = open(datadir+fileans+'.csv','rU')
+					inputfile = open(datadir+fileans+'.csv','r')
 				else:
 					print(("CDPOP InitializeGenes() error: open failed, could not open %s"%(fileans)))
 					sys.exit(-1)
@@ -329,7 +329,7 @@ def InitializeAge(agefilename,nogrids,datadir):
 		# Check statements
 		if os.path.exists(datadir+fileans):
 			# Open file for reading
-			inputfile = open(datadir+fileans,'rU')
+			inputfile = open(datadir+fileans,'r')
 		else:
 			print(("CDPOP InitializeAge() error: open failed, could not open %s"%(datadir+fileans)))
 			sys.exit(-1)
@@ -427,7 +427,7 @@ def ReadXY(xyfilename):
 	
 	
 	# Open file for reading
-	inputfile = open(xyfilename+'.csv','rU')
+	inputfile = open(xyfilename+'.csv','r')
 	
 	# Read lines from the file
 	lines = inputfile.readlines()
@@ -461,7 +461,7 @@ def ReadCDMatrix(cdmatrixfilename,function,threshold,A,B,C,subpop):
 	# Check statements
 	if os.path.exists(cdmatrixfilename+'.csv'):
 		# Open file for reading
-		inputfile = open(cdmatrixfilename+'.csv','rU')
+		inputfile = open(cdmatrixfilename+'.csv','r')
 	else:
 		print(("CDPOP ReadCDMatrix() error: open failed, could not open %s"%(cdmatrixfilename+'.csv')))
 		sys.exit(-1)
